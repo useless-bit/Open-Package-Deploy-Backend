@@ -83,6 +83,8 @@ public class ServerCommunication {
         String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
         UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
 
+        AgentApplication.logger.info("Server: " + updateCheckResponse.getAgentChecksum());
+        AgentApplication.logger.info("Local: " + AgentApplication.agentChecksum);
         if (!updateCheckResponse.getAgentChecksum().equals(AgentApplication.agentChecksum)) {
             AgentApplication.logger.info("Initiate update");
             UpdateHandler updateHandler = new UpdateHandler();
