@@ -35,20 +35,29 @@ public class PackageHandler {
     }
 
     public void initiateDeployment() {
+        AgentApplication.logger.info("Clean Folder");
         cleanupDownloadFolder();
+        AgentApplication.logger.info("Get Package Details");
         getPackageDetails();
+        AgentApplication.logger.info("Download Package");
         downloadPackage();
+        AgentApplication.logger.info("Verifiy");
         if (!validatePackage("download/file", packageDetailResponse.getChecksumEncrypted())) {
             sendDeploymentResponse(PackageDeploymentErrorState.ENCRYPTED_CHECKSUM_MISMATCH.toString());
         }
+        AgentApplication.logger.info("Decrypt");
         if (!decryptPackage()) {
             sendDeploymentResponse(PackageDeploymentErrorState.DECRYPTION_FAILED.toString());
         }
+        AgentApplication.logger.info("Verify");
         if (!validatePackage("download/file.zip", packageDetailResponse.getChecksumPlaintext())) {
             sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
         }
+        AgentApplication.logger.info("extract");
         extractPackage("download/file.zip", "download/extracted");
+        AgentApplication.logger.info("start deployment");
         sendDeploymentResponse(executeDeployment());
+        AgentApplication.logger.info("Final cleanup");
         cleanupDownloadFolder();
     }
 
@@ -84,7 +93,7 @@ public class PackageHandler {
             throw new RuntimeException(e);
         }
         if (response.code() != 200) {
-            return;
+            throw new RuntimeException("Error downloading: " + response.code());
         }
 
         byte[] data;
@@ -116,7 +125,7 @@ public class PackageHandler {
             throw new RuntimeException(e);
         }
         if (response.code() != 200) {
-            return;
+            throw new RuntimeException("Error getting details: " + response.code());
         }
         String responseBody = null;
         try {
@@ -175,7 +184,7 @@ public class PackageHandler {
             throw new RuntimeException(e);
         }
         if (response.code() != 200) {
-            return;
+            throw new RuntimeException("Error sending response: " + response.code());
         }
     }
 
