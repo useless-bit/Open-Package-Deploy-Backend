@@ -7,12 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
 @RequiredArgsConstructor
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     private final ServerRepository serverRepository;
