@@ -45,7 +45,7 @@ public class AgentApplication {
             }
         }
         HardwareInfo hardwareInfo = new HardwareInfo();
-        if (hardwareInfo.isElevated()) {
+        if (!hardwareInfo.isElevated()) {
             throw new RuntimeException("Application needs elevated permissions");
         }
 
