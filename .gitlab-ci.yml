@@ -15,10 +15,6 @@ Agent-Build:
   stage: agent
   script:
     - gradle -p agent clean build check --stacktrace --info --build-cache -x test
-  artifacts:
-    expire_in: 30 minute
-    paths:
-      - build/libs/*.jar
   except:
     - test
     - master
@@ -49,10 +45,6 @@ Server-Build:
   stage: server
   script:
     - gradle -p server clean build check --stacktrace --info --build-cache -x test
-  artifacts:
-    expire_in: 30 minute
-    paths:
-      - build/libs/*.jar
   except:
     - test
     - master
@@ -81,24 +73,24 @@ Server-Test:
     - Server-Build
 
 
-#build-image-dev:
-#  image: $CI_REGISTRY/docker/docker:latest
-#  stage: publish
-#  script:
-#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#    - docker build . -t $CI_REGISTRY/taskflare/backend:dev
-#    - docker push $CI_REGISTRY/taskflare/backend:dev
-#  only:
-#    - dev
-#  needs:
-#    - test
-#
-#build-image-master:
-#  image: $CI_REGISTRY/docker/docker:latest
-#  stage: publish
-#  script:
-#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#    - docker build . -t $CI_REGISTRY/taskflare/backend:latest
-#    - docker push $CI_REGISTRY/taskflare/backend:latest
-#  only:
-#    - master
+build-image-dev:
+  image: $CI_REGISTRY/docker/docker:latest
+  stage: publish
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build . -t $CI_REGISTRY/opd/server:dev
+    - docker push $CI_REGISTRY/opd/server:dev
+  only:
+    - dev
+  needs:
+    - test
+
+build-image-master:
+  image: $CI_REGISTRY/docker/docker:latest
+  stage: publish
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build . -t $CI_REGISTRY/opd/server:latest
+    - docker push $CI_REGISTRY/opd/server:latest
+  only:
+    - master
