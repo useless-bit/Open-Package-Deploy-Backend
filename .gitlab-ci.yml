@@ -1,6 +1,6 @@
 stages:
-  - build
-  - test
+  - agent
+  - server
   - publish
 
 before_script:
@@ -12,7 +12,7 @@ cache:
 
 Agent-Build:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: build
+  stage: agent
   script:
     - gradle -p agent clean build check --stacktrace --info --build-cache -x test
   artifacts:
@@ -25,7 +25,7 @@ Agent-Build:
 
 Agent-Test:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: test
+  stage: agent
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
@@ -42,11 +42,11 @@ Agent-Test:
     - test
     - master
   needs:
-    - Server-Build
+    - Agent-Build
 
 Server-Build:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: build
+  stage: server
   script:
     - gradle -p server clean build check --stacktrace --info --build-cache -x test
   artifacts:
@@ -61,7 +61,7 @@ Server-Build:
 
 Server-Test:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: test
+  stage: server
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
