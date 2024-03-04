@@ -104,7 +104,7 @@ public class AgentCommunicationService {
 
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null || deploymentEntity.isDeployed()
-                || (deploymentEntity.getLastDeploymentTimestamp() == null || !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
+                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
         Path path = Paths.get("/opt/OPD/Packages/" + deploymentEntity.getPackageEntity().getUuid());
@@ -144,7 +144,7 @@ public class AgentCommunicationService {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(agentDeploymentResultRequest.getDeploymentUUID());
 
         if (deploymentEntity == null || deploymentEntity.isDeployed()
-                || (deploymentEntity.getLastDeploymentTimestamp() == null || !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
+                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
 
