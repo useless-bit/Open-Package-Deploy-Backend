@@ -109,6 +109,7 @@ public class ServerInitialization {
         serverEntity.setAgentRegistrationToken(UUID.randomUUID().toString());
         serverEntity.setPublicKeyBase64(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
         serverEntity.setPrivateKeyBase64(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
+        serverEntity.setAgentChecksum("");
         return serverEntity;
     }
 }
