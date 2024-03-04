@@ -10,7 +10,7 @@ cache:
     - .gradle/wrapper
     - .gradle/caches
 
-build:
+Server-Build:
   image: $CI_REGISTRY/java/gradle:jdk19
   stage: build
   script:
@@ -42,7 +42,7 @@ Server-Test:
     - test
     - master
   needs:
-    - build
+    - Server-Build
 
 #build-image-dev:
 #  image: $CI_REGISTRY/docker/docker:latest
