@@ -24,6 +24,5 @@ FROM harbor.codesystem.org/java/zulu-openjdk-alpine:19-latest
 
 WORKDIR /jar
 COPY --from=build-stage-server /source/build/libs/* /jar/backend.jar
-ENV database.default-schema=taskflare
 
 ENTRYPOINT ["java", "-jar", "backend.jar"]
