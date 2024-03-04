@@ -16,9 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +65,8 @@ public class ManagementPackageService {
         packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
         packageEntity = packageRepository.save(packageEntity);
 
-        try (FileOutputStream fileOutputStream = new FileOutputStream(packageEntity.getUuid() + "_plaintext")) {
+        new File("/opt/OPD/Packages").mkdirs();
+        try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
             InputStream inputStream = multipartFile.getInputStream();
             byte[] inputStreamByte = inputStream.readNBytes(1024);
             while (inputStreamByte.length != 0) {
@@ -70,6 +74,7 @@ public class ManagementPackageService {
                 inputStreamByte = inputStream.readNBytes(1024);
             }
         } catch (IOException e) {
+            System.out.println(e);
             return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
         }
 
