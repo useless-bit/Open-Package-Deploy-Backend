@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
@@ -50,7 +49,7 @@ public class SecurityConfiguration {
     @Bean
     @Order(4)
     public SecurityFilterChain securityFilterChainWebAPI(HttpSecurity http) throws Exception {
-        http.securityMatcher("/api/**").authorizeHttpRequests(auth -> auth.anyRequest().hasRole(AUTHENTICATION_ROLE ))
+        http.securityMatcher("/api/**").authorizeHttpRequests(auth -> auth.anyRequest().hasRole(AUTHENTICATION_ROLE))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
