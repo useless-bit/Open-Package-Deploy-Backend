@@ -16,7 +16,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-
 public class SecurityConfiguration {
     public static final String AUTHENTICATION_ROLE = "uma_authorization";
     private final JwtAuthConverter jwtAuthConverter;
@@ -67,7 +66,8 @@ public class SecurityConfiguration {
     @Bean
     @Order(6)
     public SecurityFilterChain securityFilterChainDenyAll(HttpSecurity http) throws Exception {
-        http.securityMatcher("**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.securityMatcher("**").authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
+        http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 }
