@@ -1,0 +1,92 @@
+stages:
+  - agent
+  - server
+  - publish
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+Agent-Build:
+  image: $CI_REGISTRY/java/gradle:jdk19
+  stage: agent
+  script:
+    - gradle -p agent clean build check --stacktrace --info --build-cache -x test
+  except:
+    - master
+
+Agent-Test:
+  image: $CI_REGISTRY/java/gradle:jdk19
+  stage: agent
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - gradle -p agent test --fail-fast --info --stacktrace jacocoTestReport sonar
+  artifacts:
+    reports:
+      junit: server/build/test-results/test/**/TEST-*.xml
+  except:
+    - master
+  needs:
+    - Agent-Build
+
+Server-Build:
+  image: $CI_REGISTRY/java/gradle:jdk19
+  stage: server
+  script:
+    - gradle -p server clean build check --stacktrace --info --build-cache -x test
+  except:
+    - master
+  needs:
+    - Agent-Test
+
+Server-Test:
+  image: $CI_REGISTRY/java/gradle:jdk19
+  stage: server
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - gradle -p server test --fail-fast --info --stacktrace jacocoTestReport sonar
+  artifacts:
+    reports:
+      junit: server/build/test-results/test/**/TEST-*.xml
+  except:
+    - master
+  needs:
+    - Server-Build
+
+
+build-image-dev:
+  image: $CI_REGISTRY/docker/docker:latest
+  stage: publish
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build . -t $CI_REGISTRY/opd/server:dev
+    - docker push $CI_REGISTRY/opd/server:dev
+  only:
+    - dev
+  needs:
+    - Server-Test
+
+build-image-master:
+  image: $CI_REGISTRY/docker/docker:latest
+  stage: publish
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build . -t $CI_REGISTRY/opd/server:latest
+    - docker push $CI_REGISTRY/opd/server:latest
+  only:
+    - master
