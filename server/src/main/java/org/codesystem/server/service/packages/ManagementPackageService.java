@@ -2,7 +2,6 @@ package org.codesystem.server.service.packages;
 
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.entity.PackageEntity;
-import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.AddNewPackageRequest;
@@ -16,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +62,8 @@ public class ManagementPackageService {
         packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
         packageEntity = packageRepository.save(packageEntity);
 
-        try (FileOutputStream fileOutputStream = new FileOutputStream(packageEntity.getUuid() + "_plaintext")) {
+        new File("/opt/OPD/Packages").mkdirs();
+        try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
             InputStream inputStream = multipartFile.getInputStream();
             byte[] inputStreamByte = inputStream.readNBytes(1024);
             while (inputStreamByte.length != 0) {

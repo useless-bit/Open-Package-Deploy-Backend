@@ -33,7 +33,8 @@ public class PackageEncryptor {
 
     private void encryptPackage(PackageEntity packageEntity) {
         //check if file exists
-        File plaintextFile = new File(packageEntity.getUuid() + "_plaintext");
+        String basePath = "/opt/OPD/Packages/";
+        File plaintextFile = new File(basePath + packageEntity.getUuid() + "_plaintext");
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
         packageEntity = packageRepository.save(packageEntity);
         if (!plaintextFile.exists() || !plaintextFile.isFile()) {
@@ -56,8 +57,8 @@ public class PackageEncryptor {
             return;
         }
 
-        Path encryptedFilePath = Paths.get(packageEntity.getUuid());
-        Path decryptedTestFilePath = Paths.get(packageEntity.getUuid() + "_temp-encrypted-test");
+        Path encryptedFilePath = Paths.get(basePath + packageEntity.getUuid());
+        Path decryptedTestFilePath = Paths.get(basePath + packageEntity.getUuid() + "_temp-encrypted-test");
 
         //encrypt file
         if (!cryptoUtility.encryptFile(packageEntity, plaintextFile, encryptedFilePath)) {
