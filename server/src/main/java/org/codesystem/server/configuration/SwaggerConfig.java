@@ -22,22 +22,32 @@ public class SwaggerConfig {
     public GroupedOpenApi groupAgentCommunication() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Agent Communication")).group("Agent Communication").build();
     }
+
+    @Bean
+    public GroupedOpenApi groupAgentDownload() {
+        return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Agent Download")).group("Agent Download").build();
+    }
+
     @Bean
     public GroupedOpenApi groupAgentRegistration() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Agent Registration")).group("Agent Registration").build();
     }
+
     @Bean
     public GroupedOpenApi groupManagementAgent() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Management Agent")).group("Management Agent").build();
     }
+
     @Bean
     public GroupedOpenApi groupManagementDeployment() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Management Deployment")).group("Management Deployment").build();
     }
+
     @Bean
     public GroupedOpenApi groupManagementPackage() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Management Packages")).group("Management Packages").build();
     }
+
     @Bean
     public GroupedOpenApi groupMonitoring() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Monitoring")).group("Monitoring").build();

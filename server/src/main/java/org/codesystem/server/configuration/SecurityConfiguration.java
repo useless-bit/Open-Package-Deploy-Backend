@@ -2,6 +2,8 @@ package org.codesystem.server.configuration;
 
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.configuration.keycloak.JwtAuthConverter;
+import org.codesystem.server.filter.HeaderAuthenticationFilter;
+import org.codesystem.server.repository.ServerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -9,6 +11,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -17,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
     public static final String AUTHENTICATION_ROLE = "uma_authorization";
     private final JwtAuthConverter jwtAuthConverter;
+    private final ServerRepository serverRepository;
 
     @Bean
     @Order(1)
@@ -53,8 +58,17 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(5)
+    public SecurityFilterChain securityFilterChainAgentDownload(HttpSecurity http) throws Exception {
+        http.securityMatcher("/download/agent/**");
+        http.addFilterBefore(new HeaderAuthenticationFilter(serverRepository), BasicAuthenticationFilter.class);
+        http.csrf(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
+
+    @Bean
+    @Order(6)
     public SecurityFilterChain securityFilterChainDenyAll(HttpSecurity http) throws Exception {
-        http.securityMatcher("**").authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
+        http.securityMatcher("**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
 }
