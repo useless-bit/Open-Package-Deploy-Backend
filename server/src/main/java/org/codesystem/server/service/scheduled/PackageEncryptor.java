@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 public class PackageEncryptor {
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
-    private final String basePath = "/opt/OPD/Packages/";
 
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("encryptPackageTask")
@@ -34,6 +33,7 @@ public class PackageEncryptor {
 
     private void encryptPackage(PackageEntity packageEntity) {
         //check if file exists
+        String basePath = "/opt/OPD/Packages/";
         File plaintextFile = new File(basePath + packageEntity.getUuid() + "_plaintext");
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
         packageEntity = packageRepository.save(packageEntity);
