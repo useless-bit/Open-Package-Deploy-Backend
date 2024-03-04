@@ -16,7 +16,6 @@ Agent-Build:
   script:
     - gradle -p agent clean build check --stacktrace --info --build-cache -x test
   except:
-    - test
     - master
 
 Agent-Test:
@@ -35,7 +34,6 @@ Agent-Test:
     reports:
       junit: server/build/test-results/test/**/TEST-*.xml
   except:
-    - test
     - master
   needs:
     - Agent-Build
@@ -46,7 +44,6 @@ Server-Build:
   script:
     - gradle -p server clean build check --stacktrace --info --build-cache -x test
   except:
-    - test
     - master
   needs:
     - Agent-Test
@@ -67,7 +64,6 @@ Server-Test:
     reports:
       junit: server/build/test-results/test/**/TEST-*.xml
   except:
-    - test
     - master
   needs:
     - Server-Build
@@ -83,7 +79,7 @@ build-image-dev:
   only:
     - dev
   needs:
-    - test
+    - Server-Test
 
 build-image-master:
   image: $CI_REGISTRY/docker/docker:latest
