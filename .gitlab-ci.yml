@@ -44,24 +44,24 @@ Server-Test:
   needs:
     - build
 
-build-image-dev:
-  image: $CI_REGISTRY/docker/docker:latest
-  stage: publish
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build . -t $CI_REGISTRY/taskflare/backend:dev
-    - docker push $CI_REGISTRY/taskflare/backend:dev
-  only:
-    - dev
-  needs:
-    - test
-
-build-image-master:
-  image: $CI_REGISTRY/docker/docker:latest
-  stage: publish
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build . -t $CI_REGISTRY/taskflare/backend:latest
-    - docker push $CI_REGISTRY/taskflare/backend:latest
-  only:
-    - master
+#build-image-dev:
+#  image: $CI_REGISTRY/docker/docker:latest
+#  stage: publish
+#  script:
+#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#    - docker build . -t $CI_REGISTRY/taskflare/backend:dev
+#    - docker push $CI_REGISTRY/taskflare/backend:dev
+#  only:
+#    - dev
+#  needs:
+#    - test
+#
+#build-image-master:
+#  image: $CI_REGISTRY/docker/docker:latest
+#  stage: publish
+#  script:
+#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#    - docker build . -t $CI_REGISTRY/taskflare/backend:latest
+#    - docker push $CI_REGISTRY/taskflare/backend:latest
+#  only:
+#    - master
