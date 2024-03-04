@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class PackageEncryptor {
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
+    private final String basePath = "/opt/OPD/Packages/";
 
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("encryptPackageTask")
@@ -33,7 +34,7 @@ public class PackageEncryptor {
 
     private void encryptPackage(PackageEntity packageEntity) {
         //check if file exists
-        File plaintextFile = new File("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext");
+        File plaintextFile = new File(basePath + packageEntity.getUuid() + "_plaintext");
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
         packageEntity = packageRepository.save(packageEntity);
         if (!plaintextFile.exists() || !plaintextFile.isFile()) {
@@ -56,8 +57,8 @@ public class PackageEncryptor {
             return;
         }
 
-        Path encryptedFilePath = Paths.get("/opt/OPD/Packages/" + packageEntity.getUuid());
-        Path decryptedTestFilePath = Paths.get("/opt/OPD/Packages/" + packageEntity.getUuid() + "_temp-encrypted-test");
+        Path encryptedFilePath = Paths.get(basePath + packageEntity.getUuid());
+        Path decryptedTestFilePath = Paths.get(basePath + packageEntity.getUuid() + "_temp-encrypted-test");
 
         //encrypt file
         if (!cryptoUtility.encryptFile(packageEntity, plaintextFile, encryptedFilePath)) {

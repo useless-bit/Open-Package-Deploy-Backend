@@ -2,7 +2,6 @@ package org.codesystem.server.service.packages;
 
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.entity.PackageEntity;
-import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.AddNewPackageRequest;
@@ -20,8 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 @RequiredArgsConstructor
@@ -74,7 +71,6 @@ public class ManagementPackageService {
                 inputStreamByte = inputStream.readNBytes(1024);
             }
         } catch (IOException e) {
-            System.out.println(e);
             return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
         }
 
