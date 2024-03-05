@@ -23,7 +23,7 @@ public class AgentApplication {
     public static void main(String[] args) {
         initialSetup();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleAtFixedRate(AgentApplication::mainLogic, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(AgentApplication::mainLogic, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
     }
 
     private static void initialSetup() {
