@@ -3,8 +3,10 @@ package org.codesystem.server.service.packages;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
+import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.AddNewPackageRequest;
+import org.codesystem.server.request.packages.UpdatePackageContentRequest;
 import org.codesystem.server.request.packages.UpdatePackageRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
@@ -25,6 +27,7 @@ import java.io.InputStream;
 public class ManagementPackageService {
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
+    private final DeploymentRepository deploymentRepository;
 
 
     public ResponseEntity<ApiResponse> getAllPackages() {
@@ -104,7 +107,32 @@ public class ManagementPackageService {
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
+        deploymentRepository.deleteDeploymentsForPackage(packageEntity);
         packageRepository.save(packageEntity);
+        return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<ApiResponse> updatePackageContent(UpdatePackageContentRequest updatePackageRequest, MultipartFile multipartFile, String packageUUID) {
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+        }
+
+        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null || !multipartFile.getContentType().equalsIgnoreCase("application/zip")) {
+            return ResponseEntity.badRequest().body(new ApiError("Invalid zip-file"));
+        }
+        if (updatePackageRequest == null) {
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
+        }
+        String calculatedChecksum;
+        try {
+            calculatedChecksum = cryptoUtility.calculateChecksum(multipartFile.getInputStream());
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(new ApiError("Error when reading zip-file and creating checksum"));
+        }
+        if (!calculatedChecksum.equals(updatePackageRequest.getPackageChecksum())) {
+            return ResponseEntity.badRequest().body(new ApiError("Checksum mismatch"));
+        }
         return ResponseEntity.ok().build();
     }
 }

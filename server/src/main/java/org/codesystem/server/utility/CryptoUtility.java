@@ -160,11 +160,32 @@ public class CryptoUtility {
         if (inputStream == null) {
             return null;
         }
+        MessageDigest messageDigest = null;
         try {
-            return DigestUtils.md5DigestAsHex(inputStream);
-        } catch (IOException e) {
+            messageDigest = MessageDigest.getInstance("SHA3-256");
+        } catch (NoSuchAlgorithmException e) {
             return null;
         }
+
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        while (true) {
+            try {
+                if ((bytesRead = inputStream.read(buffer)) == -1) break;
+            } catch (IOException e) {
+                return null;
+            }
+            messageDigest.update(buffer, 0, bytesRead);
+        }
+
+        byte[] checkSum = messageDigest.digest();
+
+        StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
+        for (byte b : checkSum) {
+            stringBuilder.append(String.format("%02x", b));
+        }
+        return stringBuilder.toString();
     }
 
     private PublicKey loadPublicKeyFromAgentEntity(AgentEntity agentEntity) {

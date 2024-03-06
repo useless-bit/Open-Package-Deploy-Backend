@@ -7,10 +7,7 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -121,18 +118,38 @@ public class CryptoHandler {
     }
 
     public String calculateChecksumOfFile(String filePath) {
-        byte[] data;
+        try(FileInputStream fileInputStream = new FileInputStream(filePath)) {
+
+        MessageDigest messageDigest;
         try {
-            data = Files.readAllBytes(Paths.get(filePath));
-        } catch (IOException e) {
+            messageDigest = MessageDigest.getInstance("SHA3-256");
+        } catch (NoSuchAlgorithmException e) {
             return null;
         }
-        byte[] hash;
-        try {
-            hash = MessageDigest.getInstance("MD5").digest(data);
-        } catch (NoSuchAlgorithmException e) {
+
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        while (true) {
+            try {
+                if ((bytesRead = fileInputStream.read(buffer)) == -1) break;
+            } catch (IOException e) {
+                return null;
+            }
+            messageDigest.update(buffer, 0, bytesRead);
+        }
+
+        byte[] checkSum = messageDigest.digest();
+
+        StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
+        for (byte b : checkSum) {
+            stringBuilder.append(String.format("%02x", b));
+        }
+        return stringBuilder.toString();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new BigInteger(1, hash).toString(16);
     }
 }

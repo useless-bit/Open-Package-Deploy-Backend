@@ -11,9 +11,7 @@ import org.codesystem.payload.PackageDetailResponse;
 import org.codesystem.payload.UpdateCheckRequest;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -138,20 +136,40 @@ public class PackageHandler {
     }
 
     private boolean validatePackage(String file, String targetChecksum) {
-        byte[] data;
-        try {
-            data = Files.readAllBytes(Paths.get(file));
+        try(FileInputStream fileInputStream = new FileInputStream(file)) {
+
+            MessageDigest messageDigest;
+            try {
+                messageDigest = MessageDigest.getInstance("SHA3-256");
+            } catch (NoSuchAlgorithmException e) {
+                return false;
+            }
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+
+            while (true) {
+                try {
+                    if ((bytesRead = fileInputStream.read(buffer)) == -1) break;
+                } catch (IOException e) {
+                    return false;
+                }
+                messageDigest.update(buffer, 0, bytesRead);
+            }
+
+            byte[] checkSum = messageDigest.digest();
+
+            StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
+            for (byte b : checkSum) {
+                stringBuilder.append(String.format("%02x", b));
+            }
+            return stringBuilder.toString().equals(targetChecksum);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        byte[] hash;
-        try {
-            hash = MessageDigest.getInstance("MD5").digest(data);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        String checksum = new BigInteger(1, hash).toString(16);
-        return checksum.equals(targetChecksum);
+
     }
 
     private boolean decryptPackage() {
