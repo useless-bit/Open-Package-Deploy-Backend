@@ -140,7 +140,7 @@ public class PackageHandler {
 
             MessageDigest messageDigest;
             try {
-                messageDigest = MessageDigest.getInstance("SHA3-256");
+                messageDigest = MessageDigest.getInstance("SHA3-512");
             } catch (NoSuchAlgorithmException e) {
                 return false;
             }

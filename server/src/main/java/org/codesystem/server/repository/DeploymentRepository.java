@@ -27,7 +27,7 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
 
     @Transactional
     @Modifying
-    @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.packageEntity = ?2")
+    @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.packageEntity = ?1")
     void resetDeploymentsForPackage(PackageEntity packageEntity);
 
     @Transactional
