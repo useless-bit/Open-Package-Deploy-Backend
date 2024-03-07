@@ -44,3 +44,4 @@ bin/
 
 /opd-agent.properties
 /.idea/
+/server/src/main/resources/agent/Agent.jar

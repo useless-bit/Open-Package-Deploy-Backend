@@ -1,17 +1,14 @@
 package org.codesystem.server.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.codesystem.server.converter.OperatingSystemConverter;
-import org.codesystem.server.converter.PackageStatusInternalConverter;
 import org.codesystem.server.enums.agent.OperatingSystem;
 
 import java.time.Instant;
-import java.util.List;
 
 @Entity
 @Getter

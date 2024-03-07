@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdatePackageRequest {
-    private String packageName;
+public class UpdatePackageContentRequest {
+    private String packageChecksum;
 }

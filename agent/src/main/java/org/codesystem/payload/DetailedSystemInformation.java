@@ -4,7 +4,6 @@ import org.codesystem.HardwareInfo;
 import org.json.JSONObject;
 
 public class DetailedSystemInformation {
-    private String operatingSystem;
     private final String operatingSystemFamily;
     private final String operatingSystemArchitecture;
     private final String operatingSystemVersion;
@@ -16,6 +15,7 @@ public class DetailedSystemInformation {
     private final String cpuPhysicalCores;
     private final String cpuSockets;
     private final String memory;
+    private String operatingSystem;
 
     public DetailedSystemInformation() {
         HardwareInfo hardwareInfo = new HardwareInfo();

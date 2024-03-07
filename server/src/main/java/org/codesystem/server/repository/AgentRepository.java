@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AgentRepository extends JpaRepository<AgentEntity, String> {
     AgentEntity findFirstByPublicKeyBase64(String publicKeyBase64);
+
     AgentEntity findFirstByUuid(String uuid);
 }

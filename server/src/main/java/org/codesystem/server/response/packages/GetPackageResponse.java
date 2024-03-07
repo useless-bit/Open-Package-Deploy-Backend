@@ -8,8 +8,6 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.response.general.ApiResponse;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor

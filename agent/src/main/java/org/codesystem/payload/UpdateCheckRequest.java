@@ -3,7 +3,6 @@ package org.codesystem.payload;
 import org.codesystem.CryptoHandler;
 import org.json.JSONObject;
 
-import java.time.Instant;
 import java.util.Base64;
 
 public class UpdateCheckRequest extends EmptyRequest {

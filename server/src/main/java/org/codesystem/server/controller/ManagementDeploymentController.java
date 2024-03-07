@@ -24,6 +24,7 @@ public class ManagementDeploymentController {
     public ResponseEntity<ApiResponse> getDeployment(@PathVariable String deploymentUUID) {
         return managementDeploymentService.detDeployment(deploymentUUID);
     }
+
     @GetMapping("agent/{agentUUID}")
     public ResponseEntity<ApiResponse> getAllDeploymentsForAgent(@PathVariable String agentUUID) {
         return managementDeploymentService.getAllPackagesForAgent(agentUUID);
@@ -37,5 +38,20 @@ public class ManagementDeploymentController {
     @DeleteMapping("{deploymentUUID}")
     public ResponseEntity<ApiResponse> deleteDeployment(@PathVariable String deploymentUUID) {
         return managementDeploymentService.deleteDeployment(deploymentUUID);
+    }
+
+    @PatchMapping("reset/deployment/{deploymentUUID}")
+    public ResponseEntity<ApiResponse> resetDeployment(@PathVariable String deploymentUUID) {
+        return managementDeploymentService.resetDeployment(deploymentUUID);
+    }
+
+    @PatchMapping("reset/agent/{agentUUID}")
+    public ResponseEntity<ApiResponse> resetDeploymentForAgent(@PathVariable String agentUUID) {
+        return managementDeploymentService.resetDeploymentForAgent(agentUUID);
+    }
+
+    @PatchMapping("reset/package/{packageUUID}")
+    public ResponseEntity<ApiResponse> resetDeploymentForPackage(@PathVariable String packageUUID) {
+        return managementDeploymentService.resetDeploymentForPackage(packageUUID);
     }
 }
