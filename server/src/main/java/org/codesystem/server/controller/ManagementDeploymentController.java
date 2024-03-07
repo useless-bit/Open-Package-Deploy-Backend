@@ -38,4 +38,9 @@ public class ManagementDeploymentController {
     public ResponseEntity<ApiResponse> deleteDeployment(@PathVariable String deploymentUUID) {
         return managementDeploymentService.deleteDeployment(deploymentUUID);
     }
+
+    @PatchMapping("{deploymentUUID}")
+    public ResponseEntity<ApiResponse> resetDeployment(@PathVariable String deploymentUUID) {
+        return managementDeploymentService.deleteDeployment(deploymentUUID);
+    }
 }

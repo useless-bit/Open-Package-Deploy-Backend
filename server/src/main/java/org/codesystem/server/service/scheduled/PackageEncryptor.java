@@ -45,6 +45,7 @@ public class PackageEncryptor {
 
 
         //compare checksum of plaintext file
+        System.out.println("Checksum");
         try (FileInputStream fileInputStream = new FileInputStream(plaintextFile)) {
             if (!cryptoUtility.calculateChecksum(fileInputStream).equals(packageEntity.getChecksumPlaintext())) {
                 packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
@@ -61,6 +62,7 @@ public class PackageEncryptor {
         Path decryptedTestFilePath = Paths.get(basePath + packageEntity.getUuid() + "_temp-encrypted-test");
 
         //encrypt file
+        System.out.println("Encrypt");
         if (!cryptoUtility.encryptFile(packageEntity, plaintextFile, encryptedFilePath)) {
             packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
             packageRepository.save(packageEntity);
@@ -68,6 +70,7 @@ public class PackageEncryptor {
         }
 
         //calculate checksum of encrypted file
+        System.out.println("Checksum");
         String checksumEncryptedFile;
         try {
             checksumEncryptedFile = cryptoUtility.calculateChecksum(new FileInputStream(encryptedFilePath.toString()));
@@ -78,6 +81,7 @@ public class PackageEncryptor {
         }
 
         //decrypt file
+        System.out.println("Decrypt");
         if (!cryptoUtility.decryptFile(packageEntity, new File(encryptedFilePath.toString()), decryptedTestFilePath)) {
             packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
             packageRepository.save(packageEntity);
@@ -85,6 +89,7 @@ public class PackageEncryptor {
         }
 
         //compare checksum of decrypted file
+        System.out.println("Checksum");
         try {
             if (!cryptoUtility.calculateChecksum(new FileInputStream(decryptedTestFilePath.toString())).equals(packageEntity.getChecksumPlaintext())) {
                 packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);

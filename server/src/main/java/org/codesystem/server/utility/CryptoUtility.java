@@ -17,6 +17,7 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -57,8 +58,8 @@ public class CryptoUtility {
             this.keyFactory = KeyFactory.getInstance("EC");
             this.keyGeneratorAES = KeyGenerator.getInstance("AES");
             this.keyGeneratorAES.init(128);
-            this.cipherECC = Cipher.getInstance("ECIES", BouncyCastleProvider.PROVIDER_NAME);
-            this.cipherAES = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            this.cipherECC = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
             this.privateKeyServer = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPrivateKeyBase64())));
         } catch (Exception e) {
@@ -143,13 +144,15 @@ public class CryptoUtility {
                 CipherInputStream cipherInputStream = new CipherInputStream(fileInputStream, cipher);
                 FileOutputStream fileOutputStream = new FileOutputStream(targetPath.toString())
         ) {
-            cipher.init(Cipher.DECRYPT_MODE, packageEntity.getEncryptionToken(), new IvParameterSpec(packageEntity.getInitializationVector()));
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, packageEntity.getInitializationVector());
+            cipher.init(Cipher.DECRYPT_MODE, packageEntity.getEncryptionToken(), gcmParameterSpec);
             byte[] inputStreamByte = cipherInputStream.readNBytes(1024);
             while (inputStreamByte.length != 0) {
                 fileOutputStream.write(inputStreamByte);
                 inputStreamByte = cipherInputStream.readNBytes(1024);
             }
         } catch (Exception e) {
+            System.out.println(e);
             return false;
         }
         return true;
