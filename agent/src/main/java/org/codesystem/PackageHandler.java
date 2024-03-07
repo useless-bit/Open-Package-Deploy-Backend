@@ -93,7 +93,7 @@ public class PackageHandler {
             throw new SevereAgentErrorException("Unable to send response: " + e.getMessage());
         }
         if (response.code() != 200) {
-            throw new SevereAgentErrorException("Unable to download package. Response code: " + response.code());
+            throw new RuntimeException("Unable to download package. Response code: " + response.code());
         }
 
         byte[] data;
