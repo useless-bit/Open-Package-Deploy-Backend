@@ -1,5 +1,6 @@
 package org.codesystem.server.repository;
 
+import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,6 +30,11 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
     @Modifying
     @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.packageEntity = ?1")
     void resetDeploymentsForPackage(PackageEntity packageEntity);
+
+    @Transactional
+    @Modifying
+    @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.agentEntity = ?1")
+    int resetDeploymentsForAgent(AgentEntity agentEntity);
 
     @Transactional
     @Modifying

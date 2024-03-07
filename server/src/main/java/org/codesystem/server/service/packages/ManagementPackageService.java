@@ -133,6 +133,21 @@ public class ManagementPackageService {
         if (!calculatedChecksum.equals(updatePackageRequest.getPackageChecksum())) {
             return ResponseEntity.badRequest().body(new ApiError("Checksum mismatch"));
         }
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
+            InputStream inputStream = multipartFile.getInputStream();
+            byte[] inputStreamByte = inputStream.readNBytes(1024);
+            while (inputStreamByte.length != 0) {
+                fileOutputStream.write(inputStreamByte);
+                inputStreamByte = inputStream.readNBytes(1024);
+            }
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
+        }
+
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        packageRepository.save(packageEntity);
+        deploymentRepository.resetDeploymentsForPackage(packageEntity);
         return ResponseEntity.ok().build();
     }
 }

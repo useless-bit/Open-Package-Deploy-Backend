@@ -1,5 +1,6 @@
 package org.codesystem.server.controller;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.request.packages.AddNewPackageRequest;
@@ -30,6 +31,7 @@ public class ManagementPackageController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Schema(type = "multipartfile")
     public ResponseEntity<ApiResponse> addNewPackage(@RequestPart AddNewPackageRequest addNewPackageRequest, @RequestPart MultipartFile multipartFile) {
         return managementPackageService.addNewNewPackage(addNewPackageRequest, multipartFile);
     }
