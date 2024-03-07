@@ -23,7 +23,8 @@ public class AgentApplication {
 
     public static void main(String[] args) {
         initialSetup();
-        try (ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1)) {
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        try  {
             scheduledExecutorService.scheduleWithFixedDelay(() -> {
                 try {
                     AgentApplication.mainLogic();
