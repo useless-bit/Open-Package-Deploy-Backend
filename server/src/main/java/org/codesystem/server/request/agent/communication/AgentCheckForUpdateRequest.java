@@ -8,8 +8,10 @@ import org.json.JSONObject;
 @Setter
 public class AgentCheckForUpdateRequest {
     private SystemInformationRequest systemInformationRequest;
+    private String agentChecksum;
 
     public AgentCheckForUpdateRequest(JSONObject jsonObject) {
         this.systemInformationRequest = new SystemInformationRequest(jsonObject.getJSONObject("systemInformation"));
+        this.agentChecksum = jsonObject.getString("agentChecksum");
     }
 }

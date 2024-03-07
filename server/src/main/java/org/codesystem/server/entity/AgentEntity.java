@@ -38,6 +38,9 @@ public class AgentEntity {
     @Column(name = "last_connection_time")
     private Instant lastConnectionTime = null;
 
+    @Column(name = "agent_checksum")
+    private String agentChecksum;
+
     @Column(name = "operating_system", nullable = false)
     @Convert(converter = OperatingSystemConverter.class)
     private OperatingSystem operatingSystem = OperatingSystem.UNKNOWN;

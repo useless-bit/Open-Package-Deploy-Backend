@@ -57,6 +57,8 @@ public class AgentCommunicationService {
     }
 
     private void updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
+        agentEntity.setAgentChecksum(agentCheckForUpdateRequest.getAgentChecksum());
+
         agentEntity.setOperatingSystem(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem());
         agentEntity.setOperatingSystemFamily(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystemFamily());
         agentEntity.setOperatingSystemArchitecture(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystemArchitecture());
