@@ -5,6 +5,7 @@ import net.lingala.zip4j.exception.ZipException;
 import okhttp3.*;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
+import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.DeploymentResult;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.PackageDetailResponse;
@@ -89,22 +90,22 @@ public class PackageHandler {
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to send response: " + e.getMessage());
         }
         if (response.code() != 200) {
-            throw new RuntimeException("Error downloading: " + response.code());
+            throw new SevereAgentErrorException("Unable to download package. Response code: " + response.code());
         }
 
         byte[] data;
         try {
             data = response.body().bytes();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to load package from response: " + e.getMessage());
         }
         try (FileOutputStream fos = new FileOutputStream("download/file")) {
             fos.write(data);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to write downloaded package to file: " + e.getMessage());
         }
     }
 
