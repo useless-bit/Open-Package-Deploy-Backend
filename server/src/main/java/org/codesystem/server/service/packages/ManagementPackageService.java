@@ -31,6 +31,7 @@ public class ManagementPackageService {
     private final DeploymentRepository deploymentRepository;
 
     private static final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
+    private static final String ERROR_INVALID_ZIP_FILE = "Invalid zip-file";
 
 
     public ResponseEntity<ApiResponse> getAllPackages() {
@@ -46,9 +47,15 @@ public class ManagementPackageService {
     }
 
     public ResponseEntity<ApiResponse> addNewNewPackage(AddNewPackageRequest addNewPackageRequest, MultipartFile multipartFile) {
-        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null || !multipartFile.getContentType().equalsIgnoreCase("application/zip")) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid zip-file"));
+        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null) {
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+        } else {
+            String contentType = multipartFile.getContentType();
+            if (contentType == null || contentType.isBlank() || !contentType.equalsIgnoreCase("application/zip")) {
+                return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+            }
         }
+
         if (addNewPackageRequest == null) {
             return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
@@ -113,9 +120,15 @@ public class ManagementPackageService {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
 
-        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null || !multipartFile.getContentType().equalsIgnoreCase("application/zip")) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid zip-file"));
+        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null) {
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+        } else {
+            String contentType = multipartFile.getContentType();
+            if (contentType == null || contentType.isBlank() || !contentType.equalsIgnoreCase("application/zip")) {
+                return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+            }
         }
+
         if (updatePackageRequest == null) {
             return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
