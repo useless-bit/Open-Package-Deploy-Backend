@@ -3,7 +3,6 @@ package org.codesystem.server.response.agent.communication;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.codesystem.server.response.general.ApiResponse;
 import org.json.JSONObject;
 
 @Getter

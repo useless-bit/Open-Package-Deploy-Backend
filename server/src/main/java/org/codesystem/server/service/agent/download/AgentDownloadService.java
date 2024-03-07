@@ -14,6 +14,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AgentDownloadService {
     private final ResourceLoader resourceLoader;
+
     public ResponseEntity<byte[]> download() {
         Resource resource = resourceLoader.getResource("classpath:agent/Agent.jar");
 

@@ -29,6 +29,8 @@ public class ManagementPackageService {
     private final CryptoUtility cryptoUtility;
     private final DeploymentRepository deploymentRepository;
 
+    private final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
+
 
     public ResponseEntity<ApiResponse> getAllPackages() {
         return ResponseEntity.ok().body(new GetAllPackagesResponse(packageRepository.findAll()));
@@ -37,7 +39,7 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> getPackage(String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
         return ResponseEntity.ok().body(new GetPackageResponse(packageEntity));
     }
@@ -77,7 +79,7 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> updatePackage(UpdatePackageRequest updatePackageRequest, String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
         if (updatePackageRequest.getPackageName() != null && !updatePackageRequest.getPackageName().equals(packageEntity.getName())) {
             packageEntity.setName(updatePackageRequest.getPackageName());
@@ -89,7 +91,7 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> deletePackage(String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.PROCESSING) {
             return ResponseEntity.badRequest().body(new ApiError("Cannot delete package while being processed"));
@@ -107,7 +109,7 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> updatePackageContent(UpdatePackageContentRequest updatePackageRequest, MultipartFile multipartFile, String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
 
         if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null || !multipartFile.getContentType().equalsIgnoreCase("application/zip")) {

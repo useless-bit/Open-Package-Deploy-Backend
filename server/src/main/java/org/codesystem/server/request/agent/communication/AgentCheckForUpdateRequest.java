@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 
-import java.time.Instant;
-
 @Getter
 @Setter
 public class AgentCheckForUpdateRequest {

@@ -12,7 +12,6 @@ import org.codesystem.payload.UpdateCheckRequest;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -136,7 +135,7 @@ public class PackageHandler {
     }
 
     private boolean validatePackage(String file, String targetChecksum) {
-        try(FileInputStream fileInputStream = new FileInputStream(file)) {
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
 
             MessageDigest messageDigest;
             try {

@@ -24,6 +24,7 @@ public class ManagementDeploymentController {
     public ResponseEntity<ApiResponse> getDeployment(@PathVariable String deploymentUUID) {
         return managementDeploymentService.detDeployment(deploymentUUID);
     }
+
     @GetMapping("agent/{agentUUID}")
     public ResponseEntity<ApiResponse> getAllDeploymentsForAgent(@PathVariable String agentUUID) {
         return managementDeploymentService.getAllPackagesForAgent(agentUUID);

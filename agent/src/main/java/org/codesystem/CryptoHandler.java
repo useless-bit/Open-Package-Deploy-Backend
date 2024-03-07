@@ -7,13 +7,9 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -120,34 +116,34 @@ public class CryptoHandler {
     }
 
     public String calculateChecksumOfFile(String filePath) {
-        try(FileInputStream fileInputStream = new FileInputStream(filePath)) {
+        try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
 
-        MessageDigest messageDigest;
-        try {
-            messageDigest = MessageDigest.getInstance("SHA3-512");
-        } catch (NoSuchAlgorithmException e) {
-            return null;
-        }
-
-        byte[] buffer = new byte[4096];
-        int bytesRead;
-
-        while (true) {
+            MessageDigest messageDigest;
             try {
-                if ((bytesRead = fileInputStream.read(buffer)) == -1) break;
-            } catch (IOException e) {
+                messageDigest = MessageDigest.getInstance("SHA3-512");
+            } catch (NoSuchAlgorithmException e) {
                 return null;
             }
-            messageDigest.update(buffer, 0, bytesRead);
-        }
 
-        byte[] checkSum = messageDigest.digest();
+            byte[] buffer = new byte[4096];
+            int bytesRead;
 
-        StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
-        for (byte b : checkSum) {
-            stringBuilder.append(String.format("%02x", b));
-        }
-        return stringBuilder.toString();
+            while (true) {
+                try {
+                    if ((bytesRead = fileInputStream.read(buffer)) == -1) break;
+                } catch (IOException e) {
+                    return null;
+                }
+                messageDigest.update(buffer, 0, bytesRead);
+            }
+
+            byte[] checkSum = messageDigest.digest();
+
+            StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
+            for (byte b : checkSum) {
+                stringBuilder.append(String.format("%02x", b));
+            }
+            return stringBuilder.toString();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {

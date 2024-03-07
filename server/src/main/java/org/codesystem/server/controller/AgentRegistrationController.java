@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AgentRegistrationController {
     private final AgentRegistrationService agentRegistrationService;
+
     @PostMapping
     public ResponseEntity<ApiResponse> addNewAgent(@RequestBody AgentRegistrationRequest agentRegistrationRequest) {
         return agentRegistrationService.addNewAgent(agentRegistrationRequest);
     }
+
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse> verifyNewAgent(@RequestBody AgentVerificationRequest agentVerificationRequest) {
         return agentRegistrationService.verifyNewAgent(agentVerificationRequest);
