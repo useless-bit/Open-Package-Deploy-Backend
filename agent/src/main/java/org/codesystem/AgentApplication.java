@@ -23,15 +23,14 @@ public class AgentApplication {
 
     public static void main(String[] args) {
         initialSetup();
-        try (ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1)) {
-            scheduledExecutorService.scheduleWithFixedDelay(() -> {
-                try {
-                    AgentApplication.mainLogic();
-                } catch (Throwable t) {
-                    throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
-                }
-            }, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
-        }
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
+                AgentApplication.mainLogic();
+            } catch (Throwable t) {
+                throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
+            }
+        }, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
     }
 
     private static void initialSetup() {
