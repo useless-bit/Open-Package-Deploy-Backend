@@ -46,7 +46,7 @@ public class ManagementPackageService {
     }
 
     public ResponseEntity<ApiResponse> addNewNewPackage(AddNewPackageRequest addNewPackageRequest, MultipartFile multipartFile) {
-        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null || !multipartFile.getContentType().equalsIgnoreCase("application/zip")) {
+        if (multipartFile == null || multipartFile.isEmpty() || (multipartFile.getContentType() != null && !multipartFile.getContentType().equalsIgnoreCase("application/zip"))) {
             return ResponseEntity.badRequest().body(new ApiError("Invalid zip-file"));
         }
         if (addNewPackageRequest == null) {
@@ -113,7 +113,7 @@ public class ManagementPackageService {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
 
-        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null || !multipartFile.getContentType().equalsIgnoreCase("application/zip")) {
+        if (multipartFile == null || multipartFile.isEmpty() || (multipartFile.getContentType() != null && !multipartFile.getContentType().equalsIgnoreCase("application/zip"))) {
             return ResponseEntity.badRequest().body(new ApiError("Invalid zip-file"));
         }
         if (updatePackageRequest == null) {
