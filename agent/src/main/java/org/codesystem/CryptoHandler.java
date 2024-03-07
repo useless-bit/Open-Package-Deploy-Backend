@@ -6,6 +6,7 @@ import org.bouncycastle.jce.spec.IESParameterSpec;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
 import java.math.BigInteger;
@@ -38,8 +39,8 @@ public class CryptoHandler {
     public CryptoHandler() {
         try {
             this.keyFactory = KeyFactory.getInstance("EC");
-            this.cipher = Cipher.getInstance("ECIES", BouncyCastleProvider.PROVIDER_NAME);
-            this.cipherAES = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            this.cipher = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
             this.privateKeyAgent = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Agent.ECC.Private-Key"))));
@@ -105,7 +106,8 @@ public class CryptoHandler {
                 CipherInputStream cipherInputStream = new CipherInputStream(fileInputStream, cipher);
                 FileOutputStream fileOutputStream = new FileOutputStream(targetPath.toString())
         ) {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(initializationVector));
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, initializationVector);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
             byte[] inputStreamByte = cipherInputStream.readNBytes(1024);
             while (inputStreamByte.length != 0) {
                 fileOutputStream.write(inputStreamByte);
