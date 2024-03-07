@@ -65,15 +65,7 @@ public class ManagementPackageService {
         packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
         packageEntity = packageRepository.save(packageEntity);
 
-        new File("/opt/OPD/Packages").mkdirs();
-        try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
-            InputStream inputStream = multipartFile.getInputStream();
-            byte[] inputStreamByte = inputStream.readNBytes(1024);
-            while (inputStreamByte.length != 0) {
-                fileOutputStream.write(inputStreamByte);
-                inputStreamByte = inputStream.readNBytes(1024);
-            }
-        } catch (IOException e) {
+        if (!savePackage(multipartFile, packageEntity)) {
             return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
         }
 
@@ -134,6 +126,18 @@ public class ManagementPackageService {
             return ResponseEntity.badRequest().body(new ApiError("Checksum mismatch"));
         }
 
+        if (!savePackage(multipartFile, packageEntity)) {
+            return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
+        }
+
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        packageRepository.save(packageEntity);
+        deploymentRepository.resetDeploymentsForPackage(packageEntity);
+        return ResponseEntity.ok().build();
+    }
+
+    private boolean savePackage(MultipartFile multipartFile, PackageEntity packageEntity) {
+        new File("/opt/OPD/Packages").mkdirs();
         try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
             InputStream inputStream = multipartFile.getInputStream();
             byte[] inputStreamByte = inputStream.readNBytes(1024);
@@ -142,12 +146,8 @@ public class ManagementPackageService {
                 inputStreamByte = inputStream.readNBytes(1024);
             }
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
+            return false;
         }
-
-        packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
-        packageRepository.save(packageEntity);
-        deploymentRepository.resetDeploymentsForPackage(packageEntity);
-        return ResponseEntity.ok().build();
+        return true;
     }
 }
