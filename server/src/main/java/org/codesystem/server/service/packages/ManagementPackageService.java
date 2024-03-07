@@ -1,6 +1,7 @@
 package org.codesystem.server.service.packages;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
@@ -29,7 +30,7 @@ public class ManagementPackageService {
     private final CryptoUtility cryptoUtility;
     private final DeploymentRepository deploymentRepository;
 
-    private final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
+    private static final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
 
 
     public ResponseEntity<ApiResponse> getAllPackages() {
@@ -139,7 +140,7 @@ public class ManagementPackageService {
     }
 
     private boolean savePackage(MultipartFile multipartFile, PackageEntity packageEntity) {
-        new File("/opt/OPD/Packages").mkdirs();
+        new File(ServerApplication.PACKAGE_LOCATION).mkdirs();
         try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
             InputStream inputStream = multipartFile.getInputStream();
             byte[] inputStreamByte = inputStream.readNBytes(1024);

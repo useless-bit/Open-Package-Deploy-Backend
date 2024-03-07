@@ -10,6 +10,7 @@ import java.security.Security;
 @EnableScheduling
 @SpringBootApplication
 public class ServerApplication {
+    public static String PACKAGE_LOCATION = "/opt/OPD/Packages";
 
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());
