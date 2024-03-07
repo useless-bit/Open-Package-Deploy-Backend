@@ -2,12 +2,15 @@ package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.IESParameterSpec;
+import org.codesystem.exceptions.SevereAgentErrorException;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.*;
@@ -16,9 +19,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class CryptoHandler {
-
-    private final KeyFactory keyFactory;
-    private final Cipher cipher;
+    private final Cipher cipherEcc;
     private final Cipher cipherAES;
 
     private final Signature signature;
@@ -34,30 +35,30 @@ public class CryptoHandler {
 
     public CryptoHandler() {
         try {
-            this.keyFactory = KeyFactory.getInstance("EC");
-            this.cipher = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            this.cipherEcc = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            this.privateKeyAgent = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Agent.ECC.Private-Key"))));
+            this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Agent.ECC.Private-Key"))));
             //load with null when Server Key was not retrieved yet
             if (!AgentApplication.properties.getProperty("Server.ECC.Public-Key").isBlank()) {
-                this.publicKeyServer = this.keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Server.ECC.Public-Key"))));
+                this.publicKeyServer = keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Server.ECC.Public-Key"))));
             } else {
                 this.publicKeyServer = null;
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException(e.getMessage());
         }
     }
 
     public String decryptECC(byte[] message) {
-        byte[] decryptedMessage;
+        byte[] decryptedMessage = null;
         try {
-            cipher.init(Cipher.DECRYPT_MODE, this.privateKeyAgent, iesParamSpec);
-            decryptedMessage = cipher.doFinal(message);
+            cipherEcc.init(Cipher.DECRYPT_MODE, this.privateKeyAgent, iesParamSpec);
+            decryptedMessage = cipherEcc.doFinal(message);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to decrypt the message: " + e.getMessage());
+            throw new SevereAgentErrorException("Unable to decrypt the message: " + e.getMessage());
         }
         return new String(decryptedMessage, StandardCharsets.UTF_8);
     }
@@ -65,10 +66,10 @@ public class CryptoHandler {
     public byte[] encryptECC(byte[] message) {
         byte[] encryptedMessage;
         try {
-            cipher.init(Cipher.ENCRYPT_MODE, publicKeyServer, iesParamSpec);
-            encryptedMessage = cipher.doFinal(message);
+            cipherEcc.init(Cipher.ENCRYPT_MODE, publicKeyServer, iesParamSpec);
+            encryptedMessage = cipherEcc.doFinal(message);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to load the Public-Key: " + e.getMessage());
+            throw new SevereAgentErrorException("Unable to load the Public-Key: " + e.getMessage());
         }
         return encryptedMessage;
     }
@@ -80,7 +81,7 @@ public class CryptoHandler {
             signature.update(message.getBytes(StandardCharsets.UTF_8));
             signatureForMessage = signature.sign();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to create ECC-Signature: " + e.getMessage());
         }
         return signatureForMessage;
     }
@@ -91,7 +92,7 @@ public class CryptoHandler {
             signature.update(message.getBytes(StandardCharsets.UTF_8));
             return signature.verify(Base64.getDecoder().decode(base64Signature));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to load the Public-Key: " + e.getMessage());
         }
     }
 
@@ -119,21 +120,12 @@ public class CryptoHandler {
         try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
 
             MessageDigest messageDigest;
-            try {
-                messageDigest = MessageDigest.getInstance("SHA3-512");
-            } catch (NoSuchAlgorithmException e) {
-                return null;
-            }
+            messageDigest = MessageDigest.getInstance("SHA3-512");
 
             byte[] buffer = new byte[4096];
             int bytesRead;
 
-            while (true) {
-                try {
-                    if ((bytesRead = fileInputStream.read(buffer)) == -1) break;
-                } catch (IOException e) {
-                    return null;
-                }
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 messageDigest.update(buffer, 0, bytesRead);
             }
 
@@ -144,10 +136,8 @@ public class CryptoHandler {
                 stringBuilder.append(String.format("%02x", b));
             }
             return stringBuilder.toString();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new SevereAgentErrorException("Unable to calculate checksum: " + e.getMessage());
         }
     }
 }
