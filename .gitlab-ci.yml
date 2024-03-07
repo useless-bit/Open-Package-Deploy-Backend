@@ -64,7 +64,6 @@ Server-Test:
   except:
     - master
   needs:
-    - Agent-Test
     - Server-Build
 
 
