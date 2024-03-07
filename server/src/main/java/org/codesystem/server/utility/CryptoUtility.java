@@ -11,14 +11,12 @@ import org.codesystem.server.repository.ServerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -28,13 +26,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Service
-@RequiredArgsConstructor
 @DependsOn("serverInitialization")
 public class CryptoUtility {
-
-    private final ServerRepository serverRepository;
-    private final PackageRepository packageRepository;
-
     private final KeyFactory keyFactory;
     private final KeyGenerator keyGeneratorAES;
     private final Cipher cipherECC;
@@ -50,10 +43,8 @@ public class CryptoUtility {
             /* usePointCompression = */ false);
 
     @Autowired
-    public CryptoUtility(ServerRepository serverRepository, PackageRepository packageRepository) {
-        this.serverRepository = serverRepository;
-        this.packageRepository = packageRepository;
-        ServerEntity serverEntity = this.serverRepository.findAll().get(0);
+    public CryptoUtility(ServerRepository serverRepository) {
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
         try {
             this.keyFactory = KeyFactory.getInstance("EC");
             this.keyGeneratorAES = KeyGenerator.getInstance("AES");
@@ -152,7 +143,6 @@ public class CryptoUtility {
                 inputStreamByte = cipherInputStream.readNBytes(1024);
             }
         } catch (Exception e) {
-            System.out.println(e);
             return false;
         }
         return true;
