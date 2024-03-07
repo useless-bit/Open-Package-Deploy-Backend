@@ -64,6 +64,7 @@ Server-Test:
   except:
     - master
   needs:
+    - Agent-Test
     - Server-Build
 
 
@@ -77,6 +78,7 @@ build-image-dev:
   only:
     - dev
   needs:
+    - Agent-Test
     - Server-Test
 
 build-image-master:
