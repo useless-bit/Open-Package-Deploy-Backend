@@ -28,18 +28,23 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
 
     @Transactional
     @Modifying
+    @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.uuid = ?1")
+    void resetDeployment(String deploymentUUID);
+
+    @Transactional
+    @Modifying
     @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.packageEntity = ?1")
     void resetDeploymentsForPackage(PackageEntity packageEntity);
 
     @Transactional
     @Modifying
     @Query("update DeploymentEntity d set d.deployed = false, d.lastDeploymentTimestamp = null where d.agentEntity = ?1")
-    int resetDeploymentsForAgent(AgentEntity agentEntity);
+    void resetDeploymentsForAgent(AgentEntity agentEntity);
 
     @Transactional
     @Modifying
     @Query("delete from DeploymentEntity d where d.packageEntity = ?1")
-    int deleteDeploymentsForPackage(PackageEntity packageEntity);
+    void deleteDeploymentsForPackage(PackageEntity packageEntity);
 
 
     @Query("select (count(d) > 0) from DeploymentEntity d where d.agentEntity.uuid = ?1 and d.packageEntity.uuid = ?2")
