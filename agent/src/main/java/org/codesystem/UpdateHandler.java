@@ -1,6 +1,7 @@
 package org.codesystem;
 
 import okhttp3.*;
+import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.UpdateCheckRequest;
 
@@ -8,49 +9,64 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class UpdateHandler {
+    private static final String FILE_NAME_AGENT_UPDATE_DOWNLOAD = "Agent_update-download.jar";
+
     public void updateApplication() {
         File oldVersion = Paths.get("Agent.jar").toFile();
         File backupOldVersion = Paths.get("Agent_backup.jar").toFile();
-        File currentVersion = Paths.get("Agent_update-download.jar").toFile();
+        File currentVersion = Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD).toFile();
 
         if (!currentVersion.exists()) {
-            throw new RuntimeException("Cannot find update");
+            throw new SevereAgentErrorException("Cannot find update file");
         }
 
         if (backupOldVersion.exists()) {
-            backupOldVersion.delete();
+            try {
+                Files.delete(backupOldVersion.toPath());
+            } catch (IOException e) {
+                throw new SevereAgentErrorException("Cannot delete old backup: " + e.getMessage());
+            }
         }
 
         if (oldVersion.exists()) {
             try {
                 Files.copy(oldVersion.toPath(), backupOldVersion.toPath());
             } catch (IOException e) {
-                throw new RuntimeException("Cannot create backup");
+                throw new SevereAgentErrorException("Cannot create backup");
             }
-            oldVersion.delete();
+            try {
+                Files.delete(oldVersion.toPath());
+            } catch (IOException e) {
+                throw new SevereAgentErrorException("Cannot delete old Agent: " + e.getMessage());
+            }
         }
 
         try {
             Files.copy(currentVersion.toPath(), oldVersion.toPath());
         } catch (IOException e) {
-            throw new RuntimeException("Cannot copy update");
+            throw new SevereAgentErrorException("Cannot copy new Agent");
         }
         System.exit(0);
     }
 
     public void startUpdateProcess(String checksum) {
-        try {
-            Files.delete(Paths.get("Agent_update-download.jar"));
-        } catch (IOException e) {
-
+        Path path = Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD);
+        if (Files.exists(path)) {
+            try {
+                Files.delete(path);
+            } catch (IOException e) {
+                throw new SevereAgentErrorException("Cannot delete update: " + e.getMessage());
+            }
         }
+
         CryptoHandler cryptoHandler = new CryptoHandler();
         downloadUpdate();
-        if (!cryptoHandler.calculateChecksumOfFile("Agent_update-download.jar").equals(checksum)) {
-            System.exit(12);
+        if (!cryptoHandler.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE_DOWNLOAD).equals(checksum)) {
+            throw new SevereAgentErrorException("Checksum of new Agent is invalid");
         }
         startNewApplication();
     }
@@ -68,7 +84,7 @@ public class UpdateHandler {
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to download update: " + e.getMessage());
         }
         if (response.code() != 200) {
             return;
@@ -78,12 +94,12 @@ public class UpdateHandler {
         try {
             data = response.body().bytes();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to load update from Server-response: " + e.getMessage());
         }
-        try (FileOutputStream fos = new FileOutputStream("Agent_update-download.jar")) {
+        try (FileOutputStream fos = new FileOutputStream(FILE_NAME_AGENT_UPDATE_DOWNLOAD)) {
             fos.write(data);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to write update file: " + e.getMessage());
         }
 
     }
@@ -92,9 +108,9 @@ public class UpdateHandler {
         String command = ProcessHandle.current().info().commandLine().get();
         command = command.substring(0, command.indexOf(" "));
         try {
-            new ProcessBuilder(command, "-jar", "Agent_update-download.jar").start();
+            new ProcessBuilder(command, "-jar", FILE_NAME_AGENT_UPDATE_DOWNLOAD).start();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to execute update process: " + e.getMessage());
         }
         System.exit(0);
     }
