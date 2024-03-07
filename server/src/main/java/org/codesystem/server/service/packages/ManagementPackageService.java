@@ -141,7 +141,7 @@ public class ManagementPackageService {
 
     private boolean savePackage(MultipartFile multipartFile, PackageEntity packageEntity) {
         new File(ServerApplication.PACKAGE_LOCATION).mkdirs();
-        try (FileOutputStream fileOutputStream = new FileOutputStream("/opt/OPD/Packages/" + packageEntity.getUuid() + "_plaintext")) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(ServerApplication.PACKAGE_LOCATION + packageEntity.getUuid() + "_plaintext")) {
             InputStream inputStream = multipartFile.getInputStream();
             byte[] inputStreamByte = inputStream.readNBytes(1024);
             while (inputStreamByte.length != 0) {

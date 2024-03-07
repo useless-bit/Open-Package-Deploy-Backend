@@ -1,6 +1,7 @@
 package org.codesystem.server.service.agent.communication;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.repository.AgentRepository;
@@ -107,7 +108,7 @@ public class AgentCommunicationService {
                 || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
-        Path path = Paths.get("/opt/OPD/Packages/" + deploymentEntity.getPackageEntity().getUuid());
+        Path path = Paths.get(ServerApplication.PACKAGE_LOCATION + deploymentEntity.getPackageEntity().getUuid());
         return ResponseEntity.ok().body(new FileSystemResource(new File(String.valueOf(path))));
     }
 

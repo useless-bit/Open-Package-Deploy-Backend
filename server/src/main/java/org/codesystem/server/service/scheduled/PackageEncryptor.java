@@ -1,6 +1,7 @@
 package org.codesystem.server.service.scheduled;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
@@ -33,7 +34,7 @@ public class PackageEncryptor {
 
     private void encryptPackage(PackageEntity packageEntity) {
         //check if file exists
-        String basePath = "/opt/OPD/Packages/";
+        String basePath = ServerApplication.PACKAGE_LOCATION;
         File plaintextFile = new File(basePath + packageEntity.getUuid() + "_plaintext");
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
         packageEntity = packageRepository.save(packageEntity);
