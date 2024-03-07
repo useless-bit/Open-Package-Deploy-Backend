@@ -11,13 +11,15 @@ import org.codesystem.payload.PackageDetailResponse;
 import org.codesystem.payload.UpdateCheckRequest;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Comparator;
 
@@ -137,22 +139,12 @@ public class PackageHandler {
     private boolean validatePackage(String file, String targetChecksum) {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
 
-            MessageDigest messageDigest;
-            try {
-                messageDigest = MessageDigest.getInstance("SHA3-512");
-            } catch (NoSuchAlgorithmException e) {
-                return false;
-            }
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA3-512");
 
             byte[] buffer = new byte[4096];
             int bytesRead;
 
-            while (true) {
-                try {
-                    if ((bytesRead = fileInputStream.read(buffer)) == -1) break;
-                } catch (IOException e) {
-                    return false;
-                }
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 messageDigest.update(buffer, 0, bytesRead);
             }
 
@@ -163,9 +155,7 @@ public class PackageHandler {
                 stringBuilder.append(String.format("%02x", b));
             }
             return stringBuilder.toString().equals(targetChecksum);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
