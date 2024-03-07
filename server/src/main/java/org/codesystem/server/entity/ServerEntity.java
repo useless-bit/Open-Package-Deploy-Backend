@@ -25,6 +25,6 @@ public class ServerEntity {
     @Column(name = "agent_registration_token", nullable = false)
     private String agentRegistrationToken = null;
 
-    @Column(name = "agent_chechsum", nullable = false)
+    @Column(name = "agent_checksum", nullable = false)
     private String agentChecksum = null;
 }

@@ -17,6 +17,7 @@ public class GetAgentResponse implements ApiResponse {
     private String name;
     private boolean registrationCompleted;
     private Instant lastConnectionTime;
+    private String checksum;
     private OperatingSystem operatingSystem;
     private String operatingSystemFamily;
     private String operatingSystemArchitecture;
@@ -35,6 +36,7 @@ public class GetAgentResponse implements ApiResponse {
         this.name = agent.getName();
         this.registrationCompleted = agent.isRegistrationCompleted();
         this.lastConnectionTime = agent.getLastConnectionTime();
+        this.checksum = agent.getAgentChecksum();
         this.operatingSystem = agent.getOperatingSystem();
         this.operatingSystemFamily = agent.getOperatingSystemFamily();
         this.operatingSystemArchitecture = agent.getOperatingSystemArchitecture();
