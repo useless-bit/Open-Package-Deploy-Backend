@@ -42,8 +42,8 @@ public class ManagementPackageController {
     }
 
     @PatchMapping(value = "{packageUUID}/content", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse> updatePackageContent(@RequestPart UpdatePackageContentRequest updatePackageRequest, @RequestPart MultipartFile multipartFile, @PathVariable String packageUUID) {
-        return managementPackageService.updatePackageContent(updatePackageRequest, multipartFile, packageUUID);
+    public ResponseEntity<ApiResponse> updatePackageContent(@RequestPart UpdatePackageContentRequest updatePackageContentRequest, @RequestPart MultipartFile multipartFile, @PathVariable String packageUUID) {
+        return managementPackageService.updatePackageContent(updatePackageContentRequest, multipartFile, packageUUID);
     }
 
     @DeleteMapping("{packageUUID}")

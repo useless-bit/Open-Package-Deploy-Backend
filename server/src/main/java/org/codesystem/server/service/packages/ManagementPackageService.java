@@ -114,7 +114,7 @@ public class ManagementPackageService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<ApiResponse> updatePackageContent(UpdatePackageContentRequest updatePackageRequest, MultipartFile multipartFile, String packageUUID) {
+    public ResponseEntity<ApiResponse> updatePackageContent(UpdatePackageContentRequest updatePackageContentRequest, MultipartFile multipartFile, String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
@@ -129,7 +129,7 @@ public class ManagementPackageService {
             }
         }
 
-        if (updatePackageRequest == null) {
+        if (updatePackageContentRequest == null) {
             return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
         String calculatedChecksum;
@@ -138,7 +138,7 @@ public class ManagementPackageService {
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(new ApiError("Error when reading zip-file and creating checksum"));
         }
-        if (!calculatedChecksum.equals(updatePackageRequest.getPackageChecksum())) {
+        if (!calculatedChecksum.equals(updatePackageContentRequest.getPackageChecksum())) {
             return ResponseEntity.badRequest().body(new ApiError("Checksum mismatch"));
         }
 
