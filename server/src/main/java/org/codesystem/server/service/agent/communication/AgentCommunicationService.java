@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.ServerRepository;
@@ -50,7 +51,7 @@ public class AgentCommunicationService {
         }
 
         updateAgent(agentEntity, new AgentCheckForUpdateRequest(request));
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments_test(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
         boolean deploymentAvailable = !deploymentEntities.isEmpty();
         String checksum = serverRepository.findAll().get(0).getAgentChecksum();
         return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(60, deploymentAvailable, checksum).toJsonObject(), agentEntity));
@@ -106,7 +107,7 @@ public class AgentCommunicationService {
         }
 
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
-        if (deploymentEntity == null || deploymentEntity.isDeployed()
+        if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
                 || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
@@ -124,7 +125,7 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().build();
         }
 
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments_test(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
         if (deploymentEntities.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -146,7 +147,7 @@ public class AgentCommunicationService {
         AgentDeploymentResultRequest agentDeploymentResultRequest = new AgentDeploymentResultRequest(request);
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(agentDeploymentResultRequest.getDeploymentUUID());
 
-        if (deploymentEntity == null || deploymentEntity.isDeployed()
+        if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
                 || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }

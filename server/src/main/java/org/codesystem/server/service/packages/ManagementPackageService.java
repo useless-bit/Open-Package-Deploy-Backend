@@ -147,6 +147,7 @@ public class ManagementPackageService {
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        packageEntity.setChecksumPlaintext(updatePackageContentRequest.getPackageChecksum());
         packageRepository.save(packageEntity);
         deploymentRepository.resetDeploymentsForPackage(packageEntity);
         return ResponseEntity.ok().build();
