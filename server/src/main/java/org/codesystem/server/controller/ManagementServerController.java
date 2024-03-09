@@ -2,10 +2,8 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.codesystem.server.request.agent.management.AgentUpdateRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.service.agent.management.ManagementAgentService;
 import org.codesystem.server.service.server.ManagementServerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
