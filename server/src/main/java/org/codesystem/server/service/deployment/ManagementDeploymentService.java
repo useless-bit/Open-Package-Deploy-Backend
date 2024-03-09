@@ -15,6 +15,7 @@ import org.codesystem.server.response.deployment.management.GetAllDeploymentsRes
 import org.codesystem.server.response.deployment.management.GetDeploymentResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,8 @@ public class ManagementDeploymentService {
     private final DeploymentRepository deploymentRepository;
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
+
+    private static final String ERROR_AGENT_NOT_FOUND = "Agent not found";
 
     public ResponseEntity<ApiResponse> getAllPackages() {
         return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deploymentRepository.findAll()));
@@ -44,7 +47,7 @@ public class ManagementDeploymentService {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(createNewDeploymentRequest.getAgentUUID());
         PackageEntity packageEntity = packageRepository.findFirstByUuid(createNewDeploymentRequest.getPackageUUID());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
         }
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError("Package not found"));
@@ -77,9 +80,36 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> getAllPackagesForAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
         }
         List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid());
         return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deployments));
+    }
+
+    public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {
+        DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
+        if (deploymentEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
+        }
+        deploymentRepository.resetDeployment(deploymentUUID);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> resetDeploymentForAgent(String agentUUID) {
+        AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
+        if (agentEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
+        }
+        deploymentRepository.resetDeploymentsForAgent(agentEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> resetDeploymentForPackage(String packageUUID) {
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+        }
+        deploymentRepository.resetDeploymentsForPackage(packageEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

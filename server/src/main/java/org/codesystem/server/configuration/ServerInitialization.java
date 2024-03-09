@@ -1,7 +1,6 @@
 package org.codesystem.server.configuration;
 
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
@@ -9,12 +8,8 @@ import org.codesystem.server.utility.CryptoUtility;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.springframework.util.DigestUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
@@ -24,10 +19,16 @@ import java.util.Base64;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class ServerInitialization {
     private final ServerRepository serverRepository;
     private final ResourceLoader resourceLoader;
+    private final CryptoUtility cryptoUtility;
+
+    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader) {
+        this.serverRepository = serverRepository;
+        this.resourceLoader = resourceLoader;
+        this.cryptoUtility = new CryptoUtility(serverRepository);
+    }
 
     @PostConstruct
     public void initializeServer() {
@@ -42,22 +43,11 @@ public class ServerInitialization {
         calculateAgentChecksum();
     }
 
-    private String calculateChecksum(InputStream inputStream) {
-        if (inputStream == null) {
-            return null;
-        }
-        try {
-            return DigestUtils.md5DigestAsHex(inputStream);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
     private void calculateAgentChecksum() {
         Resource resource = resourceLoader.getResource("classpath:agent/Agent.jar");
         String checksum;
         try {
-            checksum = calculateChecksum(resource.getInputStream());
+            checksum = cryptoUtility.calculateChecksum(resource.getInputStream());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -33,7 +33,7 @@ public class SecurityConfiguration {
     @Bean
     @Order(2)
     public SecurityFilterChain securityFilterChainMonitoring(HttpSecurity http) throws Exception {
-        http.securityMatcher("/monitoring/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.securityMatcher("/monitoring/**", "/error/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
@@ -49,11 +49,12 @@ public class SecurityConfiguration {
     @Bean
     @Order(4)
     @Profile("Development")
-    public SecurityFilterChain securityFilterChainWebAPIDevelopment(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChainWebAPIDev(HttpSecurity http) throws Exception {
         http.securityMatcher("/api/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
+
     @Bean
     @Order(4)
     @Profile("!Development")
@@ -66,6 +67,16 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(5)
+    @Profile("Development")
+    public SecurityFilterChain securityFilterChainAgentDownloadDev(HttpSecurity http) throws Exception {
+        http.securityMatcher("/download/agent/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.csrf(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
+
+    @Bean
+    @Order(5)
+    @Profile("!Development")
     public SecurityFilterChain securityFilterChainAgentDownload(HttpSecurity http) throws Exception {
         http.securityMatcher("/download/agent/**");
         http.addFilterBefore(new HeaderAuthenticationFilter(serverRepository), BasicAuthenticationFilter.class);
@@ -75,14 +86,6 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(6)
-    public SecurityFilterChain securityFilterChainError(HttpSecurity http) throws Exception {
-        http.securityMatcher("/error/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        http.csrf(AbstractHttpConfigurer::disable);
-        return http.build();
-    }
-
-    @Bean
-    @Order(7)
     public SecurityFilterChain securityFilterChainDenyAll(HttpSecurity http) throws Exception {
         http.securityMatcher("**").authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
         http.csrf(AbstractHttpConfigurer::disable);

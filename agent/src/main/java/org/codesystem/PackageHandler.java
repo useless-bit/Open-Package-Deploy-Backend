@@ -5,6 +5,7 @@ import net.lingala.zip4j.exception.ZipException;
 import okhttp3.*;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
+import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.DeploymentResult;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.PackageDetailResponse;
@@ -12,15 +13,14 @@ import org.codesystem.payload.UpdateCheckRequest;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Comparator;
 
@@ -90,22 +90,22 @@ public class PackageHandler {
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to send response: " + e.getMessage());
         }
         if (response.code() != 200) {
-            throw new RuntimeException("Error downloading: " + response.code());
+            throw new RuntimeException("Unable to download package. Response code: " + response.code());
         }
 
         byte[] data;
         try {
             data = response.body().bytes();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to load package from response: " + e.getMessage());
         }
         try (FileOutputStream fos = new FileOutputStream("download/file")) {
             fos.write(data);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Unable to write downloaded package to file: " + e.getMessage());
         }
     }
 
@@ -138,20 +138,28 @@ public class PackageHandler {
     }
 
     private boolean validatePackage(String file, String targetChecksum) {
-        byte[] data;
-        try {
-            data = Files.readAllBytes(Paths.get(file));
-        } catch (IOException e) {
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA3-512");
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                messageDigest.update(buffer, 0, bytesRead);
+            }
+
+            byte[] checkSum = messageDigest.digest();
+
+            StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
+            for (byte b : checkSum) {
+                stringBuilder.append(String.format("%02x", b));
+            }
+            return stringBuilder.toString().equals(targetChecksum);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        byte[] hash;
-        try {
-            hash = MessageDigest.getInstance("MD5").digest(data);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        String checksum = new BigInteger(1, hash).toString(16);
-        return checksum.equals(targetChecksum);
+
     }
 
     private boolean decryptPackage() {

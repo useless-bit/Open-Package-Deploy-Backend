@@ -1,9 +1,11 @@
 package org.codesystem.server.service.agent.communication;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.ServerRepository;
@@ -50,13 +52,15 @@ public class AgentCommunicationService {
         }
 
         updateAgent(agentEntity, new AgentCheckForUpdateRequest(request));
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments_test(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
         boolean deploymentAvailable = !deploymentEntities.isEmpty();
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
     }
 
     private void updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
+        agentEntity.setAgentChecksum(agentCheckForUpdateRequest.getAgentChecksum());
+
         agentEntity.setOperatingSystem(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem());
         agentEntity.setOperatingSystemFamily(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystemFamily());
         agentEntity.setOperatingSystemArchitecture(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystemArchitecture());
@@ -104,11 +108,11 @@ public class AgentCommunicationService {
         }
 
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
-        if (deploymentEntity == null || deploymentEntity.isDeployed()
+        if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
                 || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
-        Path path = Paths.get("/opt/OPD/Packages/" + deploymentEntity.getPackageEntity().getUuid());
+        Path path = Paths.get(ServerApplication.PACKAGE_LOCATION + deploymentEntity.getPackageEntity().getUuid());
         return ResponseEntity.ok().body(new FileSystemResource(new File(String.valueOf(path))));
     }
 
@@ -122,7 +126,7 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().build();
         }
 
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments_test(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
         if (deploymentEntities.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -144,7 +148,7 @@ public class AgentCommunicationService {
         AgentDeploymentResultRequest agentDeploymentResultRequest = new AgentDeploymentResultRequest(request);
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(agentDeploymentResultRequest.getDeploymentUUID());
 
-        if (deploymentEntity == null || deploymentEntity.isDeployed()
+        if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
                 || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }

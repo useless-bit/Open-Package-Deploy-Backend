@@ -41,18 +41,23 @@ public class HardwareInfo {
     public String getHwCpuName() {
         return hardwareAbstractionLayer.getProcessor().getProcessorIdentifier().getName();
     }
+
     public String getHwCpuArchitecture() {
         return hardwareAbstractionLayer.getProcessor().getProcessorIdentifier().getMicroarchitecture();
     }
+
     public String getHwCpuLogicalCoreCount() {
         return String.valueOf(hardwareAbstractionLayer.getProcessor().getLogicalProcessorCount());
     }
+
     public String getHwCpuPhysicalCoreCount() {
         return String.valueOf(hardwareAbstractionLayer.getProcessor().getPhysicalProcessorCount());
     }
+
     public String getHwCpuSocketCount() {
         return String.valueOf(hardwareAbstractionLayer.getProcessor().getPhysicalPackageCount());
     }
+
     public String getHwMemory() {
         return String.valueOf(hardwareAbstractionLayer.getMemory().getTotal());
     }

@@ -2,6 +2,7 @@ package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
+import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,13 @@ public class AgentApplication {
     public static void main(String[] args) {
         initialSetup();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleWithFixedDelay(AgentApplication::mainLogic, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            try {
+                AgentApplication.mainLogic();
+            } catch (Throwable t) {
+                throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
+            }
+        }, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
     }
 
     private static void initialSetup() {

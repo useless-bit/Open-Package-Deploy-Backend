@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PackageRepository extends JpaRepository<PackageEntity, String> {
-    
+
 
     PackageEntity findFirstByPackageStatusInternal(PackageStatusInternal packageStatusInternal);
 

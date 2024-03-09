@@ -23,23 +23,23 @@ public class AgentCommunicationController {
     }
 
     @PostMapping("package")
-    public ResponseEntity<ApiResponse> getPackageDetails(@RequestBody AgentEncryptedRequest agentEncryptedRequest){
+    public ResponseEntity<ApiResponse> getPackageDetails(@RequestBody AgentEncryptedRequest agentEncryptedRequest) {
         return agentCommunicationService.getPackageDetails(agentEncryptedRequest);
     }
 
     @PostMapping(value = "agent", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<byte[]> getAgent(@RequestBody AgentEncryptedRequest agentEncryptedRequest){
+    public ResponseEntity<byte[]> getAgent(@RequestBody AgentEncryptedRequest agentEncryptedRequest) {
         return agentCommunicationService.getAgent(agentEncryptedRequest);
     }
 
     @PostMapping(value = "package/{deploymentUUID}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<FileSystemResource> getPackage(@RequestBody AgentEncryptedRequest agentEncryptedRequest, @PathVariable String deploymentUUID){
+    public ResponseEntity<FileSystemResource> getPackage(@RequestBody AgentEncryptedRequest agentEncryptedRequest, @PathVariable String deploymentUUID) {
         return agentCommunicationService.getPackage(agentEncryptedRequest, deploymentUUID);
     }
 
 
     @PostMapping("deploymentResult")
-    public ResponseEntity<ApiResponse> sendDeploymentResult(@RequestBody AgentEncryptedRequest agentEncryptedRequest){
+    public ResponseEntity<ApiResponse> sendDeploymentResult(@RequestBody AgentEncryptedRequest agentEncryptedRequest) {
         return agentCommunicationService.sendDeploymentResult(agentEncryptedRequest);
     }
 }
