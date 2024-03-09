@@ -49,6 +49,11 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public GroupedOpenApi groupManagementServer() {
+        return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Management Server")).group("Management Server").build();
+    }
+
+    @Bean
     public GroupedOpenApi groupMonitoring() {
         return GroupedOpenApi.builder().addOpenApiCustomizer(openApiCustomizerTagName("Monitoring")).group("Monitoring").build();
     }

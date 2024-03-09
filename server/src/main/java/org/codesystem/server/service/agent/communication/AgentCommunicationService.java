@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
@@ -53,8 +54,8 @@ public class AgentCommunicationService {
         updateAgent(agentEntity, new AgentCheckForUpdateRequest(request));
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
         boolean deploymentAvailable = !deploymentEntities.isEmpty();
-        String checksum = serverRepository.findAll().get(0).getAgentChecksum();
-        return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(60, deploymentAvailable, checksum).toJsonObject(), agentEntity));
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
     }
 
     private void updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {

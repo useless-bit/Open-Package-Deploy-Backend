@@ -9,13 +9,13 @@ import org.json.JSONObject;
 @Setter
 @AllArgsConstructor
 public class AgentCheckForUpdateResponse {
-    private int updateCheckTimeout;
+    private int updateInterval;
     private boolean deploymentAvailable;
     private String agentChecksum;
 
     public JSONObject toJsonObject() {
         return new JSONObject()
-                .put("updateCheckTimeout", this.updateCheckTimeout)
+                .put("updateInterval", this.updateInterval)
                 .put("deploymentAvailable", this.deploymentAvailable)
                 .put("agentChecksum", this.agentChecksum);
     }
