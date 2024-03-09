@@ -96,7 +96,7 @@ public class ServerInitialization {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
         ServerEntity serverEntity = new ServerEntity();
-        serverEntity.setAgentRegistrationToken(UUID.randomUUID().toString());
+        serverEntity.setAgentRegistrationToken(UUID.randomUUID() + "-" + (UUID.randomUUID()));
         serverEntity.setPublicKeyBase64(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
         serverEntity.setPrivateKeyBase64(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
         serverEntity.setAgentChecksum("");
