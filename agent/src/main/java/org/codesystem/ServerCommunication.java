@@ -91,8 +91,8 @@ public class ServerCommunication {
             updateHandler.startUpdateProcess(updateCheckResponse.getAgentChecksum());
         }
 
-        if (Integer.parseInt(AgentApplication.properties.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateCheckTimeout()) {
-            AgentApplication.properties.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateCheckTimeout()));
+        if (Integer.parseInt(AgentApplication.properties.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval()) {
+            AgentApplication.properties.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateInterval()));
             AgentApplication.properties.saveProperties();
             System.exit(0);
         }

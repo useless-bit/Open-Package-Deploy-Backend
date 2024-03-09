@@ -28,4 +28,7 @@ public class ServerEntity {
 
     @Column(name = "agent_chechsum", nullable = false)
     private String agentChecksum = null;
+
+    @Column(name = "agent_update_interval", nullable = false, columnDefinition = "int default 60")
+    private Integer agentUpdateInterval = 60;
 }

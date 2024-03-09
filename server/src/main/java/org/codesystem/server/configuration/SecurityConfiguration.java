@@ -6,6 +6,7 @@ import org.codesystem.server.filter.HeaderAuthenticationFilter;
 import org.codesystem.server.repository.ServerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -47,6 +48,15 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(4)
+    @Profile("Development")
+    public SecurityFilterChain securityFilterChainWebAPIDevelopment(HttpSecurity http) throws Exception {
+        http.securityMatcher("/api/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.csrf(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
+    @Bean
+    @Order(4)
+    @Profile("!Development")
     public SecurityFilterChain securityFilterChainWebAPI(HttpSecurity http) throws Exception {
         http.securityMatcher("/api/**").authorizeHttpRequests(auth -> auth.anyRequest().hasRole(AUTHENTICATION_ROLE))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
@@ -65,6 +75,14 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(6)
+    public SecurityFilterChain securityFilterChainError(HttpSecurity http) throws Exception {
+        http.securityMatcher("/error/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.csrf(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
+
+    @Bean
+    @Order(7)
     public SecurityFilterChain securityFilterChainDenyAll(HttpSecurity http) throws Exception {
         http.securityMatcher("**").authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
         http.csrf(AbstractHttpConfigurer::disable);
