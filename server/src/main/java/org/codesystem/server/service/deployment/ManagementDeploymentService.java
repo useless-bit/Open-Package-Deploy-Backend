@@ -63,7 +63,7 @@ public class ManagementDeploymentService {
         } else if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN) {
             return ResponseEntity.badRequest().body(new ApiError("OS invalid "));
         }
-        DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity, createNewDeploymentRequest.getExpectedReturnValue());
+        DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
         deploymentEntity = deploymentRepository.save(deploymentEntity);
         return ResponseEntity.ok().body(new CreateNewDeploymentResponse(deploymentEntity.getUuid()));
     }

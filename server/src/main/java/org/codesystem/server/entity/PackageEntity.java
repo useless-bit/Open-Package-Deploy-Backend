@@ -26,6 +26,9 @@ public class PackageEntity {
     @Column(name = "name", nullable = false)
     private String name = null;
 
+    @Column(name = "expected_return_value")
+    private String expectedReturnValue;
+
     @Column(name = "encryption_token")
     @JsonIgnore
     private SecretKey encryptionToken = null;

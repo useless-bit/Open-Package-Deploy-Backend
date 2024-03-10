@@ -14,4 +14,5 @@ public class AddNewPackageRequest {
     private String packageName;
     private String packageChecksum;
     private OperatingSystem operatingSystem;
+    private String expectedReturnValue;
 }

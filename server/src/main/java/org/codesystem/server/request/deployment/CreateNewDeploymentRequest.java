@@ -12,5 +12,4 @@ import lombok.Setter;
 public class CreateNewDeploymentRequest {
     private String agentUUID;
     private String packageUUID;
-    private String expectedReturnValue;
 }
