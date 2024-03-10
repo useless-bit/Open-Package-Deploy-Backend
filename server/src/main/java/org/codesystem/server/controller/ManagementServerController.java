@@ -2,6 +2,7 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.server.ManagementServerService;
@@ -35,4 +36,13 @@ public class ManagementServerController {
         return managementServerService.setUpdateInterval(updateIntervalRequest);
     }
 
+    @GetMapping("installRetryInterval")
+    public ResponseEntity<ApiResponse> getInstallRetryInterval() {
+        return managementServerService.getInstallRetryInterval();
+    }
+
+    @PatchMapping("installRetryInterval")
+    public ResponseEntity<ApiResponse> setInstallRetryInterval(@RequestBody InstallRetryIntervalRequest installRetryIntervalRequest) {
+        return managementServerService.setInstallRetryInterval(installRetryIntervalRequest);
+    }
 }

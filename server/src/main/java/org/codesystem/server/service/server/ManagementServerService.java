@@ -3,9 +3,11 @@ package org.codesystem.server.service.server;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
+import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
+import org.codesystem.server.response.server.GetInstallRetryIntervalResponse;
 import org.codesystem.server.response.server.GetRegistrationTokenResponse;
 import org.codesystem.server.response.server.GetUpdateIntervalResponse;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,21 @@ public class ManagementServerService {
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentUpdateInterval(updateIntervalRequest.getUpdateInterval());
+        serverRepository.save(serverEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> getInstallRetryInterval() {
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        return ResponseEntity.status(HttpStatus.OK).body(new GetInstallRetryIntervalResponse(serverEntity.getAgentInstallRetryInterval()));
+    }
+
+    public ResponseEntity<ApiResponse> setInstallRetryInterval(InstallRetryIntervalRequest installRetryIntervalRequest) {
+        if (installRetryIntervalRequest == null || installRetryIntervalRequest.getInstallRetryInterval() == null || installRetryIntervalRequest.getInstallRetryInterval() <= 0){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
+        }
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        serverEntity.setAgentInstallRetryInterval(installRetryIntervalRequest.getInstallRetryInterval());
         serverRepository.save(serverEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
