@@ -27,18 +27,14 @@ public class DeploymentEntity {
     @Column(name = "deployed")
     private boolean deployed = false;
 
-    @Column(name = "expected_return_value")
-    private String expectedReturnValue;
-
     @Column(name = "return_value")
     private String returnValue;
 
     @Column(name = "last_deployment_timestamp")
     private Instant lastDeploymentTimestamp;
 
-    public DeploymentEntity(AgentEntity agentEntity, PackageEntity packageEntity, String expectedReturnValue) {
+    public DeploymentEntity(AgentEntity agentEntity, PackageEntity packageEntity) {
         this.agentEntity = agentEntity;
         this.packageEntity = packageEntity;
-        this.expectedReturnValue = expectedReturnValue;
     }
 }

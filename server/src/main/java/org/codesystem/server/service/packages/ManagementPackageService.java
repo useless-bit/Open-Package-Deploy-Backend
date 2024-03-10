@@ -73,6 +73,7 @@ public class ManagementPackageService {
         packageEntity.setName(addNewPackageRequest.getPackageName());
         packageEntity.setChecksumPlaintext(calculatedChecksum);
         packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
+        packageEntity.setExpectedReturnValue(addNewPackageRequest.getExpectedReturnValue());
         packageEntity = packageRepository.save(packageEntity);
 
         if (!savePackage(multipartFile, packageEntity)) {

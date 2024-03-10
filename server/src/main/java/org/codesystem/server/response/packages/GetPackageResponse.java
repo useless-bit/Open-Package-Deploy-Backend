@@ -14,6 +14,7 @@ import org.codesystem.server.response.general.ApiResponse;
 public class GetPackageResponse implements ApiResponse {
     private String uuid;
     private String name;
+    private String expectedReturnValue;
     private PackageStatusInternal packageStatusInternal;
     private String checksumPlaintext;
     private String checksumEncrypted;
@@ -24,6 +25,7 @@ public class GetPackageResponse implements ApiResponse {
     public GetPackageResponse(PackageEntity packageEntity) {
         this.uuid = packageEntity.getUuid();
         this.name = packageEntity.getName();
+        this.expectedReturnValue = packageEntity.getExpectedReturnValue();
         this.packageStatusInternal = packageEntity.getPackageStatusInternal();
         this.checksumPlaintext = packageEntity.getChecksumPlaintext();
         this.checksumEncrypted = packageEntity.getChecksumEncrypted();

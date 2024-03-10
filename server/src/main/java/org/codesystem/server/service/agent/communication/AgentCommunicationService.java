@@ -155,10 +155,10 @@ public class AgentCommunicationService {
 
         if (agentDeploymentResultRequest.getResultCode().startsWith("AGENT-DEPLOYMENT-ERROR")) {
             deploymentEntity.setDeployed(false);
-        } else if (deploymentEntity.getExpectedReturnValue() == null || deploymentEntity.getExpectedReturnValue().isBlank()) {
+        } else if (deploymentEntity.getPackageEntity().getExpectedReturnValue() == null || deploymentEntity.getPackageEntity().getExpectedReturnValue().isBlank()) {
             deploymentEntity.setDeployed(true);
         } else
-            deploymentEntity.setDeployed(agentDeploymentResultRequest.getResultCode().equals(deploymentEntity.getExpectedReturnValue()));
+            deploymentEntity.setDeployed(agentDeploymentResultRequest.getResultCode().equals(deploymentEntity.getPackageEntity().getExpectedReturnValue()));
 
         deploymentEntity.setLastDeploymentTimestamp(Instant.now());
         deploymentEntity.setReturnValue(agentDeploymentResultRequest.getResultCode());
