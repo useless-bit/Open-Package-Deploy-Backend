@@ -11,4 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UpdatePackageRequest {
     private String packageName;
+    private String expectedReturnValue;
 }
