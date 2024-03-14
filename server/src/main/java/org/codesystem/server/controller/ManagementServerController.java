@@ -45,4 +45,10 @@ public class ManagementServerController {
     public ResponseEntity<ApiResponse> setInstallRetryInterval(@RequestBody InstallRetryIntervalRequest installRetryIntervalRequest) {
         return managementServerService.setInstallRetryInterval(installRetryIntervalRequest);
     }
+
+    @GetMapping("agentChecksum")
+    public ResponseEntity<ApiResponse> getAgentChecksum() {
+        return managementServerService.getAgentChecksum();
+    }
+
 }
