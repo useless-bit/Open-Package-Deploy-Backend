@@ -30,4 +30,7 @@ public class ServerEntity {
 
     @Column(name = "agent_update_interval", nullable = false, columnDefinition = "int default 60")
     private Integer agentUpdateInterval = 60;
+
+    @Column(name = "agent_install_retry_interval", nullable = false, columnDefinition = "int default 21600")
+    private Integer agentInstallRetryInterval = 21600;
 }

@@ -52,9 +52,9 @@ public class AgentCommunicationService {
         }
 
         updateAgent(agentEntity, new AgentCheckForUpdateRequest(request));
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
-        boolean deploymentAvailable = !deploymentEntities.isEmpty();
         ServerEntity serverEntity = serverRepository.findAll().get(0);
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.HOURS));
+        boolean deploymentAvailable = !deploymentEntities.isEmpty();
         return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
     }
 
@@ -107,9 +107,10 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().build();
         }
 
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
-                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
+                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
         Path path = Paths.get(ServerApplication.PACKAGE_LOCATION + deploymentEntity.getPackageEntity().getUuid());
@@ -126,7 +127,8 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().build();
         }
 
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.HOURS));
         if (deploymentEntities.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -148,8 +150,9 @@ public class AgentCommunicationService {
         AgentDeploymentResultRequest agentDeploymentResultRequest = new AgentDeploymentResultRequest(request);
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(agentDeploymentResultRequest.getDeploymentUUID());
 
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
         if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
-                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
+                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.HOURS)))) {
             return ResponseEntity.badRequest().build();
         }
 

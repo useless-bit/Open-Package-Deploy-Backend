@@ -1,4 +1,4 @@
-package org.codesystem.server.request.packages;
+package org.codesystem.server.request.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdatePackageRequest {
-    private String packageName;
-    private String expectedReturnValue;
+public class InstallRetryIntervalRequest {
+    private Integer installRetryInterval;
 }

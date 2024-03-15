@@ -52,7 +52,7 @@ public class ManagementDeploymentService {
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError("Package not found"));
         }
-        if (packageEntity.getPackageStatusInternal() != PackageStatusInternal.PROCESSED) {
+        if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
             return ResponseEntity.badRequest().body(new ApiError("Package not available for deployment"));
         }
         if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {

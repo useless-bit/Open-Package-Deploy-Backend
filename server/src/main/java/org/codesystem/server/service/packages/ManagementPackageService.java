@@ -90,9 +90,10 @@ public class ManagementPackageService {
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
-        if (updatePackageRequest.getPackageName() != null && !updatePackageRequest.getPackageName().equals(packageEntity.getName())) {
+        if (updatePackageRequest.getPackageName() != null && !updatePackageRequest.getPackageName().isBlank() && !updatePackageRequest.getPackageName().equals(packageEntity.getName())) {
             packageEntity.setName(updatePackageRequest.getPackageName());
         }
+        packageEntity.setExpectedReturnValue(updatePackageRequest.getExpectedReturnValue());
         packageRepository.save(packageEntity);
         return ResponseEntity.ok().build();
     }
