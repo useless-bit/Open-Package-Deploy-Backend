@@ -26,6 +26,7 @@ class ServerCommunicationTest {
     CryptoHandler cryptoHandler;
     UpdateHandler updateHandler;
     ClientAndServer mockServer;
+    MockedStatic<SystemExit> systemExitMockedStatic;
 
     @BeforeEach
     void setup() {
@@ -40,13 +41,14 @@ class ServerCommunicationTest {
         updateHandler = Mockito.mock(UpdateHandler.class);
         mockServer = ClientAndServer.startClientAndServer(8899);
         serverCommunication = new ServerCommunication(OperatingSystem.LINUX, cryptoHandler, propertiesLoader, "agentChecksum", updateHandler);
-        MockedStatic<SystemExit> systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
+        systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
         systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestException.class);
     }
 
     @AfterEach
     void teardown() {
         mockServer.stop();
+        systemExitMockedStatic.close();
     }
 
     @Test
