@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
@@ -68,28 +67,24 @@ public class ServerCommunication {
                 .post(body)
                 .build();
 
-        Response response;
         OkHttpClient client = new OkHttpClient();
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(response.code());
-        if (response.code() != 200) {
-            return false;
-        }
-        String responseBody;
-        try {
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() != 200) {
+                return false;
+            }
+            String responseBody;
             responseBody = new JSONObject(response.body().string()).getString("message");
+            String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
+            UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
+            return processUpdateCheckResponse(updateCheckResponse);
         } catch (Exception e) {
             throw new SevereAgentErrorException(e.getMessage());
         }
-        String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
-        UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
 
-        AgentApplication.logger.info("Server: " + updateCheckResponse.getAgentChecksum());
-        AgentApplication.logger.info("Local: " + AgentApplication.agentChecksum);
+
+    }
+
+    public boolean processUpdateCheckResponse(UpdateCheckResponse updateCheckResponse) {
         if (!updateCheckResponse.getAgentChecksum().equals(AgentApplication.agentChecksum)) {
             AgentApplication.logger.info("Initiate update");
             UpdateHandler updateHandler = new UpdateHandler();

@@ -45,7 +45,13 @@ class ServerCommunicationTest {
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(400));
         Assertions.assertFalse(serverCommunication.sendUpdateRequest());
 
-        // missing response
+        // invalid response
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200));
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> serverCommunication.sendUpdateRequest());
+
+        // invalid response
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200));

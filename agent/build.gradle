@@ -10,6 +10,12 @@ repositories {
     mavenCentral()
 }
 
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
 dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
