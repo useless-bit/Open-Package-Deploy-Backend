@@ -73,7 +73,7 @@ public class UpdateHandler {
 
     private void downloadUpdate() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest().toJsonObject()).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(new CryptoHandler()).toJsonObject(), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/agent")
                 .post(body)

@@ -2,6 +2,7 @@ package org.codesystem;
 
 import okhttp3.*;
 import org.codesystem.enums.OperatingSystem;
+import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.UpdateCheckRequest;
 import org.codesystem.payload.UpdateCheckResponse;
@@ -11,16 +12,19 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 public class ServerCommunication {
     private final CryptoHandler cryptoHandler;
     private final OperatingSystem operatingSystem;
+    private final PropertiesLoader propertiesLoader;
 
-    public ServerCommunication(OperatingSystem operatingSystem) {
+    public ServerCommunication(OperatingSystem operatingSystem, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader) {
         this.operatingSystem = operatingSystem;
-        this.cryptoHandler = new CryptoHandler();
+        this.cryptoHandler = cryptoHandler;
+        this.propertiesLoader = propertiesLoader;
     }
 
     private boolean isServerAvailable() {
@@ -58,9 +62,9 @@ public class ServerCommunication {
 
     public boolean sendUpdateRequest() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest().toJsonObject()).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(cryptoHandler).toJsonObject(), cryptoHandler, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/checkForUpdates")
+                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/checkForUpdates")
                 .post(body)
                 .build();
 
@@ -71,14 +75,15 @@ public class ServerCommunication {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        System.out.println(response.code());
         if (response.code() != 200) {
             return false;
         }
         String responseBody;
         try {
             responseBody = new JSONObject(response.body().string()).getString("message");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new SevereAgentErrorException(e.getMessage());
         }
         String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
         UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));

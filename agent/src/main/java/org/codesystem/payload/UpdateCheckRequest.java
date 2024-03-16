@@ -9,19 +9,21 @@ import java.util.Base64;
 public class UpdateCheckRequest extends EmptyRequest {
     private final DetailedSystemInformation detailedSystemInformation;
     private final String agentChecksum;
+    private final CryptoHandler cryptoHandler;
 
-    public UpdateCheckRequest() {
+    public UpdateCheckRequest(CryptoHandler cryptoHandler) {
         super();
+        this.cryptoHandler = cryptoHandler;
         this.detailedSystemInformation = new DetailedSystemInformation();
         this.agentChecksum = AgentApplication.agentChecksum;
     }
 
+    @Override
     public JSONObject toJsonObject() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
         jsonObject.put("systemInformation", detailedSystemInformation.toJsonObject());
         jsonObject.put("agentChecksum", this.agentChecksum);
-        CryptoHandler cryptoHandler = new CryptoHandler();
         String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;

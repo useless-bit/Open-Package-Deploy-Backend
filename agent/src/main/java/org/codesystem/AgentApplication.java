@@ -75,7 +75,7 @@ public class AgentApplication {
 
     private static void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(operatingSystem);
+        ServerCommunication serverCommunication = new ServerCommunication(operatingSystem, new CryptoHandler(), properties);
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");
