@@ -19,11 +19,13 @@ public class ServerCommunication {
     private final CryptoHandler cryptoHandler;
     private final OperatingSystem operatingSystem;
     private final PropertiesLoader propertiesLoader;
+    private final String agentChecksum;
 
-    public ServerCommunication(OperatingSystem operatingSystem, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader) {
+    public ServerCommunication(OperatingSystem operatingSystem, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader, String agentChecksum) {
         this.operatingSystem = operatingSystem;
         this.cryptoHandler = cryptoHandler;
         this.propertiesLoader = propertiesLoader;
+        this.agentChecksum = agentChecksum;
     }
 
     private boolean isServerAvailable() {
@@ -85,15 +87,15 @@ public class ServerCommunication {
     }
 
     public boolean processUpdateCheckResponse(UpdateCheckResponse updateCheckResponse) {
-        if (!updateCheckResponse.getAgentChecksum().equals(AgentApplication.agentChecksum)) {
+        if (!updateCheckResponse.getAgentChecksum().equals(agentChecksum)) {
             AgentApplication.logger.info("Initiate update");
             UpdateHandler updateHandler = new UpdateHandler();
             updateHandler.startUpdateProcess(updateCheckResponse.getAgentChecksum());
         }
 
-        if (Integer.parseInt(AgentApplication.properties.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval()) {
-            AgentApplication.properties.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateInterval()));
-            AgentApplication.properties.saveProperties();
+        if (Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval()) {
+            propertiesLoader.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateInterval()));
+            propertiesLoader.saveProperties();
             System.exit(0);
         }
 
