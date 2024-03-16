@@ -42,7 +42,7 @@ public class AgentApplication {
         }
         if (filename.endsWith("Agent_update-download.jar")) {
             logger.info("Entering Update Mode");
-            UpdateHandler updateHandler = new UpdateHandler();
+            UpdateHandler updateHandler = new UpdateHandler(properties);
             updateHandler.updateApplication();
         } else if (Files.exists(Paths.get("Agent_update-download.jar"))) {
             try {
@@ -75,7 +75,7 @@ public class AgentApplication {
 
     private static void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(operatingSystem, new CryptoHandler(), properties, agentChecksum);
+        ServerCommunication serverCommunication = new ServerCommunication(operatingSystem, new CryptoHandler(), properties, agentChecksum, new UpdateHandler(properties));
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");

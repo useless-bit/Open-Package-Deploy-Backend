@@ -13,7 +13,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class UpdateHandler {
+    private final PropertiesLoader propertiesLoader;
     private static final String FILE_NAME_AGENT_UPDATE_DOWNLOAD = "Agent_update-download.jar";
+
+    public UpdateHandler(PropertiesLoader propertiesLoader) {
+        this.propertiesLoader = propertiesLoader;
+    }
 
     public void updateApplication() {
         File oldVersion = Paths.get("Agent.jar").toFile();
@@ -112,6 +117,6 @@ public class UpdateHandler {
         } catch (IOException e) {
             throw new SevereAgentErrorException("Unable to execute update process: " + e.getMessage());
         }
-        System.exit(0);
+        SystemExit.exit(-10);
     }
 }

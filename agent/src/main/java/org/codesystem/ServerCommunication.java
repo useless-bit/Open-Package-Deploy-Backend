@@ -20,12 +20,14 @@ public class ServerCommunication {
     private final OperatingSystem operatingSystem;
     private final PropertiesLoader propertiesLoader;
     private final String agentChecksum;
+    private final UpdateHandler updateHandler;
 
-    public ServerCommunication(OperatingSystem operatingSystem, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader, String agentChecksum) {
+    public ServerCommunication(OperatingSystem operatingSystem, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler) {
         this.operatingSystem = operatingSystem;
         this.cryptoHandler = cryptoHandler;
         this.propertiesLoader = propertiesLoader;
         this.agentChecksum = agentChecksum;
+        this.updateHandler = updateHandler;
     }
 
     private boolean isServerAvailable() {
@@ -89,16 +91,15 @@ public class ServerCommunication {
         if (updateCheckResponse == null) {
             return false;
         }
-        if (!updateCheckResponse.getAgentChecksum().equals(agentChecksum)) {
+        if (!updateCheckResponse.getAgentChecksum().isBlank() && !updateCheckResponse.getAgentChecksum().equals(agentChecksum)) {
             AgentApplication.logger.info("Initiate update");
-            UpdateHandler updateHandler = new UpdateHandler();
             updateHandler.startUpdateProcess(updateCheckResponse.getAgentChecksum());
         }
 
-        if (Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval()) {
+        if (Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval() && updateCheckResponse.getUpdateInterval() >= 1) {
             propertiesLoader.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateInterval()));
             propertiesLoader.saveProperties();
-            System.exit(0);
+            SystemExit.exit(-10);
         }
 
         if (updateCheckResponse.isDeploymentAvailable()) {

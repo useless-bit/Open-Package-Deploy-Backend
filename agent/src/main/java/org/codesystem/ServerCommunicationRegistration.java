@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class ServerCommunicationRegistration {
-    private final ServerCommunication serverCommunication = new ServerCommunication(AgentApplication.operatingSystem, new CryptoHandler(), AgentApplication.properties, AgentApplication.agentChecksum);
+    private final ServerCommunication serverCommunication = new ServerCommunication(AgentApplication.operatingSystem, new CryptoHandler(), AgentApplication.properties, AgentApplication.agentChecksum, new UpdateHandler(AgentApplication.properties));
 
     public void validateRegistration() {
         AgentApplication.logger.info("Checking if Server is available");
