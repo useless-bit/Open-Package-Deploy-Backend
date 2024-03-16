@@ -4,6 +4,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,11 @@ class ServerCommunicationTest {
         mockServer = ClientAndServer.startClientAndServer(8899);
     }
 
+    @AfterEach
+    void teardown() {
+        mockServer.stop();
+    }
+
     @Test
     void sendUpdateRequest() {
         // invalid return value
@@ -62,6 +68,12 @@ class ServerCommunicationTest {
         Mockito.when(cryptoHandler.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         Assertions.assertFalse(serverCommunication.sendUpdateRequest());
+    }
+
+    @Test
+    void processUpdateCheckResponse() {
+        // null values
+        Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(null));
     }
 
 }

@@ -69,25 +69,26 @@ public class ServerCommunication {
                 .post(body)
                 .build();
 
-        UpdateCheckResponse updateCheckResponse;
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {
             if (response.code() != 200) {
                 return false;
             }
-            String responseBody;
-            responseBody = new JSONObject(response.body().string()).getString("message");
+            String responseBody = new JSONObject(response.body().string()).getString("message");
             String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
-            updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
+            UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
+            return processUpdateCheckResponse(updateCheckResponse);
         } catch (Exception e) {
             throw new SevereAgentErrorException(e.getMessage());
         }
-        return processUpdateCheckResponse(updateCheckResponse);
 
 
     }
 
     public boolean processUpdateCheckResponse(UpdateCheckResponse updateCheckResponse) {
+        if (updateCheckResponse == null) {
+            return false;
+        }
         if (!updateCheckResponse.getAgentChecksum().equals(agentChecksum)) {
             AgentApplication.logger.info("Initiate update");
             UpdateHandler updateHandler = new UpdateHandler();
