@@ -1,7 +1,6 @@
 package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.UpdateCheckResponse;
 import org.json.JSONObject;
@@ -25,6 +24,7 @@ class ServerCommunicationTest {
     PropertiesLoader propertiesLoader;
     CryptoHandler cryptoHandler;
     UpdateHandler updateHandler;
+    PackageHandler packageHandler;
     ClientAndServer mockServer;
     MockedStatic<SystemExit> systemExitMockedStatic;
 
@@ -39,8 +39,9 @@ class ServerCommunicationTest {
         Mockito.when(cryptoHandler.encryptECC(Mockito.any())).thenReturn("Encrypted".getBytes());
         Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes());
         updateHandler = Mockito.mock(UpdateHandler.class);
+        packageHandler = Mockito.mock(PackageHandler.class);
         mockServer = ClientAndServer.startClientAndServer(8899);
-        serverCommunication = new ServerCommunication(OperatingSystem.LINUX, cryptoHandler, propertiesLoader, "agentChecksum", updateHandler);
+        serverCommunication = new ServerCommunication(cryptoHandler, propertiesLoader, "agentChecksum", updateHandler, packageHandler);
         systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
         systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestException.class);
     }
@@ -104,6 +105,10 @@ class ServerCommunicationTest {
 
         // updateInterval
         Assertions.assertThrows(TestException.class, () -> serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(new JSONObject().put("updateInterval", "20").put("deploymentAvailable", "false").put("agentChecksum", "agentChecksum"))));
+
+        // deployment
+        jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "true").put("agentChecksum", "agentChecksum");
+        Assertions.assertTrue(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
 
     }
 

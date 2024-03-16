@@ -17,17 +17,17 @@ import java.util.concurrent.TimeUnit;
 
 public class ServerCommunication {
     private final CryptoHandler cryptoHandler;
-    private final OperatingSystem operatingSystem;
     private final PropertiesLoader propertiesLoader;
     private final String agentChecksum;
     private final UpdateHandler updateHandler;
+    private final PackageHandler packageHandler;
 
-    public ServerCommunication(OperatingSystem operatingSystem, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler) {
-        this.operatingSystem = operatingSystem;
+    public ServerCommunication(CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageHandler packageHandler) {
         this.cryptoHandler = cryptoHandler;
         this.propertiesLoader = propertiesLoader;
         this.agentChecksum = agentChecksum;
         this.updateHandler = updateHandler;
+        this.packageHandler = packageHandler;
     }
 
     private boolean isServerAvailable() {
@@ -104,7 +104,6 @@ public class ServerCommunication {
 
         if (updateCheckResponse.isDeploymentAvailable()) {
             AgentApplication.logger.info("Deployment Found");
-            PackageHandler packageHandler = new PackageHandler(operatingSystem);
             packageHandler.initiateDeployment();
             return true;
         }
