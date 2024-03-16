@@ -34,7 +34,6 @@ class EmptyRequestTest {
         jsonObject = emptyRequest.toJsonObject(cryptoHandler);
         Assertions.assertNotNull(jsonObject.get("timestamp"));
         Assertions.assertEquals(Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)), jsonObject.getString("signature"));
-        Assertions.assertTrue(Arrays.equals("Signature".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(jsonObject.getString("signature"))));
-
+        Assertions.assertArrayEquals("Signature".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(jsonObject.getString("signature")));
     }
 }

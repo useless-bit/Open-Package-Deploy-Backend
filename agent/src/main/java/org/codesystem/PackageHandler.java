@@ -178,7 +178,7 @@ public class PackageHandler {
     private void sendDeploymentResponse(String responseMessage) {
         DeploymentResult deploymentResult = new DeploymentResult(packageDetailResponse.getDeploymentUUID(), responseMessage);
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/deploymentResult")
                 .post(body)
