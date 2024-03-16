@@ -16,6 +16,7 @@ import org.mockserver.model.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockserver.model.HttpRequest.request;
 
@@ -40,16 +41,41 @@ class ServerCommunicationTest {
         Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes());
         updateHandler = Mockito.mock(UpdateHandler.class);
         packageHandler = Mockito.mock(PackageHandler.class);
-        mockServer = ClientAndServer.startClientAndServer(8899);
         serverCommunication = new ServerCommunication(cryptoHandler, propertiesLoader, "agentChecksum", updateHandler, packageHandler);
         systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
         systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestException.class);
+        mockServer = ClientAndServer.startClientAndServer(8899);
     }
 
     @AfterEach
     void teardown() {
         mockServer.stop();
         systemExitMockedStatic.close();
+    }
+
+    @Test
+    void waitForServerAvailability() {
+        // available
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        mockServer.when(request().withMethod("GET").withPath("/monitoring/health")).respond(HttpResponse.response().withStatusCode(200));
+        Assertions.assertDoesNotThrow(() -> serverCommunication.waitForServerAvailability());
+
+        // not available
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        mockServer.when(request().withMethod("GET").withPath("/monitoring/health")).respond(HttpResponse.response().withStatusCode(500));
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(30);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            mockServer.stop();
+            mockServer = ClientAndServer.startClientAndServer(8899);
+            mockServer.when(request().withMethod("GET").withPath("/monitoring/health")).respond(HttpResponse.response().withStatusCode(200));
+        }).start();
+        Assertions.assertDoesNotThrow(() -> serverCommunication.waitForServerAvailability());
     }
 
     @Test
