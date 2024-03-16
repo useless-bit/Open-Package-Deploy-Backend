@@ -13,10 +13,12 @@ public class EmptyRequest {
         this.timestamp = Instant.now();
     }
 
-    public JSONObject toJsonObject() {
+    public JSONObject toJsonObject(CryptoHandler cryptoHandler) {
+        if (cryptoHandler == null) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
-        CryptoHandler cryptoHandler = new CryptoHandler();
         String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;

@@ -19,7 +19,7 @@ public class UpdateCheckRequest extends EmptyRequest {
     }
 
     @Override
-    public JSONObject toJsonObject() {
+    public JSONObject toJsonObject(CryptoHandler cryptoHandler) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
         jsonObject.put("systemInformation", detailedSystemInformation.toJsonObject());
