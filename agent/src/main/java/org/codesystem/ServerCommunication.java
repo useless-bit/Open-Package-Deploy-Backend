@@ -69,6 +69,7 @@ public class ServerCommunication {
                 .post(body)
                 .build();
 
+        UpdateCheckResponse updateCheckResponse;
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {
             if (response.code() != 200) {
@@ -77,11 +78,11 @@ public class ServerCommunication {
             String responseBody;
             responseBody = new JSONObject(response.body().string()).getString("message");
             String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
-            UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
-            return processUpdateCheckResponse(updateCheckResponse);
+            updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
         } catch (Exception e) {
             throw new SevereAgentErrorException(e.getMessage());
         }
+        return processUpdateCheckResponse(updateCheckResponse);
 
 
     }
