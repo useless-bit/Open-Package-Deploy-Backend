@@ -1,6 +1,5 @@
 package org.codesystem.payload;
 
-import org.codesystem.AgentApplication;
 import org.codesystem.CryptoHandler;
 import org.codesystem.PropertiesLoader;
 import org.json.JSONObject;
