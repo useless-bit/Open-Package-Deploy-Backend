@@ -2,6 +2,8 @@ package org.codesystem;
 
 import okhttp3.*;
 import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.payload.DetailedSystemInformation;
+import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.UpdateCheckRequest;
 
@@ -78,7 +80,7 @@ public class UpdateHandler {
 
     private void downloadUpdate() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(new CryptoHandler()).toJsonObject(new CryptoHandler()), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(new CryptoHandler()), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/agent")
                 .post(body)

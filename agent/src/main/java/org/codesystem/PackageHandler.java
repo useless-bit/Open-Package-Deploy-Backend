@@ -6,10 +6,7 @@ import okhttp3.*;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
 import org.codesystem.exceptions.SevereAgentErrorException;
-import org.codesystem.payload.DeploymentResult;
-import org.codesystem.payload.EncryptedMessage;
-import org.codesystem.payload.PackageDetailResponse;
-import org.codesystem.payload.UpdateCheckRequest;
+import org.codesystem.payload.*;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -79,7 +76,7 @@ public class PackageHandler {
 
     private void downloadPackage() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(cryptoHandler).toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
                 .post(body)
@@ -111,7 +108,7 @@ public class PackageHandler {
 
     private void getPackageDetails() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(cryptoHandler).toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/package")
                 .post(body)

@@ -25,7 +25,7 @@ class EmptyRequestTest {
     @Test
     void toJsonObject() {
         // invalid
-        EmptyRequest emptyRequest = new EmptyRequest();
+        emptyRequest = new EmptyRequest();
         JSONObject jsonObject = emptyRequest.toJsonObject(null);
         Assertions.assertNull(jsonObject);
 
