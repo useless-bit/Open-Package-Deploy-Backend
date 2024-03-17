@@ -2,6 +2,7 @@ package org.codesystem.payload;
 
 import org.codesystem.AgentApplication;
 import org.codesystem.CryptoHandler;
+import org.codesystem.HardwareInfo;
 import org.json.JSONObject;
 
 import java.util.Base64;
@@ -14,7 +15,7 @@ public class UpdateCheckRequest extends EmptyRequest {
     public UpdateCheckRequest(CryptoHandler cryptoHandler) {
         super();
         this.cryptoHandler = cryptoHandler;
-        this.detailedSystemInformation = new DetailedSystemInformation();
+        this.detailedSystemInformation = new DetailedSystemInformation(new HardwareInfo());
         this.agentChecksum = AgentApplication.agentChecksum;
     }
 
