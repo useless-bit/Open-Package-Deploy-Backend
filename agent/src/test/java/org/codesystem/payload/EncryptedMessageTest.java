@@ -61,6 +61,6 @@ class EncryptedMessageTest {
         encryptedMessage = new EncryptedMessage(new JSONObject(), cryptoHandler, propertiesLoader);
         Assertions.assertEquals(new JSONObject().put("publicKeyBase64", "PublicKey").put("message", Base64.getEncoder().encodeToString("Encrypted".getBytes(StandardCharsets.UTF_8))).toString(), encryptedMessage.toJsonObject().toString());
         Assertions.assertArrayEquals("Encrypted".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(encryptedMessage.toJsonObject().getString("message")));
-        Assertions.assertEquals("PublicKey".getBytes(StandardCharsets.UTF_8), encryptedMessage.toJsonObject().getString("publicKeyBase64"));
+        Assertions.assertEquals("PublicKey", encryptedMessage.toJsonObject().getString("publicKeyBase64"));
     }
 }
