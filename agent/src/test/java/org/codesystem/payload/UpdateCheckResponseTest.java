@@ -14,7 +14,7 @@ class UpdateCheckResponseTest {
     }
 
     @Test
-    void updateCheckResponse(){
+    void updateCheckResponse() {
         // null value
         updateCheckResponse = new UpdateCheckResponse(new JSONObject());
         Assertions.assertEquals(-1, updateCheckResponse.getUpdateInterval());
@@ -43,15 +43,15 @@ class UpdateCheckResponseTest {
         Assertions.assertNull(updateCheckResponse.getAgentChecksum());
 
         // valid value
-        jsonObject = new JSONObject().put("updateInterval",231241).put("deploymentAvailable", false).put("agentChecksum", "testChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 231241).put("deploymentAvailable", false).put("agentChecksum", "testChecksum");
         updateCheckResponse = new UpdateCheckResponse(jsonObject);
         Assertions.assertEquals(231241, updateCheckResponse.getUpdateInterval());
         Assertions.assertFalse(updateCheckResponse.isDeploymentAvailable());
-        Assertions.assertEquals("testChecksum",updateCheckResponse.getAgentChecksum());
+        Assertions.assertEquals("testChecksum", updateCheckResponse.getAgentChecksum());
         jsonObject = new JSONObject().put("updateInterval", 231241).put("deploymentAvailable", true).put("agentChecksum", "testChecksum");
         updateCheckResponse = new UpdateCheckResponse(jsonObject);
         Assertions.assertEquals(231241, updateCheckResponse.getUpdateInterval());
         Assertions.assertTrue(updateCheckResponse.isDeploymentAvailable());
-        Assertions.assertEquals("testChecksum",updateCheckResponse.getAgentChecksum());
+        Assertions.assertEquals("testChecksum", updateCheckResponse.getAgentChecksum());
     }
 }

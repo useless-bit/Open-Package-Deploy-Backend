@@ -28,7 +28,7 @@ public class DeploymentResult extends EmptyRequest {
         }
         if (resultCode == null || resultCode.isBlank()) {
             jsonObject.put("resultCode", JSONObject.NULL);
-        }else {
+        } else {
             jsonObject.put("resultCode", this.resultCode.trim());
         }
         String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));

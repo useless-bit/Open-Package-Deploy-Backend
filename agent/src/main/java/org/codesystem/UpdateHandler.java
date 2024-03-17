@@ -2,10 +2,8 @@ package org.codesystem;
 
 import okhttp3.*;
 import org.codesystem.exceptions.SevereAgentErrorException;
-import org.codesystem.payload.DetailedSystemInformation;
 import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
-import org.codesystem.payload.UpdateCheckRequest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,8 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class UpdateHandler {
-    private final PropertiesLoader propertiesLoader;
     private static final String FILE_NAME_AGENT_UPDATE_DOWNLOAD = "Agent_update-download.jar";
+    private final PropertiesLoader propertiesLoader;
 
     public UpdateHandler(PropertiesLoader propertiesLoader) {
         this.propertiesLoader = propertiesLoader;
