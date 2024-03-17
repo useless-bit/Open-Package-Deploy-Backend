@@ -14,11 +14,19 @@ public class EncryptedMessage {
 
 
     public EncryptedMessage(JSONObject jsonObject, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader) {
-        this.publicKeyBase64 = propertiesLoader.getProperty("Agent.ECC.Public-Key");
-        this.message = Base64.getEncoder().encodeToString(cryptoHandler.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
+        if (jsonObject == null || cryptoHandler == null || propertiesLoader == null) {
+            publicKeyBase64 = null;
+            message = null;
+        } else {
+            this.publicKeyBase64 = propertiesLoader.getProperty("Agent.ECC.Public-Key");
+            this.message = Base64.getEncoder().encodeToString(cryptoHandler.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
+        }
     }
 
     public JSONObject toJsonObject() {
+        if (publicKeyBase64 == null || publicKeyBase64.isBlank() || message == null || message.isBlank()) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("publicKeyBase64", this.publicKeyBase64);
         jsonObject.put("message", this.message);
