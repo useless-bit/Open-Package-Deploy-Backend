@@ -14,12 +14,23 @@ public class DeploymentResult extends EmptyRequest {
         this.resultCode = resultCode;
     }
 
-    public JSONObject toJsonObject() {
+    @Override
+    public JSONObject toJsonObject(CryptoHandler cryptoHandler) {
+        if (cryptoHandler == null) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
-        jsonObject.put("deploymentUUID", this.deploymentUUID);
-        jsonObject.put("resultCode", this.resultCode);
-        CryptoHandler cryptoHandler = new CryptoHandler();
+        if (deploymentUUID == null || deploymentUUID.isBlank()) {
+            jsonObject.put("deploymentUUID", JSONObject.NULL);
+        } else {
+            jsonObject.put("deploymentUUID", this.deploymentUUID.trim());
+        }
+        if (resultCode == null || resultCode.isBlank()) {
+            jsonObject.put("resultCode", JSONObject.NULL);
+        } else {
+            jsonObject.put("resultCode", this.resultCode.trim());
+        }
         String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;

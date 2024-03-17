@@ -8,9 +8,21 @@ public class UpdateCheckResponse {
     private final String agentChecksum;
 
     public UpdateCheckResponse(JSONObject jsonObject) {
-        this.updateInterval = jsonObject.getInt("updateInterval");
-        this.deploymentAvailable = jsonObject.getBoolean("deploymentAvailable");
-        this.agentChecksum = jsonObject.getString("agentChecksum");
+        if (jsonObject.isNull("updateInterval") || !(jsonObject.get("updateInterval") instanceof Integer || jsonObject.get("updateInterval") instanceof Long)) {
+            this.updateInterval = -1;
+        } else {
+            this.updateInterval = jsonObject.getInt("updateInterval");
+        }
+        if (jsonObject.isNull("deploymentAvailable") || !(jsonObject.get("deploymentAvailable") instanceof Boolean)) {
+            this.deploymentAvailable = false;
+        } else {
+            this.deploymentAvailable = jsonObject.getBoolean("deploymentAvailable");
+        }
+        if (jsonObject.isNull("agentChecksum") || jsonObject.getString("agentChecksum").isBlank()) {
+            this.agentChecksum = null;
+        } else {
+            this.agentChecksum = jsonObject.getString("agentChecksum").trim();
+        }
     }
 
     public int getUpdateInterval() {

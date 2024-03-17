@@ -1,6 +1,5 @@
 package org.codesystem.payload;
 
-import org.codesystem.AgentApplication;
 import org.codesystem.CryptoHandler;
 import org.json.JSONObject;
 
@@ -10,18 +9,29 @@ public class UpdateCheckRequest extends EmptyRequest {
     private final DetailedSystemInformation detailedSystemInformation;
     private final String agentChecksum;
 
-    public UpdateCheckRequest() {
+    public UpdateCheckRequest(String agentChecksum, DetailedSystemInformation detailedSystemInformation) {
         super();
-        this.detailedSystemInformation = new DetailedSystemInformation();
-        this.agentChecksum = AgentApplication.agentChecksum;
+        this.detailedSystemInformation = detailedSystemInformation;
+        this.agentChecksum = agentChecksum;
     }
 
-    public JSONObject toJsonObject() {
+    @Override
+    public JSONObject toJsonObject(CryptoHandler cryptoHandler) {
+        if (cryptoHandler == null) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
-        jsonObject.put("systemInformation", detailedSystemInformation.toJsonObject());
-        jsonObject.put("agentChecksum", this.agentChecksum);
-        CryptoHandler cryptoHandler = new CryptoHandler();
+        if (detailedSystemInformation == null) {
+            jsonObject.put("systemInformation", JSONObject.NULL);
+        } else {
+            jsonObject.put("systemInformation", detailedSystemInformation.toJsonObject());
+        }
+        if (agentChecksum == null) {
+            jsonObject.put("agentChecksum", JSONObject.NULL);
+        } else {
+            jsonObject.put("agentChecksum", agentChecksum.trim());
+        }
         String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;

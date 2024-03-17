@@ -2,8 +2,8 @@ package org.codesystem;
 
 import okhttp3.*;
 import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
-import org.codesystem.payload.UpdateCheckRequest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,6 +14,11 @@ import java.nio.file.Paths;
 
 public class UpdateHandler {
     private static final String FILE_NAME_AGENT_UPDATE_DOWNLOAD = "Agent_update-download.jar";
+    private final PropertiesLoader propertiesLoader;
+
+    public UpdateHandler(PropertiesLoader propertiesLoader) {
+        this.propertiesLoader = propertiesLoader;
+    }
 
     public void updateApplication() {
         File oldVersion = Paths.get("Agent.jar").toFile();
@@ -73,7 +78,7 @@ public class UpdateHandler {
 
     private void downloadUpdate() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest().toJsonObject()).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(new CryptoHandler()), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/agent")
                 .post(body)
@@ -112,6 +117,6 @@ public class UpdateHandler {
         } catch (IOException e) {
             throw new SevereAgentErrorException("Unable to execute update process: " + e.getMessage());
         }
-        System.exit(0);
+        SystemExit.exit(-10);
     }
 }
