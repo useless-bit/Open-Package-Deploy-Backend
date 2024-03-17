@@ -19,7 +19,6 @@ class EncryptedMessageTest {
     @BeforeEach
     void setup() {
         encryptedMessage = null;
-        //Security.addProvider(new BouncyCastleProvider());
         propertiesLoader = Mockito.mock(PropertiesLoader.class);
         cryptoHandler = Mockito.mock(CryptoHandler.class);
 
