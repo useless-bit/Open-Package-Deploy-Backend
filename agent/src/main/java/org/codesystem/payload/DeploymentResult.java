@@ -24,12 +24,12 @@ public class DeploymentResult extends EmptyRequest {
         if (deploymentUUID == null || deploymentUUID.isBlank()) {
             jsonObject.put("deploymentUUID", JSONObject.NULL);
         } else {
-            jsonObject.put("deploymentUUID", this.deploymentUUID);
+            jsonObject.put("deploymentUUID", this.deploymentUUID.trim());
         }
         if (resultCode == null || resultCode.isBlank()) {
             jsonObject.put("resultCode", JSONObject.NULL);
         }else {
-            jsonObject.put("resultCode", this.resultCode);
+            jsonObject.put("resultCode", this.resultCode.trim());
         }
         String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);

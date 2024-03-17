@@ -39,6 +39,14 @@ class DeploymentResultTest {
         Assertions.assertEquals(JSONObject.NULL, deploymentResult.toJsonObject(cryptoHandler).get("deploymentUUID"));
         Assertions.assertEquals(JSONObject.NULL, deploymentResult.toJsonObject(cryptoHandler).get("resultCode"));
 
+        // valid trim
+        deploymentResult = new DeploymentResult(" sampleUUID ", " sampleReturnCode ");
+        jsonObject = deploymentResult.toJsonObject(cryptoHandler);
+        Assertions.assertNotNull(jsonObject.get("timestamp"));
+        Assertions.assertEquals(Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)), jsonObject.getString("signature"));
+        Assertions.assertArrayEquals("Signature".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(jsonObject.getString("signature")));
+        Assertions.assertEquals("sampleUUID", jsonObject.getString("deploymentUUID"));
+        Assertions.assertEquals("sampleReturnCode", jsonObject.getString("resultCode"));
 
         // valid
         deploymentResult = new DeploymentResult("sampleUUID", "sampleReturnCode");

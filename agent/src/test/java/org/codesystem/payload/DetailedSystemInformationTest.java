@@ -26,6 +26,7 @@ class DetailedSystemInformationTest {
         Mockito.when(hardwareInfo.getOsArchitecture()).thenReturn(null);
         Mockito.when(hardwareInfo.getOsVersion()).thenReturn(null);
         Mockito.when(hardwareInfo.getOsCodeName()).thenReturn(null);
+        Mockito.when(hardwareInfo.getOsBuildNumber()).thenReturn(null);
         Mockito.when(hardwareInfo.getHwCpuName()).thenReturn(null);
         Mockito.when(hardwareInfo.getHwCpuArchitecture()).thenReturn(null);
         Mockito.when(hardwareInfo.getHwCpuLogicalCoreCount()).thenReturn(null);
@@ -52,6 +53,7 @@ class DetailedSystemInformationTest {
         Mockito.when(hardwareInfo.getOsArchitecture()).thenReturn("");
         Mockito.when(hardwareInfo.getOsVersion()).thenReturn("");
         Mockito.when(hardwareInfo.getOsCodeName()).thenReturn("");
+        Mockito.when(hardwareInfo.getOsBuildNumber()).thenReturn("");
         Mockito.when(hardwareInfo.getHwCpuName()).thenReturn("");
         Mockito.when(hardwareInfo.getHwCpuArchitecture()).thenReturn("");
         Mockito.when(hardwareInfo.getHwCpuLogicalCoreCount()).thenReturn("");
@@ -78,6 +80,7 @@ class DetailedSystemInformationTest {
         Mockito.when(hardwareInfo.getOsArchitecture()).thenReturn("   ");
         Mockito.when(hardwareInfo.getOsVersion()).thenReturn("   ");
         Mockito.when(hardwareInfo.getOsCodeName()).thenReturn("   ");
+        Mockito.when(hardwareInfo.getOsBuildNumber()).thenReturn("   ");
         Mockito.when(hardwareInfo.getHwCpuName()).thenReturn("   ");
         Mockito.when(hardwareInfo.getHwCpuArchitecture()).thenReturn("   ");
         Mockito.when(hardwareInfo.getHwCpuLogicalCoreCount()).thenReturn("   ");
