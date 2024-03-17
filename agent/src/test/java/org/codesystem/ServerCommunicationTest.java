@@ -99,7 +99,7 @@ class ServerCommunicationTest {
         // valid response
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
-        JSONObject jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "false").put("agentChecksum", "agentChecksum");
+        JSONObject jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum");
         Mockito.when(cryptoHandler.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         Assertions.assertFalse(serverCommunication.sendUpdateRequest());
@@ -111,29 +111,29 @@ class ServerCommunicationTest {
         Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(null));
 
         // invalid checksum
-        JSONObject jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "false").put("agentChecksum", "");
+        JSONObject jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "");
         Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
-        jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "false").put("agentChecksum", "   ");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "   ");
         Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
 
         // invalid updateInterval
-        jsonObject = new JSONObject().put("updateInterval", "-1").put("deploymentAvailable", "false").put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", -1).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum");
         Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
-        jsonObject = new JSONObject().put("updateInterval", "0").put("deploymentAvailable", "false").put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 0).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum");
         Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
 
         // checksum
-        jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "false").put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum");
         Assertions.assertFalse(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
-        jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "false").put("agentChecksum", "differentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "differentChecksum");
         serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject));
         Mockito.verify(updateHandler).startUpdateProcess(Mockito.any());
 
         // updateInterval
-        Assertions.assertThrows(TestException.class, () -> serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(new JSONObject().put("updateInterval", "20").put("deploymentAvailable", "false").put("agentChecksum", "agentChecksum"))));
+        Assertions.assertThrows(TestException.class, () -> serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(new JSONObject().put("updateInterval", 20).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum"))));
 
         // deployment
-        jsonObject = new JSONObject().put("updateInterval", "10").put("deploymentAvailable", "true").put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable",true).put("agentChecksum", "agentChecksum");
         Assertions.assertTrue(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
 
     }

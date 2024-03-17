@@ -75,14 +75,13 @@ public class ServerCommunication {
             throw new SevereAgentErrorException(e.getMessage());
         }
 
-
     }
 
     public boolean processUpdateCheckResponse(UpdateCheckResponse updateCheckResponse) {
         if (updateCheckResponse == null) {
             return false;
         }
-        if (!updateCheckResponse.getAgentChecksum().isBlank() && !updateCheckResponse.getAgentChecksum().equals(agentChecksum)) {
+        if (updateCheckResponse.getAgentChecksum() != null && !updateCheckResponse.getAgentChecksum().isBlank() && !updateCheckResponse.getAgentChecksum().equals(agentChecksum)) {
             AgentApplication.logger.info("Initiate update");
             updateHandler.startUpdateProcess(updateCheckResponse.getAgentChecksum());
         }
