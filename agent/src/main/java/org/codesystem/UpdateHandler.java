@@ -14,10 +14,8 @@ import java.nio.file.Paths;
 
 public class UpdateHandler {
     private static final String FILE_NAME_AGENT_UPDATE_DOWNLOAD = "Agent_update-download.jar";
-    private final PropertiesLoader propertiesLoader;
 
-    public UpdateHandler(PropertiesLoader propertiesLoader) {
-        this.propertiesLoader = propertiesLoader;
+    public UpdateHandler() {
     }
 
     public void updateApplication() {
@@ -77,35 +75,6 @@ public class UpdateHandler {
     }
 
     private void downloadUpdate() {
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(new CryptoHandler()), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder()
-                .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/agent")
-                .post(body)
-                .build();
-
-        Response response;
-        OkHttpClient client = new OkHttpClient();
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to download update: " + e.getMessage());
-        }
-        if (response.code() != 200) {
-            return;
-        }
-
-        byte[] data;
-        try {
-            data = response.body().bytes();
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to load update from Server-response: " + e.getMessage());
-        }
-        try (FileOutputStream fos = new FileOutputStream(FILE_NAME_AGENT_UPDATE_DOWNLOAD)) {
-            fos.write(data);
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to write update file: " + e.getMessage());
-        }
 
     }
 
