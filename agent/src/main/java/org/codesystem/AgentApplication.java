@@ -25,7 +25,7 @@ public class AgentApplication {
         initialSetup();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
-            try (scheduledExecutorService) {
+            try {
                 AgentApplication.mainLogic();
             } catch (Throwable t) {
                 throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
