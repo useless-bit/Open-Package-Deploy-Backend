@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -28,9 +25,6 @@ import java.util.Base64;
 public class CryptoUtility {
     private final KeyFactory keyFactory;
     private final KeyGenerator keyGeneratorAES;
-    private final Cipher cipherECC;
-    private final Cipher cipherAES;
-    private final Signature signature;
     private final PrivateKey privateKeyServer;
     private final IESParameterSpec iesParamSpec = new IESParameterSpec(
             /* derivation = */ null,
@@ -47,9 +41,6 @@ public class CryptoUtility {
             this.keyFactory = KeyFactory.getInstance("EC");
             this.keyGeneratorAES = KeyGenerator.getInstance("AES");
             this.keyGeneratorAES.init(128);
-            this.cipherECC = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
-            this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
             this.privateKeyServer = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPrivateKeyBase64())));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -70,8 +61,8 @@ public class CryptoUtility {
 
     public byte[] encryptECC(byte[] message, AgentEntity agentEntity) {
         byte[] encryptedMessage;
-        Cipher cipher = cipherECC;
         try {
+            Cipher cipher = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             cipher.init(Cipher.ENCRYPT_MODE, loadPublicKeyFromAgentEntity(agentEntity), iesParamSpec);
             encryptedMessage = cipher.doFinal(message);
         } catch (Exception e) {
@@ -83,6 +74,7 @@ public class CryptoUtility {
     public byte[] createSignatureECC(String message) {
         byte[] signatureForMessage;
         try {
+            Signature signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
             signature.initSign(privateKeyServer);
             signature.update(message.getBytes(StandardCharsets.UTF_8));
             signatureForMessage = signature.sign();
@@ -94,10 +86,10 @@ public class CryptoUtility {
 
     public boolean verifySignatureECC(String message, String base64Signature, AgentEntity agentEntity) {
         try {
-            Signature signatureTest = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
-            signatureTest.initVerify(loadPublicKeyFromAgentEntity(agentEntity));
-            signatureTest.update(message.getBytes(StandardCharsets.UTF_8));
-            return signatureTest.verify(Base64.getDecoder().decode(base64Signature));
+            Signature signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
+            signature.initVerify(loadPublicKeyFromAgentEntity(agentEntity));
+            signature.update(message.getBytes(StandardCharsets.UTF_8));
+            return signature.verify(Base64.getDecoder().decode(base64Signature));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -105,10 +97,11 @@ public class CryptoUtility {
 
     public boolean encryptFile(PackageEntity packageEntity, File plaintextFile, Path targetFilePath) {
         packageEntity.setEncryptionToken(keyGeneratorAES.generateKey());
-        Cipher cipher = cipherAES;
+        Cipher cipher;
         try {
+            cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, packageEntity.getEncryptionToken());
-        } catch (InvalidKeyException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
             return false;
         }
         packageEntity.setInitializationVector(cipher.getIV());
@@ -128,7 +121,12 @@ public class CryptoUtility {
     }
 
     public boolean decryptFile(PackageEntity packageEntity, File encryptedFile, Path targetPath) {
-        Cipher cipher = cipherAES;
+        Cipher cipher;
+        try {
+            cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            return false;
+        }
         try (
                 FileInputStream fileInputStream = new FileInputStream(encryptedFile);
                 CipherInputStream cipherInputStream = new CipherInputStream(fileInputStream, cipher);
@@ -152,7 +150,7 @@ public class CryptoUtility {
         if (inputStream == null) {
             return null;
         }
-        MessageDigest messageDigest = null;
+        MessageDigest messageDigest;
         try {
             messageDigest = MessageDigest.getInstance("SHA3-512");
         } catch (NoSuchAlgorithmException e) {
