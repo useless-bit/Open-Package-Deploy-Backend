@@ -65,6 +65,7 @@ public class ServerCommunication {
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {
             if (response.code() != 200) {
+                AgentApplication.logger.info("HTTP response-code: " + response.code());
                 return false;
             }
             String responseBody = new JSONObject(response.body().string()).getString("message");

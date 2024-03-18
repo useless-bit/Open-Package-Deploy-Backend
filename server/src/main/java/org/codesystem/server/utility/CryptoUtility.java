@@ -58,8 +58,8 @@ public class CryptoUtility {
 
     public String decryptECC(byte[] message) {
         byte[] decryptedMessage;
-        Cipher cipher = cipherECC;
         try {
+            Cipher cipher = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             cipher.init(Cipher.DECRYPT_MODE, this.privateKeyServer, iesParamSpec);
             decryptedMessage = cipher.doFinal(message);
         } catch (Exception e) {
