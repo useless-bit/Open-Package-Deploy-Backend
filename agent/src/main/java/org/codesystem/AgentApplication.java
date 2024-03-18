@@ -3,6 +3,7 @@ package org.codesystem;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.utility.DownloadUtility;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class AgentApplication {
         }
         if (filename.endsWith("Agent_update-download.jar")) {
             logger.info("Entering Update Mode");
-            UpdateHandler updateHandler = new UpdateHandler();
+            UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), new CryptoHandler(), properties);
             updateHandler.updateApplication();
         } else if (Files.exists(Paths.get("Agent_update-download.jar"))) {
             try {
@@ -75,7 +76,7 @@ public class AgentApplication {
 
     private static void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(new CryptoHandler(), properties, agentChecksum, new UpdateHandler(), new PackageHandler(operatingSystem));
+        ServerCommunication serverCommunication = new ServerCommunication(new CryptoHandler(), properties, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoHandler(), properties), new PackageHandler(operatingSystem));
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");

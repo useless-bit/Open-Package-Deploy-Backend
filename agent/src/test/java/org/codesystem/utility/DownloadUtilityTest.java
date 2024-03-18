@@ -54,6 +54,8 @@ class DownloadUtilityTest {
 
     @AfterEach
     void tearDown() throws IOException {
+        mockServer.stop();
+        systemExitMockedStatic.close();
         deleteFolderWithContent();
     }
 
