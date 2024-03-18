@@ -51,8 +51,7 @@ sonar {
         property "sonar.projectName", "OPD-Agent"
         property "sonar.qualitygate.wait", true
         property "sonar.java.fileByFile", true
-        property "sonar.sources", "src/main/java/**/*"
-        property "sonar.exclusions", "src/test/java/**/*"
+        property "sonar.exclusions", "**/test/java/**/*"
         property "sonar.token", System.getenv("SONAR_TOKEN_AGENT")
     }
 }
