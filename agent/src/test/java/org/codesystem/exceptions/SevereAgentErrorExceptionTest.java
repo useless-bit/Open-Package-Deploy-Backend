@@ -1,7 +1,7 @@
 package org.codesystem.exceptions;
 
 import org.codesystem.SystemExit;
-import org.codesystem.TestException;
+import org.codesystem.TestSystemExitException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,11 +14,11 @@ class SevereAgentErrorExceptionTest {
     @BeforeEach
     void setup() {
         systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestException.class);
+        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
     }
 
     @Test
     void severeAgentErrorException() {
-        Assertions.assertThrows(TestException.class, () -> new SevereAgentErrorException("Test error"));
+        Assertions.assertThrows(TestSystemExitException.class, () -> new SevereAgentErrorException("Test error"));
     }
 }
