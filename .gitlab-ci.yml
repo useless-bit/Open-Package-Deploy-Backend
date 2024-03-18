@@ -32,7 +32,7 @@ Agent-Test:
     - gradle -p agent test --fail-fast --info --stacktrace jacocoTestReport sonar
   artifacts:
     reports:
-      junit: agent/build/test-results/test/**/TEST-*.xml
+      junit: /builds/open-package-deploy/backend/agent/build/test-results/test/**/TEST-*.xml
   except:
     - master
   needs:
