@@ -30,9 +30,10 @@ dependencies {
     testImplementation 'org.mock-server:mockserver-netty:5.15.0'
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
+
 
 tasks.register('fatJar', Jar) {
     manifest {
