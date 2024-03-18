@@ -41,7 +41,7 @@ class UpdateHandlerTest {
         Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("signature".getBytes(StandardCharsets.UTF_8));
         Mockito.when(cryptoHandler.encryptECC(Mockito.any())).thenReturn("encrypted".getBytes(StandardCharsets.UTF_8));
 
-        updateHandler = new UpdateHandler(downloadUtility, cryptoHandler,propertiesLoader);
+        updateHandler = new UpdateHandler(downloadUtility, cryptoHandler, propertiesLoader);
 
         mockServer = ClientAndServer.startClientAndServer(8899);
 
@@ -138,6 +138,7 @@ class UpdateHandlerTest {
         Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
         Assertions.assertArrayEquals(Files.readAllBytes(PATH_UPDATE_FILE), "Agent-Update_Content".getBytes(StandardCharsets.UTF_8));
     }
+
     @Test
     void startUpdateProcess_correctInputOldFilePresent() throws IOException {
         Files.writeString(PATH_UPDATE_FILE, "Old-Agent-Update_Content");

@@ -132,7 +132,7 @@ class ServerCommunicationTest {
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(new JSONObject().put("updateInterval", 20).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum"))));
 
         // deployment
-        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable",true).put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", true).put("agentChecksum", "agentChecksum");
         Assertions.assertTrue(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
 
     }

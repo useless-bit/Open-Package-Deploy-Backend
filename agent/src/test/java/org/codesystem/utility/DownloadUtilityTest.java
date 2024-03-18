@@ -1,15 +1,8 @@
 package org.codesystem.utility;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import okhttp3.MediaType;
 import okhttp3.Request;
-import okhttp3.RequestBody;
-import org.codesystem.AgentApplication;
-import org.codesystem.CryptoHandler;
 import org.codesystem.SystemExit;
 import org.codesystem.TestSystemExitException;
-import org.codesystem.payload.EmptyRequest;
-import org.codesystem.payload.EncryptedMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +31,6 @@ class DownloadUtilityTest {
     DownloadUtility downloadUtility;
     ClientAndServer mockServer;
     MockedStatic<SystemExit> systemExitMockedStatic;
-
 
 
     @BeforeEach
