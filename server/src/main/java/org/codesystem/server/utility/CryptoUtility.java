@@ -94,9 +94,10 @@ public class CryptoUtility {
 
     public boolean verifySignatureECC(String message, String base64Signature, AgentEntity agentEntity) {
         try {
-            signature.initVerify(loadPublicKeyFromAgentEntity(agentEntity));
-            signature.update(message.getBytes(StandardCharsets.UTF_8));
-            return signature.verify(Base64.getDecoder().decode(base64Signature));
+            Signature signatureTest = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
+            signatureTest.initVerify(loadPublicKeyFromAgentEntity(agentEntity));
+            signatureTest.update(message.getBytes(StandardCharsets.UTF_8));
+            return signatureTest.verify(Base64.getDecoder().decode(base64Signature));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
