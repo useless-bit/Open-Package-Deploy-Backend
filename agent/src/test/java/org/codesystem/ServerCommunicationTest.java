@@ -94,7 +94,7 @@ class ServerCommunicationTest {
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200));
-        Assertions.assertThrows(SevereAgentErrorException.class, () -> serverCommunication.sendUpdateRequest());
+        Assertions.assertThrows(TestException.class, () -> serverCommunication.sendUpdateRequest());
 
         // valid response
         mockServer.stop();
