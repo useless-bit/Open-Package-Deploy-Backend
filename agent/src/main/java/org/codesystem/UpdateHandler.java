@@ -96,6 +96,7 @@ public class UpdateHandler {
     private void startNewApplication() {
         String command = ProcessHandle.current().info().commandLine().get();
         command = command.substring(0, command.indexOf(" "));
+        AgentApplication.logger.info("Update command: " + command);
         try {
             new ProcessBuilder(command, "-jar", FILE_NAME_AGENT_UPDATE).start();
         } catch (IOException e) {
