@@ -1,5 +1,6 @@
 package org.codesystem;
 
+import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.DownloadUtility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -46,7 +47,7 @@ class UpdateHandlerTest {
         mockServer = ClientAndServer.startClientAndServer(8899);
 
         systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
+        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).then(invocationOnMock -> null);
         deleteFiles();
     }
 
@@ -67,26 +68,26 @@ class UpdateHandlerTest {
 
     @Test
     void updateApplication_noFilesPresent() {
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.updateApplication());
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.updateApplication());
     }
 
     @Test
     void updateApplication_agentPresentUpdateMissing() throws IOException {
         Files.writeString(PATH_FILE, "Agent_File_Content");
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.updateApplication());
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.updateApplication());
     }
 
     @Test
     void updateApplication_agentMissingUpdatePresent() throws IOException {
         Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.updateApplication());
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.updateApplication());
     }
 
     @Test
     void updateApplication_agentPresentUpdatePresent() throws IOException {
         Files.writeString(PATH_FILE, "Agent_File_Content");
         Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.updateApplication());
+        Assertions.assertDoesNotThrow(() -> updateHandler.updateApplication());
         Assertions.assertTrue(PATH_FILE.toFile().exists());
         Assertions.assertTrue(PATH_BACKUP_FILE.toFile().exists());
         Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
@@ -100,7 +101,7 @@ class UpdateHandlerTest {
         Files.writeString(PATH_FILE, "Agent_File_Content");
         Files.writeString(PATH_BACKUP_FILE, "Agent_Backup_Content");
         Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.updateApplication());
+        Assertions.assertDoesNotThrow(() -> updateHandler.updateApplication());
         Assertions.assertTrue(PATH_FILE.toFile().exists());
         Assertions.assertTrue(PATH_BACKUP_FILE.toFile().exists());
         Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
@@ -111,9 +112,9 @@ class UpdateHandlerTest {
 
     @Test
     void startUpdateProcess_invalidInput() {
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.startUpdateProcess(null));
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.startUpdateProcess(""));
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.startUpdateProcess("   "));
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.startUpdateProcess(null));
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.startUpdateProcess(""));
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.startUpdateProcess("   "));
     }
 
     @Test
@@ -123,7 +124,7 @@ class UpdateHandlerTest {
             Files.writeString(PATH_UPDATE_FILE, "Agent-Update_Content");
             return true;
         });
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.startUpdateProcess("invalid CheckSum"));
+        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.startUpdateProcess("invalid CheckSum"));
         Assertions.assertFalse(PATH_UPDATE_FILE.toFile().exists());
     }
 
@@ -134,7 +135,7 @@ class UpdateHandlerTest {
             Files.writeString(PATH_UPDATE_FILE, "Agent-Update_Content");
             return true;
         });
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.startUpdateProcess("valid CheckSum"));
+        Assertions.assertDoesNotThrow(() -> updateHandler.startUpdateProcess("valid CheckSum"));
         Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
         Assertions.assertArrayEquals(Files.readAllBytes(PATH_UPDATE_FILE), "Agent-Update_Content".getBytes(StandardCharsets.UTF_8));
     }
@@ -147,7 +148,7 @@ class UpdateHandlerTest {
             Files.writeString(PATH_UPDATE_FILE, "Agent-Update_Content");
             return true;
         });
-        Assertions.assertThrows(TestSystemExitException.class, () -> updateHandler.startUpdateProcess("valid CheckSum"));
+        Assertions.assertDoesNotThrow(() -> updateHandler.startUpdateProcess("valid CheckSum"));
         Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
         Assertions.assertArrayEquals(Files.readAllBytes(PATH_UPDATE_FILE), "Agent-Update_Content".getBytes(StandardCharsets.UTF_8));
     }
