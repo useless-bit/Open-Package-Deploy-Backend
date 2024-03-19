@@ -3,6 +3,7 @@ package org.codesystem;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.utility.AutoUpdateUtility;
 import org.codesystem.utility.DownloadUtility;
 
 import java.io.File;
@@ -45,14 +46,7 @@ public class AgentApplication {
         }
         if (filename.endsWith("Agent_update.jar")) {
             logger.info("Entering Update Mode");
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                AgentApplication.logger.severe("Cannot pause thread");
-                Thread.currentThread().interrupt();
-            }
-            UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), new CryptoHandler(), properties);
-            updateHandler.updateApplication();
+            new AutoUpdateUtility().updateApplication();
         } else if (Files.exists(Paths.get("Agent_update.jar"))) {
             try {
                 Files.deleteIfExists(Paths.get("Agent_update.jar"));
