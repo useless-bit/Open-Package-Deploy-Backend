@@ -31,7 +31,7 @@ public class DownloadUtility {
                 Files.deleteIfExists(targetFileLocation);
                 return false;
             }
-            byte[] data = response.body().bytes();
+            byte[] data = response.body() != null ? response.body().bytes() : new byte[0];
             fileOutputStream.write(data);
         } catch (IOException e) {
             try {
