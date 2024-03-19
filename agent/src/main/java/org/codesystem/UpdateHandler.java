@@ -31,7 +31,13 @@ public class UpdateHandler {
     public void updateApplication() {
         File oldVersion = Paths.get("Agent.jar").toFile();
         File backupOldVersion = Paths.get("Agent_backup.jar").toFile();
-        File currentVersion = Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD).toFile();
+        File currentVersion;
+        if (Files.exists(Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD))) {
+            currentVersion = Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD).toFile();
+        } else {
+            currentVersion = Paths.get("Agent_update-download.jar").toFile();
+        }
+
 
         if (!currentVersion.exists() || !oldVersion.exists()) {
             throw new SevereAgentErrorException("Cannot find update file");
