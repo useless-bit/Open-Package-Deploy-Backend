@@ -30,9 +30,10 @@ dependencies {
     testImplementation 'org.mock-server:mockserver-netty:5.15.0'
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
+
 
 tasks.register('fatJar', Jar) {
     manifest {
@@ -51,7 +52,7 @@ sonar {
         property "sonar.projectName", "OPD-Agent"
         property "sonar.qualitygate.wait", true
         property "sonar.java.fileByFile", true
-        property "sonar.exclusions", "src/test/**"
+        property "sonar.test.exclusions", "src/test/java/**/*"
         property "sonar.token", System.getenv("SONAR_TOKEN_AGENT")
     }
 }

@@ -1,6 +1,7 @@
 package org.codesystem;
 
 import okhttp3.*;
+import org.codesystem.utility.DownloadUtility;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class ServerCommunicationRegistration {
-    private final ServerCommunication serverCommunication = new ServerCommunication(new CryptoHandler(), AgentApplication.properties, AgentApplication.agentChecksum, new UpdateHandler(AgentApplication.properties), new PackageHandler(AgentApplication.operatingSystem));
+    private final ServerCommunication serverCommunication = new ServerCommunication(new CryptoHandler(), AgentApplication.properties, AgentApplication.agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoHandler(), new PropertiesLoader()), new PackageHandler(AgentApplication.operatingSystem));
 
     public void validateRegistration() {
         AgentApplication.logger.info("Checking if Server is available");

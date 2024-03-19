@@ -1,7 +1,6 @@
 package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.UpdateCheckResponse;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +42,7 @@ class ServerCommunicationTest {
         packageHandler = Mockito.mock(PackageHandler.class);
         serverCommunication = new ServerCommunication(cryptoHandler, propertiesLoader, "agentChecksum", updateHandler, packageHandler);
         systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestException.class);
+        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
         mockServer = ClientAndServer.startClientAndServer(8899);
     }
 
@@ -94,7 +93,7 @@ class ServerCommunicationTest {
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200));
-        Assertions.assertThrows(TestException.class, () -> serverCommunication.sendUpdateRequest());
+        Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunication.sendUpdateRequest());
 
         // valid response
         mockServer.stop();
@@ -130,10 +129,10 @@ class ServerCommunicationTest {
         Mockito.verify(updateHandler).startUpdateProcess(Mockito.any());
 
         // updateInterval
-        Assertions.assertThrows(TestException.class, () -> serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(new JSONObject().put("updateInterval", 20).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum"))));
+        Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(new JSONObject().put("updateInterval", 20).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum"))));
 
         // deployment
-        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable",true).put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", true).put("agentChecksum", "agentChecksum");
         Assertions.assertTrue(serverCommunication.processUpdateCheckResponse(new UpdateCheckResponse(jsonObject)));
 
     }
