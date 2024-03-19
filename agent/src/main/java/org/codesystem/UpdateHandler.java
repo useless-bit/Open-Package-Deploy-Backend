@@ -32,6 +32,7 @@ public class UpdateHandler {
 
     public void updateApplication() {
         if (!PATH_UPDATE_FILE.toFile().exists() || !PATH_FILE.toFile().exists()) {
+            Paths.get("FileNotFoundError").toFile().mkdirs();
             throw new SevereAgentErrorException("Cannot find update file");
         }
 
@@ -39,6 +40,7 @@ public class UpdateHandler {
             try {
                 Files.delete(PATH_BACKUP_FILE);
             } catch (IOException e) {
+                Paths.get("DelBackupError").toFile().mkdirs();
                 throw new SevereAgentErrorException("Cannot delete old backup: " + e.getMessage());
             }
         }
@@ -46,17 +48,21 @@ public class UpdateHandler {
         try {
             Files.copy(PATH_FILE, PATH_BACKUP_FILE);
         } catch (IOException e) {
+            Paths.get("CreateBackupError").toFile().mkdirs();
+
             throw new SevereAgentErrorException("Cannot create backup: " + e.getMessage());
         }
         try {
             Files.delete(PATH_FILE);
         } catch (IOException e) {
+            Paths.get("DelOldAgentError").toFile().mkdirs();
             throw new SevereAgentErrorException("Cannot delete old Agent: " + e.getMessage());
         }
 
         try {
             Files.copy(PATH_UPDATE_FILE, PATH_FILE);
         } catch (IOException e) {
+            Paths.get("CopyError").toFile().mkdirs();
             throw new SevereAgentErrorException("Cannot copy new Agent: " + e.getMessage());
         }
         SystemExit.exit(0);
