@@ -45,6 +45,12 @@ public class AgentApplication {
         }
         if (filename.endsWith("Agent_update.jar")) {
             logger.info("Entering Update Mode");
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                AgentApplication.logger.severe("Cannot pause thread");
+                Thread.currentThread().interrupt();
+            }
             UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), new CryptoHandler(), properties);
             updateHandler.updateApplication();
         } else if (Files.exists(Paths.get("Agent_update.jar"))) {
