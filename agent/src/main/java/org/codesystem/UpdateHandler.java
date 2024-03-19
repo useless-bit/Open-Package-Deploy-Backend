@@ -81,7 +81,9 @@ public class UpdateHandler {
                 .post(body)
                 .build();
 
-        downloadUtility.downloadFile(PATH_DOWNLOAD_FILE, request);
+        if (!downloadUtility.downloadFile(PATH_DOWNLOAD_FILE, request)) {
+            throw new SevereAgentErrorException("Update-download from Server failed");
+        }
         if (!cryptoHandler.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE_DOWNLOAD).equals(checksum)) {
             try {
                 Files.deleteIfExists(PATH_DOWNLOAD_FILE);
