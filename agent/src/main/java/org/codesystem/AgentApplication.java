@@ -23,6 +23,7 @@ public class AgentApplication {
     public static OperatingSystem operatingSystem;
 
     public static void main(String[] args) {
+        Security.addProvider(new BouncyCastleProvider());
         initialSetup();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
@@ -65,7 +66,6 @@ public class AgentApplication {
         }
 
         logger.info("Agent Startup");
-        Security.addProvider(new BouncyCastleProvider());
         properties.loadProperties();
 
         CryptoHandler cryptoHandler = new CryptoHandler();
