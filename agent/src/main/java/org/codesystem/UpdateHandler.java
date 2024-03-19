@@ -8,19 +8,21 @@ import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.utility.DownloadUtility;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class UpdateHandler {
-    private static final String FILE_NAME_AGENT_UPDATE_DOWNLOAD = "Agent_update.jar";
-    private static final Path PATH_DOWNLOAD_FILE = Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD);
-
     private final DownloadUtility downloadUtility;
     private final CryptoHandler cryptoHandler;
     private final PropertiesLoader propertiesLoader;
+    String FILE_NAME_AGENT_UPDATE = "Agent_update.jar";
+    Path PATH_UPDATE_FILE = Paths.get(FILE_NAME_AGENT_UPDATE);
+    String FILE_NAME_AGENT_UPDATE_BACKUP = "Agent_backup.jar";
+    Path PATH_BACKUP_FILE = Paths.get(FILE_NAME_AGENT_UPDATE_BACKUP);
+    String FILE_NAME_AGENT = "Agent.jar";
+    Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
 
     public UpdateHandler(DownloadUtility downloadUtility, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader) {
         this.downloadUtility = downloadUtility;
@@ -29,41 +31,31 @@ public class UpdateHandler {
     }
 
     public void updateApplication() {
-        File oldVersion = Paths.get("Agent.jar").toFile();
-        File backupOldVersion = Paths.get("Agent_backup.jar").toFile();
-        File currentVersion;
-        if (Files.exists(Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD))) {
-            currentVersion = Paths.get(FILE_NAME_AGENT_UPDATE_DOWNLOAD).toFile();
-        } else {
-            currentVersion = Paths.get("Agent_update-download.jar").toFile();
-        }
-
-
-        if (!currentVersion.exists() || !oldVersion.exists()) {
+        if (!PATH_UPDATE_FILE.toFile().exists() || !PATH_FILE.toFile().exists()) {
             throw new SevereAgentErrorException("Cannot find update file");
         }
 
-        if (backupOldVersion.exists()) {
+        if (PATH_BACKUP_FILE.toFile().exists()) {
             try {
-                Files.delete(backupOldVersion.toPath());
+                Files.delete(PATH_BACKUP_FILE);
             } catch (IOException e) {
                 throw new SevereAgentErrorException("Cannot delete old backup: " + e.getMessage());
             }
         }
 
         try {
-            Files.copy(oldVersion.toPath(), backupOldVersion.toPath());
+            Files.copy(PATH_FILE, PATH_BACKUP_FILE);
         } catch (IOException e) {
             throw new SevereAgentErrorException("Cannot create backup: " + e.getMessage());
         }
         try {
-            Files.delete(oldVersion.toPath());
+            Files.delete(PATH_FILE);
         } catch (IOException e) {
             throw new SevereAgentErrorException("Cannot delete old Agent: " + e.getMessage());
         }
 
         try {
-            Files.copy(currentVersion.toPath(), oldVersion.toPath());
+            Files.copy(PATH_UPDATE_FILE, PATH_FILE);
         } catch (IOException e) {
             throw new SevereAgentErrorException("Cannot copy new Agent: " + e.getMessage());
         }
@@ -75,7 +67,7 @@ public class UpdateHandler {
             throw new SevereAgentErrorException("Invalid Checksum");
         }
         try {
-            Files.deleteIfExists(PATH_DOWNLOAD_FILE);
+            Files.deleteIfExists(PATH_UPDATE_FILE);
         } catch (IOException e) {
             throw new SevereAgentErrorException("Cannot delete old update: " + e.getMessage());
         }
@@ -87,12 +79,12 @@ public class UpdateHandler {
                 .post(body)
                 .build();
 
-        if (!downloadUtility.downloadFile(PATH_DOWNLOAD_FILE, request)) {
+        if (!downloadUtility.downloadFile(PATH_UPDATE_FILE, request)) {
             throw new SevereAgentErrorException("Update-download from Server failed");
         }
-        if (!cryptoHandler.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE_DOWNLOAD).equals(checksum)) {
+        if (!cryptoHandler.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE).equals(checksum)) {
             try {
-                Files.deleteIfExists(PATH_DOWNLOAD_FILE);
+                Files.deleteIfExists(PATH_UPDATE_FILE);
             } catch (IOException e) {
                 throw new SevereAgentErrorException("Cannot delete invalid Agent: " + e.getMessage());
             }
@@ -105,7 +97,7 @@ public class UpdateHandler {
         String command = ProcessHandle.current().info().commandLine().get();
         command = command.substring(0, command.indexOf(" "));
         try {
-            new ProcessBuilder(command, "-jar", FILE_NAME_AGENT_UPDATE_DOWNLOAD).start();
+            new ProcessBuilder(command, "-jar", FILE_NAME_AGENT_UPDATE).start();
         } catch (IOException e) {
             throw new SevereAgentErrorException("Unable to execute update process: " + e.getMessage());
         }
