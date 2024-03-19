@@ -27,6 +27,7 @@ class DownloadUtilityTest {
     final String TEST_DOWNLOAD_FOLDER = "test-download";
     final Path downloadFolder = Paths.get(TEST_DOWNLOAD_FOLDER);
     final Path downloadFileOne = Paths.get(TEST_DOWNLOAD_FOLDER + "/file_one");
+    final Path downloadFileTwo = Paths.get("file_two");
 
     DownloadUtility downloadUtility;
     ClientAndServer mockServer;
@@ -52,6 +53,7 @@ class DownloadUtilityTest {
     }
 
     private void deleteFolderWithContent() throws IOException {
+        downloadFileTwo.toFile().delete();
         if (Files.exists(downloadFolder)) {
             try (Stream<Path> pathStream = Files.walk(downloadFolder)) {
                 pathStream.sorted(Comparator.reverseOrder())
@@ -114,6 +116,18 @@ class DownloadUtilityTest {
         Assertions.assertTrue(downloadUtility.downloadFile(downloadFileOne, request));
         Assertions.assertTrue(Files.exists(downloadFileOne));
         Assertions.assertArrayEquals(Files.readAllBytes(downloadFileOne), "Test-Content".getBytes(StandardCharsets.UTF_8));
+        deleteFolderWithContent();
+
+        // valid
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        mockServer.when(request().withMethod("GET").withPath("/download/test")).respond(HttpResponse.response().withStatusCode(200).withBody("Test-Content".getBytes(StandardCharsets.UTF_8)));
+        request = new Request.Builder()
+                .url("http://localhost:8899/download/test")
+                .build();
+        Assertions.assertTrue(downloadUtility.downloadFile(downloadFileTwo, request));
+        Assertions.assertTrue(Files.exists(downloadFileTwo));
+        Assertions.assertArrayEquals(Files.readAllBytes(downloadFileTwo), "Test-Content".getBytes(StandardCharsets.UTF_8));
         deleteFolderWithContent();
 
         // file already present
