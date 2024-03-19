@@ -7,6 +7,7 @@ import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DownloadUtility {
@@ -27,13 +28,12 @@ public class DownloadUtility {
         try (Response response = client.newCall(request).execute();
              FileOutputStream fileOutputStream = new FileOutputStream(targetFileLocation.toString())) {
             if (response.code() != 200) {
-                targetFileLocation.toFile().delete();
+                Files.deleteIfExists(targetFileLocation);
                 return false;
             }
             byte[] data = response.body().bytes();
             fileOutputStream.write(data);
         } catch (IOException e) {
-            targetFileLocation.toFile().delete();
             throw new SevereAgentErrorException("Unable to download file: " + e.getMessage());
         }
         return true;

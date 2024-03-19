@@ -83,7 +83,11 @@ public class UpdateHandler {
 
         downloadUtility.downloadFile(PATH_DOWNLOAD_FILE, request);
         if (!cryptoHandler.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE_DOWNLOAD).equals(checksum)) {
-            PATH_DOWNLOAD_FILE.toFile().delete();
+            try {
+                Files.deleteIfExists(PATH_DOWNLOAD_FILE);
+            } catch (IOException e) {
+                throw new SevereAgentErrorException("Cannot delete invalid Agent: " + e.getMessage());
+            }
             throw new SevereAgentErrorException("Checksum of new Agent is invalid");
         }
         startNewApplication();
