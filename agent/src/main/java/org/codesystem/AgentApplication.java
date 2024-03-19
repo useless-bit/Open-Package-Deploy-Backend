@@ -41,13 +41,13 @@ public class AgentApplication {
         } catch (URISyntaxException e) {
             throw new RuntimeException("Cannot get filename");
         }
-        if (filename.endsWith("Agent_update-download.jar")) {
+        if (filename.endsWith("Agent_update.jar")) {
             logger.info("Entering Update Mode");
             UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), new CryptoHandler(), properties);
             updateHandler.updateApplication();
-        } else if (Files.exists(Paths.get("Agent_update-download.jar"))) {
+        } else if (Files.exists(Paths.get("Agent_update.jar"))) {
             try {
-                Files.delete(Paths.get("Agent_update-download.jar"));
+                Files.delete(Paths.get("Agent_update.jar"));
             } catch (IOException e) {
                 throw new RuntimeException("Cannot delete old update");
             }
