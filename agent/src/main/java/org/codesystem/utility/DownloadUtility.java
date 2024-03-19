@@ -34,6 +34,11 @@ public class DownloadUtility {
             byte[] data = response.body().bytes();
             fileOutputStream.write(data);
         } catch (IOException e) {
+            try {
+                Files.deleteIfExists(targetFileLocation);
+            } catch (IOException ex) {
+                throw new SevereAgentErrorException("Unable to delete file: " + e.getMessage());
+            }
             throw new SevereAgentErrorException("Unable to download file: " + e.getMessage());
         }
         return true;
