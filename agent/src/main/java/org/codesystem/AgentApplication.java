@@ -24,6 +24,7 @@ public class AgentApplication {
 
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());
+        properties.loadProperties();
         initialSetup();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
