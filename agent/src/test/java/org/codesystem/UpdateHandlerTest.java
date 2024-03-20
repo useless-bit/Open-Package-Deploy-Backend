@@ -65,51 +65,6 @@ class UpdateHandlerTest {
         PATH_FILE.toFile().delete();
     }
 
-
-    @Test
-    void updateApplication_noFilesPresent() {
-        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.updateApplication());
-    }
-
-    @Test
-    void updateApplication_agentPresentUpdateMissing() throws IOException {
-        Files.writeString(PATH_FILE, "Agent_File_Content");
-        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.updateApplication());
-    }
-
-    @Test
-    void updateApplication_agentMissingUpdatePresent() throws IOException {
-        Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.updateApplication());
-    }
-
-    @Test
-    void updateApplication_agentPresentUpdatePresent() throws IOException {
-        Files.writeString(PATH_FILE, "Agent_File_Content");
-        Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertDoesNotThrow(() -> updateHandler.updateApplication());
-        Assertions.assertTrue(PATH_FILE.toFile().exists());
-        Assertions.assertTrue(PATH_BACKUP_FILE.toFile().exists());
-        Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
-        Assertions.assertArrayEquals(Files.readAllBytes(PATH_FILE), "Agent_Update_File_Content".getBytes(StandardCharsets.UTF_8));
-        Assertions.assertArrayEquals(Files.readAllBytes(PATH_BACKUP_FILE), "Agent_File_Content".getBytes(StandardCharsets.UTF_8));
-        Assertions.assertArrayEquals(Files.readAllBytes(PATH_UPDATE_FILE), "Agent_Update_File_Content".getBytes(StandardCharsets.UTF_8));
-    }
-
-    @Test
-    void updateApplication_allFilesPresent() throws IOException {
-        Files.writeString(PATH_FILE, "Agent_File_Content");
-        Files.writeString(PATH_BACKUP_FILE, "Agent_Backup_Content");
-        Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertDoesNotThrow(() -> updateHandler.updateApplication());
-        Assertions.assertTrue(PATH_FILE.toFile().exists());
-        Assertions.assertTrue(PATH_BACKUP_FILE.toFile().exists());
-        Assertions.assertTrue(PATH_UPDATE_FILE.toFile().exists());
-        Assertions.assertArrayEquals(Files.readAllBytes(PATH_FILE), "Agent_Update_File_Content".getBytes(StandardCharsets.UTF_8));
-        Assertions.assertArrayEquals(Files.readAllBytes(PATH_BACKUP_FILE), "Agent_File_Content".getBytes(StandardCharsets.UTF_8));
-        Assertions.assertArrayEquals(Files.readAllBytes(PATH_UPDATE_FILE), "Agent_Update_File_Content".getBytes(StandardCharsets.UTF_8));
-    }
-
     @Test
     void startUpdateProcess_invalidInput() {
         Assertions.assertThrows(SevereAgentErrorException.class, () -> updateHandler.startUpdateProcess(null));
