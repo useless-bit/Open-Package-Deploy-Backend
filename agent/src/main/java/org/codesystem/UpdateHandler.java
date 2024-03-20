@@ -7,6 +7,7 @@ import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.utility.DownloadUtility;
+import org.codesystem.utility.SystemExitUtility;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,6 +67,6 @@ public class UpdateHandler {
         } catch (IOException e) {
             throw new SevereAgentErrorException("Unable to execute update process: " + e.getMessage());
         }
-        SystemExit.exit(-10);
+        SystemExitUtility.exit(-10);
     }
 }

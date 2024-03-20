@@ -6,6 +6,7 @@ import org.codesystem.payload.DetailedSystemInformation;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.UpdateCheckRequest;
 import org.codesystem.payload.UpdateCheckResponse;
+import org.codesystem.utility.SystemExitUtility;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -90,7 +91,7 @@ public class ServerCommunication {
         if (Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval() && updateCheckResponse.getUpdateInterval() >= 1) {
             propertiesLoader.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateInterval()));
             propertiesLoader.saveProperties();
-            SystemExit.exit(-10);
+            SystemExitUtility.exit(-10);
         }
 
         if (updateCheckResponse.isDeploymentAvailable()) {

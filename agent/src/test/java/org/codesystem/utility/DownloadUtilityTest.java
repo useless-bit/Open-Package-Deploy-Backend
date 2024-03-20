@@ -1,7 +1,6 @@
 package org.codesystem.utility;
 
 import okhttp3.Request;
-import org.codesystem.SystemExit;
 import org.codesystem.TestSystemExitException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -31,7 +30,7 @@ class DownloadUtilityTest {
 
     DownloadUtility downloadUtility;
     ClientAndServer mockServer;
-    MockedStatic<SystemExit> systemExitMockedStatic;
+    MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
 
     @BeforeEach
@@ -39,8 +38,8 @@ class DownloadUtilityTest {
         downloadUtility = new DownloadUtility();
         mockServer = ClientAndServer.startClientAndServer(8899);
 
-        systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
+        systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
+        systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
 
         deleteFolderWithContent();
     }

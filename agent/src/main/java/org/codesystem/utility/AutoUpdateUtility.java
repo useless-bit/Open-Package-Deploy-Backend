@@ -1,6 +1,5 @@
 package org.codesystem.utility;
 
-import org.codesystem.SystemExit;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class AutoUpdateUtility {
         } catch (IOException e) {
             throw new SevereAgentErrorException("Cannot copy new Agent: " + e.getMessage());
         }
-        SystemExit.exit(0);
+        SystemExitUtility.exit(0);
     }
 
 }

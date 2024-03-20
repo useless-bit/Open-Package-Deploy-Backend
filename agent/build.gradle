@@ -53,6 +53,7 @@ sonar {
         property "sonar.qualitygate.wait", true
         property "sonar.java.fileByFile", true
         property "sonar.test.exclusions", "src/test/java/**/*"
+        property "sonar.coverage.exclusions", "/src/main/java/org/codesystem/utility/SystemExitUtility.java"
         property "sonar.token", System.getenv("SONAR_TOKEN_AGENT")
     }
 }

@@ -2,6 +2,7 @@ package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.payload.UpdateCheckResponse;
+import org.codesystem.utility.SystemExitUtility;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +27,7 @@ class ServerCommunicationTest {
     UpdateHandler updateHandler;
     PackageHandler packageHandler;
     ClientAndServer mockServer;
-    MockedStatic<SystemExit> systemExitMockedStatic;
+    MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
     void setup() {
@@ -41,8 +42,8 @@ class ServerCommunicationTest {
         updateHandler = Mockito.mock(UpdateHandler.class);
         packageHandler = Mockito.mock(PackageHandler.class);
         serverCommunication = new ServerCommunication(cryptoHandler, propertiesLoader, "agentChecksum", updateHandler, packageHandler);
-        systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
+        systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
+        systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
         mockServer = ClientAndServer.startClientAndServer(8899);
     }
 

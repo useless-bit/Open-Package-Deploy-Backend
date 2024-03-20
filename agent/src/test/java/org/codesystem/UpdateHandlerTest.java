@@ -2,6 +2,7 @@ package org.codesystem;
 
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.DownloadUtility;
+import org.codesystem.utility.SystemExitUtility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,7 @@ class UpdateHandlerTest {
     CryptoHandler cryptoHandler;
     PropertiesLoader propertiesLoader;
     ClientAndServer mockServer;
-    MockedStatic<SystemExit> systemExitMockedStatic;
+    MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
     void setUp() {
@@ -46,8 +47,8 @@ class UpdateHandlerTest {
 
         mockServer = ClientAndServer.startClientAndServer(8899);
 
-        systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).then(invocationOnMock -> null);
+        systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
+        systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).then(invocationOnMock -> null);
         deleteFiles();
     }
 
