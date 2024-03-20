@@ -61,12 +61,20 @@ class CryptoUtilityTest {
         Assertions.assertThrows(TestSystemExitException.class, () -> new CryptoUtility(propertiesLoader));
         Mockito.when(propertiesLoader.getProperty("Agent.ECC.Private-Key")).thenReturn("invalid Key");
         Assertions.assertThrows(TestSystemExitException.class, () -> new CryptoUtility(propertiesLoader));
+        Mockito.when(propertiesLoader.getProperty("Agent.ECC.Private-Key")).thenReturn(Base64.getEncoder().encodeToString(agentPrivateKey.getEncoded()));
+        Assertions.assertThrows(TestSystemExitException.class, () -> new CryptoUtility(propertiesLoader));
     }
 
     @Test
     void constructor_valid() {
         Mockito.when(propertiesLoader.getProperty("Agent.ECC.Private-Key")).thenReturn(Base64.getEncoder().encodeToString(agentPrivateKey.getEncoded()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> new CryptoUtility(propertiesLoader));
-
+        Mockito.when(propertiesLoader.getProperty("Server.ECC.Public-Key")).thenReturn("");
+        Assertions.assertDoesNotThrow(() -> new CryptoUtility(propertiesLoader));
+        Mockito.when(propertiesLoader.getProperty("Agent.ECC.Private-Key")).thenReturn(Base64.getEncoder().encodeToString(agentPrivateKey.getEncoded()));
+        Mockito.when(propertiesLoader.getProperty("Server.ECC.Public-Key")).thenReturn("   ");
+        Assertions.assertDoesNotThrow(() -> new CryptoUtility(propertiesLoader));
+        Mockito.when(propertiesLoader.getProperty("Agent.ECC.Private-Key")).thenReturn(Base64.getEncoder().encodeToString(agentPrivateKey.getEncoded()));
+        Mockito.when(propertiesLoader.getProperty("Server.ECC.Public-Key")).thenReturn(Base64.getEncoder().encodeToString(serverPublicKey.getEncoded()));
+        Assertions.assertDoesNotThrow(() -> new CryptoUtility(propertiesLoader));
     }
 }
