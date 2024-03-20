@@ -1,6 +1,6 @@
 package org.codesystem.payload;
 
-import org.codesystem.CryptoHandler;
+import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,14 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 class EmptyRequestTest {
-    CryptoHandler cryptoHandler;
+    CryptoUtility cryptoUtility;
     EmptyRequest emptyRequest;
 
     @BeforeEach
     void setup() {
         emptyRequest = new EmptyRequest();
-        cryptoHandler = Mockito.mock(CryptoHandler.class);
-        Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes(StandardCharsets.UTF_8));
+        cryptoUtility = Mockito.mock(CryptoUtility.class);
+        Mockito.when(cryptoUtility.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -30,7 +30,7 @@ class EmptyRequestTest {
 
         // valid
         emptyRequest = new EmptyRequest();
-        jsonObject = emptyRequest.toJsonObject(cryptoHandler);
+        jsonObject = emptyRequest.toJsonObject(cryptoUtility);
         Assertions.assertNotNull(jsonObject.get("timestamp"));
         Assertions.assertEquals(Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)), jsonObject.getString("signature"));
         Assertions.assertArrayEquals("Signature".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(jsonObject.getString("signature")));

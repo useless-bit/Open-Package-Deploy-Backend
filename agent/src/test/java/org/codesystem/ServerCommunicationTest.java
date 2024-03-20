@@ -2,6 +2,8 @@ package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.payload.UpdateCheckResponse;
+import org.codesystem.utility.CryptoUtility;
+import org.codesystem.utility.PackageUtility;
 import org.codesystem.utility.SystemExitUtility;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -23,9 +25,9 @@ import static org.mockserver.model.HttpRequest.request;
 class ServerCommunicationTest {
     ServerCommunication serverCommunication;
     PropertiesLoader propertiesLoader;
-    CryptoHandler cryptoHandler;
+    CryptoUtility cryptoUtility;
     UpdateHandler updateHandler;
-    PackageHandler packageHandler;
+    PackageUtility packageUtility;
     ClientAndServer mockServer;
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
@@ -36,12 +38,12 @@ class ServerCommunicationTest {
         Mockito.when(propertiesLoader.getProperty("Server.Url")).thenReturn("http://localhost:8899");
         Mockito.when(propertiesLoader.getProperty("Agent.ECC.Public-Key")).thenReturn("PublicKey");
         Mockito.when(propertiesLoader.getProperty("Agent.Update-Interval")).thenReturn("10");
-        cryptoHandler = Mockito.mock(CryptoHandler.class);
-        Mockito.when(cryptoHandler.encryptECC(Mockito.any())).thenReturn("Encrypted".getBytes());
-        Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes());
+        cryptoUtility = Mockito.mock(CryptoUtility.class);
+        Mockito.when(cryptoUtility.encryptECC(Mockito.any())).thenReturn("Encrypted".getBytes());
+        Mockito.when(cryptoUtility.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes());
         updateHandler = Mockito.mock(UpdateHandler.class);
-        packageHandler = Mockito.mock(PackageHandler.class);
-        serverCommunication = new ServerCommunication(cryptoHandler, propertiesLoader, "agentChecksum", updateHandler, packageHandler);
+        packageUtility = Mockito.mock(PackageUtility.class);
+        serverCommunication = new ServerCommunication(cryptoUtility, propertiesLoader, "agentChecksum", updateHandler, packageUtility);
         systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
         systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -100,7 +102,7 @@ class ServerCommunicationTest {
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
         JSONObject jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum");
-        Mockito.when(cryptoHandler.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
+        Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         Assertions.assertFalse(serverCommunication.sendUpdateRequest());
     }

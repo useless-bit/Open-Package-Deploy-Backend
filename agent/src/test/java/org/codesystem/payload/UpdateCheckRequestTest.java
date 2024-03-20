@@ -1,6 +1,6 @@
 package org.codesystem.payload;
 
-import org.codesystem.CryptoHandler;
+import org.codesystem.utility.CryptoUtility;
 import org.codesystem.HardwareInfo;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -12,14 +12,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 class UpdateCheckRequestTest {
-    CryptoHandler cryptoHandler;
+    CryptoUtility cryptoUtility;
     UpdateCheckRequest updateCheckRequest;
 
     @BeforeEach
     void setup() {
         updateCheckRequest = new UpdateCheckRequest(null, null);
-        cryptoHandler = Mockito.mock(CryptoHandler.class);
-        Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes(StandardCharsets.UTF_8));
+        cryptoUtility = Mockito.mock(CryptoUtility.class);
+        Mockito.when(cryptoUtility.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -31,21 +31,21 @@ class UpdateCheckRequestTest {
 
         // null values
         updateCheckRequest = new UpdateCheckRequest(null, null);
-        jsonObject = updateCheckRequest.toJsonObject(cryptoHandler);
+        jsonObject = updateCheckRequest.toJsonObject(cryptoUtility);
         Assertions.assertEquals(JSONObject.NULL, jsonObject.get("systemInformation"));
         Assertions.assertEquals(JSONObject.NULL, jsonObject.get("agentChecksum"));
         Assertions.assertNotNull(jsonObject.get("timestamp"));
         Assertions.assertEquals(Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)), jsonObject.getString("signature"));
         Assertions.assertArrayEquals("Signature".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(jsonObject.getString("signature")));
         updateCheckRequest = new UpdateCheckRequest("checksum", null);
-        jsonObject = updateCheckRequest.toJsonObject(cryptoHandler);
+        jsonObject = updateCheckRequest.toJsonObject(cryptoUtility);
         Assertions.assertEquals(JSONObject.NULL, jsonObject.get("systemInformation"));
         Assertions.assertEquals("checksum", jsonObject.get("agentChecksum"));
         Assertions.assertNotNull(jsonObject.get("timestamp"));
         Assertions.assertEquals(Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)), jsonObject.getString("signature"));
         Assertions.assertArrayEquals("Signature".getBytes(StandardCharsets.UTF_8), Base64.getDecoder().decode(jsonObject.getString("signature")));
         updateCheckRequest = new UpdateCheckRequest(null, new DetailedSystemInformation(new HardwareInfo()));
-        jsonObject = updateCheckRequest.toJsonObject(cryptoHandler);
+        jsonObject = updateCheckRequest.toJsonObject(cryptoUtility);
         Assertions.assertNotNull(jsonObject.get("systemInformation"));
         Assertions.assertEquals(JSONObject.NULL, jsonObject.get("agentChecksum"));
         Assertions.assertNotNull(jsonObject.get("timestamp"));
@@ -54,7 +54,7 @@ class UpdateCheckRequestTest {
 
         // valid
         updateCheckRequest = new UpdateCheckRequest("checksum", new DetailedSystemInformation(new HardwareInfo()));
-        jsonObject = updateCheckRequest.toJsonObject(cryptoHandler);
+        jsonObject = updateCheckRequest.toJsonObject(cryptoUtility);
         Assertions.assertNotNull(jsonObject.get("systemInformation"));
         Assertions.assertEquals("checksum", jsonObject.get("agentChecksum"));
         Assertions.assertNotNull(jsonObject.get("timestamp"));

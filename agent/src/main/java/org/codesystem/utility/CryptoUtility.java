@@ -1,7 +1,8 @@
-package org.codesystem;
+package org.codesystem.utility;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.IESParameterSpec;
+import org.codesystem.AgentApplication;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import javax.crypto.Cipher;
@@ -18,7 +19,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-public class CryptoHandler {
+public class CryptoUtility {
     private final Cipher cipherEcc;
     private final Cipher cipherAES;
 
@@ -33,7 +34,7 @@ public class CryptoHandler {
             /* nonce = */ null,
             /* usePointCompression = */ false);
 
-    public CryptoHandler() {
+    public CryptoUtility() {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             this.cipherEcc = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);

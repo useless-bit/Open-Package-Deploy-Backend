@@ -1,7 +1,9 @@
 package org.codesystem;
 
 import okhttp3.*;
+import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.DownloadUtility;
+import org.codesystem.utility.PackageUtility;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -11,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class ServerCommunicationRegistration {
-    private final ServerCommunication serverCommunication = new ServerCommunication(new CryptoHandler(), AgentApplication.properties, AgentApplication.agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoHandler(), new PropertiesLoader()), new PackageHandler(AgentApplication.operatingSystem));
+    private final ServerCommunication serverCommunication = new ServerCommunication(new CryptoUtility(), AgentApplication.properties, AgentApplication.agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoUtility(), new PropertiesLoader()), new PackageUtility(AgentApplication.operatingSystem));
 
     public void validateRegistration() {
         AgentApplication.logger.info("Checking if Server is available");
@@ -74,15 +76,15 @@ public class ServerCommunicationRegistration {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        CryptoHandler cryptoHandler = new CryptoHandler();
+        CryptoUtility cryptoUtility = new CryptoUtility();
         AgentApplication.properties.setProperty("Server.ECC.Public-Key", jsonResponse.get("publicKeyBase64").toString());
         AgentApplication.properties.saveProperties();
 
 
-        String verificationToken = cryptoHandler.decryptECC(Base64.getDecoder().decode(jsonResponse.get("encryptedValidationToken").toString()));
+        String verificationToken = cryptoUtility.decryptECC(Base64.getDecoder().decode(jsonResponse.get("encryptedValidationToken").toString()));
 
-        cryptoHandler = new CryptoHandler();
-        verificationToken = Base64.getEncoder().encodeToString(cryptoHandler.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
+        cryptoUtility = new CryptoUtility();
+        verificationToken = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
 
         jsonRequestBody = new JSONObject()
                 .put("publicKeyBase64", AgentApplication.properties.getProperty("Agent.ECC.Public-Key"))

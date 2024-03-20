@@ -1,6 +1,6 @@
 package org.codesystem.payload;
 
-import org.codesystem.CryptoHandler;
+import org.codesystem.utility.CryptoUtility;
 import org.codesystem.PropertiesLoader;
 import org.json.JSONObject;
 
@@ -12,13 +12,13 @@ public class EncryptedMessage {
     final String message;
 
 
-    public EncryptedMessage(JSONObject jsonObject, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader) {
-        if (jsonObject == null || cryptoHandler == null || propertiesLoader == null) {
+    public EncryptedMessage(JSONObject jsonObject, CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader) {
+        if (jsonObject == null || cryptoUtility == null || propertiesLoader == null) {
             publicKeyBase64 = null;
             message = null;
         } else {
             this.publicKeyBase64 = propertiesLoader.getProperty("Agent.ECC.Public-Key");
-            this.message = Base64.getEncoder().encodeToString(cryptoHandler.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
+            this.message = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
         }
     }
 

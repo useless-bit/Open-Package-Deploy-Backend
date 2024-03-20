@@ -4,7 +4,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.AutoUpdateUtility;
+import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.DownloadUtility;
+import org.codesystem.utility.PackageUtility;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,8 +68,8 @@ public class AgentApplication {
         logger.info("Agent Startup");
         properties.loadProperties();
 
-        CryptoHandler cryptoHandler = new CryptoHandler();
-        agentChecksum = cryptoHandler.calculateChecksumOfFile("Agent.jar");
+        CryptoUtility cryptoUtility = new CryptoUtility();
+        agentChecksum = cryptoUtility.calculateChecksumOfFile("Agent.jar");
 
         ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration();
         serverCommunicationRegistration.validateRegistration();
@@ -75,7 +77,7 @@ public class AgentApplication {
 
     private static void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(new CryptoHandler(), properties, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoHandler(), properties), new PackageHandler(operatingSystem));
+        ServerCommunication serverCommunication = new ServerCommunication(new CryptoUtility(), properties, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoUtility(), properties), new PackageUtility(operatingSystem));
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");

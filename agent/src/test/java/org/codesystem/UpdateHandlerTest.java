@@ -1,6 +1,7 @@
 package org.codesystem;
 
 import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.DownloadUtility;
 import org.codesystem.utility.SystemExitUtility;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +28,7 @@ class UpdateHandlerTest {
 
     UpdateHandler updateHandler;
     DownloadUtility downloadUtility;
-    CryptoHandler cryptoHandler;
+    CryptoUtility cryptoUtility;
     PropertiesLoader propertiesLoader;
     ClientAndServer mockServer;
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
@@ -35,15 +36,15 @@ class UpdateHandlerTest {
     @BeforeEach
     void setUp() {
         downloadUtility = Mockito.mock(DownloadUtility.class);
-        cryptoHandler = Mockito.mock(CryptoHandler.class);
+        cryptoUtility = Mockito.mock(CryptoUtility.class);
         propertiesLoader = Mockito.mock(PropertiesLoader.class);
 
         Mockito.when(propertiesLoader.getProperty("Server.Url")).thenReturn("http://localhost:8899");
         Mockito.when(propertiesLoader.getProperty("Agent.ECC.Public-Key")).thenReturn("PublicKey");
-        Mockito.when(cryptoHandler.createSignatureECC(Mockito.any())).thenReturn("signature".getBytes(StandardCharsets.UTF_8));
-        Mockito.when(cryptoHandler.encryptECC(Mockito.any())).thenReturn("encrypted".getBytes(StandardCharsets.UTF_8));
+        Mockito.when(cryptoUtility.createSignatureECC(Mockito.any())).thenReturn("signature".getBytes(StandardCharsets.UTF_8));
+        Mockito.when(cryptoUtility.encryptECC(Mockito.any())).thenReturn("encrypted".getBytes(StandardCharsets.UTF_8));
 
-        updateHandler = new UpdateHandler(downloadUtility, cryptoHandler, propertiesLoader);
+        updateHandler = new UpdateHandler(downloadUtility, cryptoUtility, propertiesLoader);
 
         mockServer = ClientAndServer.startClientAndServer(8899);
 
@@ -75,7 +76,7 @@ class UpdateHandlerTest {
 
     @Test
     void startUpdateProcess_wrongInput() {
-        Mockito.when(cryptoHandler.calculateChecksumOfFile(Mockito.any())).thenReturn("valid CheckSum");
+        Mockito.when(cryptoUtility.calculateChecksumOfFile(Mockito.any())).thenReturn("valid CheckSum");
         Mockito.when(downloadUtility.downloadFile(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
             Files.writeString(PATH_UPDATE_FILE, "Agent-Update_Content");
             return true;
@@ -86,7 +87,7 @@ class UpdateHandlerTest {
 
     @Test
     void startUpdateProcess_correctInput() throws IOException {
-        Mockito.when(cryptoHandler.calculateChecksumOfFile(Mockito.any())).thenReturn("valid CheckSum");
+        Mockito.when(cryptoUtility.calculateChecksumOfFile(Mockito.any())).thenReturn("valid CheckSum");
         Mockito.when(downloadUtility.downloadFile(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
             Files.writeString(PATH_UPDATE_FILE, "Agent-Update_Content");
             return true;
@@ -99,7 +100,7 @@ class UpdateHandlerTest {
     @Test
     void startUpdateProcess_correctInputOldFilePresent() throws IOException {
         Files.writeString(PATH_UPDATE_FILE, "Old-Agent-Update_Content");
-        Mockito.when(cryptoHandler.calculateChecksumOfFile(Mockito.any())).thenReturn("valid CheckSum");
+        Mockito.when(cryptoUtility.calculateChecksumOfFile(Mockito.any())).thenReturn("valid CheckSum");
         Mockito.when(downloadUtility.downloadFile(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
             Files.writeString(PATH_UPDATE_FILE, "Agent-Update_Content");
             return true;

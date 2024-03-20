@@ -6,6 +6,7 @@ import okhttp3.RequestBody;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
+import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.DownloadUtility;
 import org.codesystem.utility.SystemExitUtility;
 
@@ -16,14 +17,14 @@ import java.nio.file.Paths;
 
 public class UpdateHandler {
     private final DownloadUtility downloadUtility;
-    private final CryptoHandler cryptoHandler;
+    private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     String FILE_NAME_AGENT_UPDATE = "Agent_update.jar";
     Path PATH_UPDATE_FILE = Paths.get(FILE_NAME_AGENT_UPDATE);
 
-    public UpdateHandler(DownloadUtility downloadUtility, CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader) {
+    public UpdateHandler(DownloadUtility downloadUtility, CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader) {
         this.downloadUtility = downloadUtility;
-        this.cryptoHandler = cryptoHandler;
+        this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;
     }
 
@@ -38,7 +39,7 @@ public class UpdateHandler {
         }
 
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoHandler), cryptoHandler, propertiesLoader).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/agent")
                 .post(body)
@@ -47,7 +48,7 @@ public class UpdateHandler {
         if (!downloadUtility.downloadFile(PATH_UPDATE_FILE, request)) {
             throw new SevereAgentErrorException("Update-download from Server failed");
         }
-        if (!cryptoHandler.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE).equals(checksum)) {
+        if (!cryptoUtility.calculateChecksumOfFile(FILE_NAME_AGENT_UPDATE).equals(checksum)) {
             try {
                 Files.deleteIfExists(PATH_UPDATE_FILE);
             } catch (IOException e) {

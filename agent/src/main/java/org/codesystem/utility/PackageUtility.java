@@ -1,8 +1,9 @@
-package org.codesystem;
+package org.codesystem.utility;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import okhttp3.*;
+import org.codesystem.AgentApplication;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
 import org.codesystem.exceptions.SevereAgentErrorException;
@@ -10,6 +11,7 @@ import org.codesystem.payload.DeploymentResult;
 import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.PackageDetailResponse;
+import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -24,14 +26,14 @@ import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Comparator;
 
-public class PackageHandler {
-    private final CryptoHandler cryptoHandler;
+public class PackageUtility {
+    private final CryptoUtility cryptoUtility;
     private final OperatingSystem operatingSystem;
     private PackageDetailResponse packageDetailResponse;
 
-    public PackageHandler(OperatingSystem operatingSystem) {
+    public PackageUtility(OperatingSystem operatingSystem) {
         this.operatingSystem = operatingSystem;
-        this.cryptoHandler = new CryptoHandler();
+        this.cryptoUtility = new CryptoUtility();
     }
 
     public void initiateDeployment() {
@@ -79,7 +81,7 @@ public class PackageHandler {
 
     private void downloadPackage() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), new CryptoUtility(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
                 .post(body)
@@ -111,7 +113,7 @@ public class PackageHandler {
 
     private void getPackageDetails() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), new CryptoUtility(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/package")
                 .post(body)
@@ -133,7 +135,7 @@ public class PackageHandler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
+        String decrypted = cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
         this.packageDetailResponse = new PackageDetailResponse(new JSONObject(decrypted));
     }
 
@@ -163,7 +165,7 @@ public class PackageHandler {
     }
 
     private boolean decryptPackage() {
-        return cryptoHandler.decryptFile(packageDetailResponse.getEncryptionToken(), packageDetailResponse.getInitializationVector(), new File("download/file"), Paths.get("download/file.zip"));
+        return cryptoUtility.decryptFile(packageDetailResponse.getEncryptionToken(), packageDetailResponse.getInitializationVector(), new File("download/file"), Paths.get("download/file.zip"));
     }
 
     private void extractPackage(String zipFileLocation, String destinationFolderLocation) {
@@ -178,7 +180,7 @@ public class PackageHandler {
     private void sendDeploymentResponse(String responseMessage) {
         DeploymentResult deploymentResult = new DeploymentResult(packageDetailResponse.getDeploymentUUID(), responseMessage);
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoHandler), new CryptoHandler(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), new CryptoUtility(), AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/deploymentResult")
                 .post(body)
