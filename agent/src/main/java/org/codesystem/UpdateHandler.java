@@ -34,19 +34,18 @@ public class UpdateHandler {
         if (!PATH_UPDATE_FILE.toFile().exists() || !PATH_FILE.toFile().exists()) {
             throw new SevereAgentErrorException("Cannot find update file");
         }
-
         if (PATH_BACKUP_FILE.toFile().exists()) {
             try {
                 Files.delete(PATH_BACKUP_FILE);
             } catch (IOException e) {
-                throw new SevereAgentErrorException("Cannot delete old backup: " + e.getMessage());
+                throw new SevereAgentErrorException("Cannot delete backup: " + e.getMessage());
             }
         }
 
         try {
             Files.copy(PATH_FILE, PATH_BACKUP_FILE);
         } catch (IOException e) {
-            throw new SevereAgentErrorException("Cannot create backup: " + e.getMessage());
+            throw new SevereAgentErrorException("Cannot create backup of agent: " + e.getMessage());
         }
         try {
             Files.delete(PATH_FILE);
@@ -57,7 +56,7 @@ public class UpdateHandler {
         try {
             Files.copy(PATH_UPDATE_FILE, PATH_FILE);
         } catch (IOException e) {
-            throw new SevereAgentErrorException("Cannot copy new Agent: " + e.getMessage());
+            throw new SevereAgentErrorException("Cannot copy update: " + e.getMessage());
         }
         SystemExit.exit(0);
     }
