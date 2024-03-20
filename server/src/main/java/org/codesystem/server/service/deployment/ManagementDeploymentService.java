@@ -24,11 +24,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ManagementDeploymentService {
+    private static final String ERROR_AGENT_NOT_FOUND = "Agent not found";
     private final DeploymentRepository deploymentRepository;
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
-
-    private static final String ERROR_AGENT_NOT_FOUND = "Agent not found";
 
     public ResponseEntity<ApiResponse> getAllPackages() {
         return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deploymentRepository.findAll()));
