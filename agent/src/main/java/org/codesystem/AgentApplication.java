@@ -24,8 +24,6 @@ public class AgentApplication {
     public static OperatingSystem operatingSystem;
 
     public static void main(String[] args) {
-        Security.addProvider(new BouncyCastleProvider());
-        properties.loadProperties();
         initialSetup();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
@@ -64,7 +62,7 @@ public class AgentApplication {
         } else {
             throw new RuntimeException("Unsupported OS");
         }
-
+        Security.addProvider(new BouncyCastleProvider());
         logger.info("Agent Startup");
         properties.loadProperties();
 
