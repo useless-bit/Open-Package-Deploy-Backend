@@ -42,27 +42,27 @@ public class AgentApplication {
         try {
             filename = String.valueOf(new File(AgentApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
         } catch (URISyntaxException e) {
-            throw new RuntimeException("Cannot get filename");
+            throw new SevereAgentErrorException("Cannot get filename");
         }
-        if (filename.endsWith("Agent_update.jar")) {
+        if (filename.endsWith(Variables.FILE_NAME_AGENT_UPDATE)) {
             logger.info("Entering Update Mode");
             new AutoUpdateUtility().updateApplication();
-        } else if (Files.exists(Paths.get("Agent_update.jar"))) {
+        } else if (Files.exists(Paths.get(Variables.FILE_NAME_AGENT_UPDATE))) {
             try {
-                Files.deleteIfExists(Paths.get("Agent_update.jar"));
+                Files.deleteIfExists(Paths.get(Variables.FILE_NAME_AGENT_UPDATE));
             } catch (IOException e) {
-                throw new RuntimeException("Cannot delete old update");
+                throw new SevereAgentErrorException("Cannot delete old update");
             }
         }
         HardwareInfo hardwareInfo = new HardwareInfo();
         if (!hardwareInfo.isElevated()) {
-            throw new RuntimeException("Application needs elevated permissions");
+            throw new SevereAgentErrorException("Application needs elevated permissions");
         }
 
         if (hardwareInfo.getOsManufacturer().toLowerCase().contains("linux")) {
             AgentApplication.operatingSystem = OperatingSystem.LINUX;
         } else {
-            throw new RuntimeException("Unsupported OS");
+            throw new SevereAgentErrorException("Unsupported OS");
         }
         Security.addProvider(new BouncyCastleProvider());
         logger.info("Agent Startup");

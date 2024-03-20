@@ -61,7 +61,7 @@ public class ServerCommunication {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(agentChecksum, new DetailedSystemInformation(new HardwareInfo())).toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/checkForUpdates")
+                .url(propertiesLoader.getProperty("Server.Url") + Variables.URL_UPDATE_CHECK_REQUEST)
                 .post(body)
                 .build();
 

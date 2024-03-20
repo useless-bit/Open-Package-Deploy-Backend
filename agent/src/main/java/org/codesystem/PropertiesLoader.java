@@ -14,7 +14,7 @@ import java.util.*;
 
 public class PropertiesLoader extends Properties {
     private static final File PROPERTIES_FILE = new File("opd-agent.properties");
-    private final List<String> requiredPropertiesOptions = new ArrayList<>(Arrays.asList("Server.Url", "Server.Registered", "Server.ECC.Public-Key", "Agent.ECC.Public-Key", "Agent.ECC.Private-Key", "Agent.Update-Interval"));
+    private final List<String> requiredPropertiesOptions = new ArrayList<>(Arrays.asList("Server.Url", "Server.Registered", Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, "Agent.Update-Interval"));
 
     @Override
     public synchronized void load(Reader reader) {
@@ -100,37 +100,33 @@ public class PropertiesLoader extends Properties {
                     }
                 }
 
-                case "Agent.ECC.Public-Key", "Agent.ECC.Private-Key" -> {
-                    if (isPropertiesPresentAndSet("Agent.ECC.Public-Key") && isPropertiesPresentAndSet("Agent.ECC.Private-Key")) {
+                case Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY -> {
+                    if (isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
                         //load existing Key Pair
                         KeyFactory keyFactory;
                         try {
                             //load KeyFactory and public Key
                             keyFactory = KeyFactory.getInstance("EC");
-                            X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty("Agent.ECC.Public-Key")));
+                            X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY)));
                             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
-                        } catch (NoSuchAlgorithmException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
-                        } catch (InvalidKeySpecException e) {
-                            throw new RuntimeException("Unable to load the Public-Key: " + e.getMessage());
                         }
                         try {
                             //load private Key
-                            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.getProperty("Agent.ECC.Private-Key")));
+                            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)));
                             keyFactory.generatePrivate(pkcs8EncodedKeySpec);
                         } catch (InvalidKeySpecException e) {
                             throw new RuntimeException("Unable to load the Private-Key: " + e.getMessage());
                         }
-                    } else if (!isPropertiesPresentAndSet("Agent.ECC.Public-Key") && !isPropertiesPresentAndSet("Agent.ECC.Private-Key")) {
+                    } else if (!isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && !isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
                         //generate new Key Pair
                         AgentApplication.logger.info("No Key-Pair found. Generating Public and Private Key");
                         KeyPairGenerator keyPairGenerator;
                         try {
                             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
-                        } catch (NoSuchAlgorithmException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
-                        } catch (NoSuchProviderException e) {
-                            throw new RuntimeException("Unable to load the Algorithm Provider: " + e.getMessage());
                         }
                         try {
                             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
@@ -138,8 +134,8 @@ public class PropertiesLoader extends Properties {
                             throw new RuntimeException("Unable to load the Algorithm: " + e.getMessage());
                         }
                         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-                        this.setProperty("Agent.ECC.Public-Key", Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
-                        this.setProperty("Agent.ECC.Private-Key", Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
+                        this.setProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+                        this.setProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
                         saveProperties();
                         AgentApplication.logger.info("Key Pair generated and stored in Properties File");
 
@@ -159,13 +155,13 @@ public class PropertiesLoader extends Properties {
                     }
                 }
 
-                case "Server.ECC.Public-Key" -> {
+                case Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY -> {
                     if (isPropertiesPresentAndSet(propertiesKey)) {
                         KeyFactory keyFactory;
                         try {
                             //load KeyFactory and server public Key
                             keyFactory = KeyFactory.getInstance("EC");
-                            X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty("Server.ECC.Public-Key")));
+                            X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY)));
                             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
                         } catch (NoSuchAlgorithmException e) {
                             throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());

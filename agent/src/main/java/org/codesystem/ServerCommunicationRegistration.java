@@ -29,15 +29,15 @@ public class ServerCommunicationRegistration {
 
         //clear server public key when not registered
         if (propertiesLoader.getProperty("Server.Registered").equals("false")) {
-            propertiesLoader.setProperty("Server.ECC.Public-Key", "");
+            propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, "");
             propertiesLoader.saveProperties();
         }
 
         //register on server
-        if (propertiesLoader.getProperty("Server.ECC.Public-Key").isBlank()) {
+        if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY).isBlank()) {
             AgentApplication.logger.info("No Server Public Key found. Registering on Server.");
-            if (propertiesLoader.getProperty("Server.Registration-Token") == null || propertiesLoader.getProperty("Server.Registration-Token").isBlank()) {
-                propertiesLoader.setProperty("Server.Registration-Token", "");
+            if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN) == null || propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN).isBlank()) {
+                propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN, "");
                 propertiesLoader.saveProperties();
                 throw new RuntimeException("Cannot register without a Token. Set the 'Server.Registration-Token'");
             }
@@ -60,7 +60,7 @@ public class ServerCommunicationRegistration {
         JSONObject jsonRequestBody = new JSONObject()
                 .put("publicKeyBase64", propertiesLoader.getProperty("Agent.ECC.Public-Key"))
                 .put("name", inetAddress.getCanonicalHostName())
-                .put("authenticationToken", propertiesLoader.getProperty("Server.Registration-Token"));
+                .put("authenticationToken", propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN));
 
         RequestBody body = RequestBody.create(jsonRequestBody.toString(), mediaType);
         Request request = new Request.Builder()
@@ -83,7 +83,7 @@ public class ServerCommunicationRegistration {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        propertiesLoader.setProperty("Server.ECC.Public-Key", jsonResponse.get("publicKeyBase64").toString());
+        propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, jsonResponse.get("publicKeyBase64").toString());
         propertiesLoader.saveProperties();
 
 
@@ -110,7 +110,7 @@ public class ServerCommunicationRegistration {
         }
 
         propertiesLoader.setProperty("Server.Registered", "true");
-        propertiesLoader.remove("Server.Registration-Token");
+        propertiesLoader.remove(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN);
         propertiesLoader.saveProperties();
 
     }
