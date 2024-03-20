@@ -15,16 +15,10 @@ public class ServerCommunicationRegistration {
     private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     private final ServerCommunication serverCommunication;
-    private final String agentChecksum;
-    private final UpdateHandler updateHandler;
-    private final PackageUtility packageUtility;
 
     public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageUtility packageUtility) {
         this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;
-        this.agentChecksum = agentChecksum;
-        this.updateHandler = updateHandler;
-        this.packageUtility = packageUtility;
         this.serverCommunication = new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility);
     }
 
