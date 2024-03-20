@@ -49,7 +49,7 @@ public class CryptoUtility {
                 this.publicKeyServer = null;
             }
         } catch (Exception e) {
-            throw new SevereAgentErrorException(e.getMessage());
+            throw new SevereAgentErrorException("Cannot initialize Crypto Utility: " + e.getMessage());
         }
     }
 

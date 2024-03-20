@@ -37,6 +37,7 @@ public class ServerInitialization {
             System.exit(1);
         } else if (serverRepository.findAll().isEmpty()) {
             serverRepository.save(generateServerEntity());
+            System.exit(0);
         } else {
             validateServerEntity();
         }
@@ -80,6 +81,7 @@ public class ServerInitialization {
     }
 
     private ServerEntity generateServerEntity() {
+        Security.addProvider(new BouncyCastleProvider());
         KeyPairGenerator keyPairGenerator;
         try {
             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);

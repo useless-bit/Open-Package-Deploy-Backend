@@ -19,6 +19,7 @@ import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @DependsOn("serverInitialization")
@@ -36,12 +37,17 @@ public class CryptoUtility {
 
     @Autowired
     public CryptoUtility(ServerRepository serverRepository) {
-        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        List<ServerEntity> serverEntityList = serverRepository.findAll();
+
         try {
             this.keyFactory = KeyFactory.getInstance("EC");
             this.keyGeneratorAES = KeyGenerator.getInstance("AES");
             this.keyGeneratorAES.init(128);
-            this.privateKeyServer = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPrivateKeyBase64())));
+            if (!serverEntityList.isEmpty()) {
+                this.privateKeyServer = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntityList.get(0).getPrivateKeyBase64())));
+            } else {
+                this.privateKeyServer = null;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
