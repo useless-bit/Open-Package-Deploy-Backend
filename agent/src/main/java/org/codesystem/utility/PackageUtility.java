@@ -4,6 +4,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import okhttp3.*;
 import org.codesystem.AgentApplication;
+import org.codesystem.PropertiesLoader;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
 import org.codesystem.exceptions.SevereAgentErrorException;
@@ -31,9 +32,9 @@ public class PackageUtility {
     private final OperatingSystem operatingSystem;
     private PackageDetailResponse packageDetailResponse;
 
-    public PackageUtility(OperatingSystem operatingSystem) {
+    public PackageUtility(OperatingSystem operatingSystem, PropertiesLoader propertiesLoader) {
         this.operatingSystem = operatingSystem;
-        this.cryptoUtility = new CryptoUtility();
+        this.cryptoUtility = new CryptoUtility(propertiesLoader);
     }
 
     public void initiateDeployment() {
@@ -81,7 +82,7 @@ public class PackageUtility {
 
     private void downloadPackage() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), new CryptoUtility(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
                 .post(body)
@@ -113,7 +114,7 @@ public class PackageUtility {
 
     private void getPackageDetails() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), new CryptoUtility(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/package")
                 .post(body)
@@ -180,7 +181,7 @@ public class PackageUtility {
     private void sendDeploymentResponse(String responseMessage) {
         DeploymentResult deploymentResult = new DeploymentResult(packageDetailResponse.getDeploymentUUID(), responseMessage);
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), new CryptoUtility(), AgentApplication.properties).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), cryptoUtility, AgentApplication.properties).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
                 .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/deploymentResult")
                 .post(body)

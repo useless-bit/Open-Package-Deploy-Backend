@@ -2,7 +2,7 @@ package org.codesystem.utility;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.IESParameterSpec;
-import org.codesystem.AgentApplication;
+import org.codesystem.PropertiesLoader;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import javax.crypto.Cipher;
@@ -34,17 +34,17 @@ public class CryptoUtility {
             /* nonce = */ null,
             /* usePointCompression = */ false);
 
-    public CryptoUtility() {
+    public CryptoUtility(PropertiesLoader propertiesLoader) {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             this.cipherEcc = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Agent.ECC.Private-Key"))));
+            this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(propertiesLoader.getProperty("Agent.ECC.Private-Key"))));
             //load with null when Server Key was not retrieved yet
-            if (!AgentApplication.properties.getProperty("Server.ECC.Public-Key").isBlank()) {
-                this.publicKeyServer = keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Server.ECC.Public-Key"))));
+            if (!propertiesLoader.getProperty("Server.ECC.Public-Key").isBlank()) {
+                this.publicKeyServer = keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(propertiesLoader.getProperty("Server.ECC.Public-Key"))));
             } else {
                 this.publicKeyServer = null;
             }
