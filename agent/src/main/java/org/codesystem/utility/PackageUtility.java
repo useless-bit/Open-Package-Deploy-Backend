@@ -47,7 +47,7 @@ public class PackageUtility {
         AgentApplication.logger.info("Download Package");
         downloadPackage();
         AgentApplication.logger.info("Verifiy");
-        if (!validatePackage("download/file", packageDetailResponse.getChecksumEncrypted())) {
+        if (!validatePackage(Variables.FILE_NAME_PACKAGE_ENCRYPTED, packageDetailResponse.getChecksumEncrypted())) {
             sendDeploymentResponse(PackageDeploymentErrorState.ENCRYPTED_CHECKSUM_MISMATCH.toString());
         }
         AgentApplication.logger.info("Decrypt");
@@ -55,11 +55,11 @@ public class PackageUtility {
             sendDeploymentResponse(PackageDeploymentErrorState.DECRYPTION_FAILED.toString());
         }
         AgentApplication.logger.info("Verify");
-        if (!validatePackage("download/file.zip", packageDetailResponse.getChecksumPlaintext())) {
+        if (!validatePackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, packageDetailResponse.getChecksumPlaintext())) {
             sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
         }
         AgentApplication.logger.info("extract");
-        extractPackage("download/file.zip", "download/extracted");
+        extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, "download/extracted");
         AgentApplication.logger.info("start deployment");
         sendDeploymentResponse(executeDeployment());
         AgentApplication.logger.info("Final cleanup");
@@ -71,12 +71,9 @@ public class PackageUtility {
         Path downloadFolder = Paths.get("download");
         if (Files.exists(downloadFolder)) {
             try {
-                Files.walk(downloadFolder)
-                        .sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
+                Files.walk(downloadFolder).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new SevereAgentErrorException("Cannot delete download folder: " + e.getMessage());
             }
         }
         new File(downloadFolder.toAbsolutePath().toString()).mkdir();
@@ -85,10 +82,7 @@ public class PackageUtility {
     private void downloadPackage() {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
-                .post(body)
-                .build();
+        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID()).post(body).build();
 
         Response response;
         OkHttpClient client = new OkHttpClient();
@@ -98,7 +92,7 @@ public class PackageUtility {
             throw new SevereAgentErrorException("Unable to send response: " + e.getMessage());
         }
         if (response.code() != 200) {
-            throw new RuntimeException("Unable to download package. Response code: " + response.code());
+            throw new SevereAgentErrorException("Unable to download package. Response code: " + response.code());
         }
 
         byte[] data;
@@ -107,7 +101,7 @@ public class PackageUtility {
         } catch (IOException e) {
             throw new SevereAgentErrorException("Unable to load package from response: " + e.getMessage());
         }
-        try (FileOutputStream fos = new FileOutputStream("download/file")) {
+        try (FileOutputStream fos = new FileOutputStream(Variables.FILE_NAME_PACKAGE_ENCRYPTED)) {
             fos.write(data);
         } catch (IOException e) {
             throw new SevereAgentErrorException("Unable to write downloaded package to file: " + e.getMessage());
@@ -117,29 +111,20 @@ public class PackageUtility {
     private void getPackageDetails() {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package")
-                .post(body)
-                .build();
+        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package").post(body).build();
 
-        Response response;
         OkHttpClient client = new OkHttpClient();
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() != 200) {
+                throw new SevereAgentErrorException("Error getting details: " + response.code());
+            }
+            String responseBody = new JSONObject(response.body().string()).getString("message");
+            String decrypted = cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
+            this.packageDetailResponse = new PackageDetailResponse(new JSONObject(decrypted));
+        } catch (Exception e) {
+            throw new SevereAgentErrorException("Cannot process Package Detail request: " + e.getMessage());
         }
-        if (response.code() != 200) {
-            throw new RuntimeException("Error getting details: " + response.code());
-        }
-        String responseBody = null;
-        try {
-            responseBody = new JSONObject(response.body().string()).getString("message");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String decrypted = cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
-        this.packageDetailResponse = new PackageDetailResponse(new JSONObject(decrypted));
+
     }
 
     private boolean validatePackage(String file, String targetChecksum) {
@@ -162,13 +147,13 @@ public class PackageUtility {
             }
             return stringBuilder.toString().equals(targetChecksum);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Error whe validating package: " + e.getMessage());
         }
 
     }
 
     private boolean decryptPackage() {
-        return cryptoUtility.decryptFile(packageDetailResponse.getEncryptionToken(), packageDetailResponse.getInitializationVector(), new File("download/file"), Paths.get("download/file.zip"));
+        return cryptoUtility.decryptFile(packageDetailResponse.getEncryptionToken(), packageDetailResponse.getInitializationVector(), new File(Variables.FILE_NAME_PACKAGE_ENCRYPTED), Paths.get(Variables.FILE_NAME_PACKAGE_DECRYPTED));
     }
 
     private void extractPackage(String zipFileLocation, String destinationFolderLocation) {
@@ -176,7 +161,7 @@ public class PackageUtility {
         try {
             zipFile.extractAll(destinationFolderLocation);
         } catch (ZipException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Error whe extracting package: " + e.getMessage());
         }
     }
 
@@ -184,21 +169,17 @@ public class PackageUtility {
         DeploymentResult deploymentResult = new DeploymentResult(packageDetailResponse.getDeploymentUUID(), responseMessage);
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/deploymentResult")
-                .post(body)
-                .build();
+        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/deploymentResult").post(body).build();
 
-        Response response;
         OkHttpClient client = new OkHttpClient();
-        try {
-            response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() != 200) {
+                throw new SevereAgentErrorException("Error sending response: " + response.code());
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Cannot send Deployment Result: " + e.getMessage());
         }
-        if (response.code() != 200) {
-            throw new RuntimeException("Error sending response: " + response.code());
-        }
+
     }
 
     private String executeDeployment() {
