@@ -1,6 +1,7 @@
 package org.codesystem;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -17,8 +18,13 @@ public class PropertiesLoader extends Properties {
     private final List<String> requiredPropertiesOptions = new ArrayList<>(Arrays.asList("Server.Url", "Server.Registered", Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, "Agent.Update-Interval"));
 
     @Override
+    public synchronized boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
     public synchronized void load(Reader reader) {
-        throw new RuntimeException("This method should not be used");
+        throw new SevereAgentErrorException("This method should not be used");
     }
 
     @Override
@@ -27,7 +33,7 @@ public class PropertiesLoader extends Properties {
             super.load(inStream);
             validatePropertiesFile();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Cannot load properties: " + e.getMessage());
         }
     }
 
@@ -35,7 +41,7 @@ public class PropertiesLoader extends Properties {
         try (FileWriter fileWriter = new FileWriter(PROPERTIES_FILE.getName())) {
             super.store(fileWriter, null);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Cannot save properties: " + e.getMessage());
         }
     }
 
@@ -46,7 +52,7 @@ public class PropertiesLoader extends Properties {
             try {
                 inputStream = new FileInputStream(PROPERTIES_FILE);
             } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new SevereAgentErrorException("Cannot load properties-stream: " + e.getMessage());
             }
             load(inputStream);
         } else {
@@ -60,10 +66,10 @@ public class PropertiesLoader extends Properties {
         if (!this.containsKey(propertiesKey)) {
             this.setProperty(propertiesKey, "");
             this.saveProperties();
-            throw new RuntimeException("The following value was not set in the properties file: '" + propertiesKey + "'");
+            throw new SevereAgentErrorException("The following value was not set in the properties file: '" + propertiesKey + "'");
         }
         if (this.getProperty(propertiesKey).isBlank()) {
-            throw new RuntimeException("The following value was not set in the properties file: '" + propertiesKey + "'");
+            throw new SevereAgentErrorException("The following value was not set in the properties file: '" + propertiesKey + "'");
         }
     }
 
@@ -87,7 +93,7 @@ public class PropertiesLoader extends Properties {
                     try {
                         url = new URL(this.getProperty(propertiesKey));
                     } catch (MalformedURLException e) {
-                        throw new RuntimeException("Error when parsing the Server URL: '" + e.getMessage() + "'");
+                        throw new SevereAgentErrorException("Error when parsing the Server URL: '" + e.getMessage() + "'");
                     }
                     switch (url.getProtocol()) {
                         case "https" -> {
@@ -96,7 +102,7 @@ public class PropertiesLoader extends Properties {
                         case "http" ->
                                 AgentApplication.logger.warning("The HTTP protocol is used to communicate with the Server. HTTPS is highly recommended");
                         default ->
-                                throw new RuntimeException("The protocol is used, but not supported, to communicate with the Server: '" + url.getProtocol() + "'");
+                                throw new SevereAgentErrorException("The protocol is used, but not supported, to communicate with the Server: '" + url.getProtocol() + "'");
                     }
                 }
 
@@ -110,14 +116,14 @@ public class PropertiesLoader extends Properties {
                             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY)));
                             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
                         } catch (Exception e) {
-                            throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
                         }
                         try {
                             //load private Key
                             PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)));
                             keyFactory.generatePrivate(pkcs8EncodedKeySpec);
                         } catch (InvalidKeySpecException e) {
-                            throw new RuntimeException("Unable to load the Private-Key: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the Private-Key: " + e.getMessage());
                         }
                     } else if (!isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && !isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
                         //generate new Key Pair
@@ -126,12 +132,12 @@ public class PropertiesLoader extends Properties {
                         try {
                             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
                         } catch (Exception e) {
-                            throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
                         }
                         try {
                             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
                         } catch (InvalidAlgorithmParameterException e) {
-                            throw new RuntimeException("Unable to load the Algorithm: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the Algorithm: " + e.getMessage());
                         }
                         KeyPair keyPair = keyPairGenerator.generateKeyPair();
                         this.setProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
@@ -141,7 +147,7 @@ public class PropertiesLoader extends Properties {
 
                     } else {
                         //only one variable is set
-                        throw new RuntimeException("Unable to load the Public and Private Key. Make sure both values are set. Clear both values to generate a new Key-Pair on startup");
+                        throw new SevereAgentErrorException("Unable to load the Public and Private Key. Make sure both values are set. Clear both values to generate a new Key-Pair on startup");
                     }
 
                 }
@@ -151,7 +157,7 @@ public class PropertiesLoader extends Properties {
                         this.setProperty(propertiesKey, "false");
                         saveProperties();
                     } else if (!this.getProperty("Server.Registered").equals("false") && !this.getProperty("Server.Registered").equals("true")) {
-                        throw new RuntimeException("Only 'true' or 'false' values are allowed for: " + propertiesKey);
+                        throw new SevereAgentErrorException("Only 'true' or 'false' values are allowed for: " + propertiesKey);
                     }
                 }
 
@@ -164,9 +170,9 @@ public class PropertiesLoader extends Properties {
                             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY)));
                             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
                         } catch (NoSuchAlgorithmException e) {
-                            throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
                         } catch (InvalidKeySpecException e) {
-                            throw new RuntimeException("Unable to load the Server Public-Key: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the Server Public-Key: " + e.getMessage());
                         }
                     }
                 }

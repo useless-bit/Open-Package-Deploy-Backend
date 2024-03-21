@@ -1,6 +1,7 @@
 package org.codesystem;
 
 import okhttp3.*;
+import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.PackageUtility;
 import org.json.JSONObject;
@@ -39,7 +40,7 @@ public class ServerCommunicationRegistration {
             if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN) == null || propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN).isBlank()) {
                 propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN, "");
                 propertiesLoader.saveProperties();
-                throw new RuntimeException("Cannot register without a Token. Set the 'Server.Registration-Token'");
+                throw new SevereAgentErrorException("Cannot register without a Token. Set the 'Server.Registration-Token'");
             }
             registerOnServer();
             AgentApplication.logger.info("Registered on Server.");
@@ -51,7 +52,7 @@ public class ServerCommunicationRegistration {
         try {
             inetAddress = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            throw new SevereAgentErrorException("Cannot get Hostname: " + e.getMessage());
         }
 
         OkHttpClient client = new OkHttpClient();
@@ -68,50 +69,39 @@ public class ServerCommunicationRegistration {
                 .post(body)
                 .build();
 
-        Response response;
-        try {
-            response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() != 200) {
+                throw new SevereAgentErrorException("Cannot register on Server. Response: " + response);
+            }
+            JSONObject jsonResponse = new JSONObject(response.body().string());
+
+            propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, jsonResponse.get("publicKeyBase64").toString());
+            propertiesLoader.saveProperties();
+            String verificationToken = cryptoUtility.decryptECC(Base64.getDecoder().decode(jsonResponse.get("encryptedValidationToken").toString()));
+
+            verificationToken = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
+
+            jsonRequestBody = new JSONObject()
+                    .put("publicKeyBase64", propertiesLoader.getProperty("Agent.ECC.Public-Key"))
+                    .put("verificationToken", verificationToken);
+
+            body = RequestBody.create(jsonRequestBody.toString(), mediaType);
+            request = new Request.Builder()
+                    .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/registration/verify")
+                    .post(body)
+                    .build();
+            Response responseSecond = client.newCall(request).execute();
+            if (responseSecond.code() != 200) {
+                throw new SevereAgentErrorException("Cannot register on Server. Response: " + responseSecond);
+            }
+
+            propertiesLoader.setProperty("Server.Registered", "true");
+            propertiesLoader.remove(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN);
+            propertiesLoader.saveProperties();
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (response.code() != 200) {
-            throw new RuntimeException("Cannot register on Server. Response: " + response);
-        }
-        JSONObject jsonResponse = null;
-        try {
-            jsonResponse = new JSONObject(response.body().string());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, jsonResponse.get("publicKeyBase64").toString());
-        propertiesLoader.saveProperties();
-
-
-        String verificationToken = cryptoUtility.decryptECC(Base64.getDecoder().decode(jsonResponse.get("encryptedValidationToken").toString()));
-
-        verificationToken = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
-
-        jsonRequestBody = new JSONObject()
-                .put("publicKeyBase64", propertiesLoader.getProperty("Agent.ECC.Public-Key"))
-                .put("verificationToken", verificationToken);
-
-        body = RequestBody.create(jsonRequestBody.toString(), mediaType);
-        request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/registration/verify")
-                .post(body)
-                .build();
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (response.code() != 200) {
-            throw new RuntimeException("Cannot register on Server. Response: " + response);
+            throw new SevereAgentErrorException("Cannot get Hostname: " + e.getMessage());
         }
 
-        propertiesLoader.setProperty("Server.Registered", "true");
-        propertiesLoader.remove(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN);
-        propertiesLoader.saveProperties();
 
     }
 
