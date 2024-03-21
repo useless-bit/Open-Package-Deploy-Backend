@@ -9,10 +9,13 @@ public class Variables {
     public static final String URL_UPDATE_CHECK_REQUEST = "/api/agent/communication/checkForUpdates";
 
     // properties
+    public static final String PROPERTIES_SERVER_REGISTRATION_TOKEN = "Server.Registration-Token";
+    public static final String PROPERTIES_SERVER_URL = "Server.Url";
+    public static final String PROPERTIES_SERVER_REGISTERED = "Server.Registered";
     public static final String PROPERTIES_SERVER_ECC_PUBLIC_KEY = "Server.ECC.Public-Key";
     public static final String PROPERTIES_AGENT_ECC_PUBLIC_KEY = "Agent.ECC.Public-Key";
     public static final String PROPERTIES_AGENT_ECC_PRIVATE_KEY = "Agent.ECC.Private-Key";
-    public static final String PROPERTIES_SERVER_REGISTRATION_TOKEN = "Server.Registration-Token";
+    public static final String PROPERTIES_AGENT_UPDATE_INTERVAL = "Agent.Update-Interval";
 
     private Variables() {
     }

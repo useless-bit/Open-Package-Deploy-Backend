@@ -15,7 +15,12 @@ import java.util.*;
 
 public class PropertiesLoader extends Properties {
     private static final File PROPERTIES_FILE = new File("opd-agent.properties");
-    private final List<String> requiredPropertiesOptions = new ArrayList<>(Arrays.asList("Server.Url", "Server.Registered", Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, "Agent.Update-Interval"));
+    private final List<String> requiredPropertiesOptions = new ArrayList<>(Arrays.asList(Variables.PROPERTIES_SERVER_URL, Variables.PROPERTIES_SERVER_REGISTERED, Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, Variables.PROPERTIES_AGENT_UPDATE_INTERVAL));
+
+    @Override
+    public synchronized int hashCode() {
+        return super.hashCode();
+    }
 
     @Override
     public synchronized boolean equals(Object o) {
@@ -87,7 +92,7 @@ public class PropertiesLoader extends Properties {
         AgentApplication.logger.info("Validating properties file");
         for (String propertiesKey : requiredPropertiesOptions) {
             switch (propertiesKey) {
-                case "Server.Url" -> {
+                case Variables.PROPERTIES_SERVER_URL -> {
                     checkPropertiesPresentAndSet(propertiesKey);
                     URL url;
                     try {
@@ -116,7 +121,7 @@ public class PropertiesLoader extends Properties {
                             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY)));
                             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
                         } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm fo existing pair: " + e.getMessage());
                         }
                         try {
                             //load private Key
@@ -132,7 +137,7 @@ public class PropertiesLoader extends Properties {
                         try {
                             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
                         } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
+                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm for new pair: " + e.getMessage());
                         }
                         try {
                             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
@@ -152,11 +157,11 @@ public class PropertiesLoader extends Properties {
 
                 }
 
-                case "Server.Registered" -> {
+                case Variables.PROPERTIES_SERVER_REGISTERED -> {
                     if (!isPropertiesPresentAndSet(propertiesKey)) {
                         this.setProperty(propertiesKey, "false");
                         saveProperties();
-                    } else if (!this.getProperty("Server.Registered").equals("false") && !this.getProperty("Server.Registered").equals("true")) {
+                    } else if (!this.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("false") && !this.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("true")) {
                         throw new SevereAgentErrorException("Only 'true' or 'false' values are allowed for: " + propertiesKey);
                     }
                 }
@@ -177,7 +182,7 @@ public class PropertiesLoader extends Properties {
                     }
                 }
 
-                case "Agent.Update-Interval" -> {
+                case Variables.PROPERTIES_AGENT_UPDATE_INTERVAL -> {
                     if (!isPropertiesPresentAndSet(propertiesKey)) {
                         this.setProperty(propertiesKey, "60");
                         saveProperties();
