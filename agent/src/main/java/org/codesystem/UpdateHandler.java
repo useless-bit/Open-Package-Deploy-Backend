@@ -17,10 +17,10 @@ import java.nio.file.Paths;
 import java.util.logging.Level;
 
 public class UpdateHandler {
+    private static final Path PATH_UPDATE_FILE = Paths.get(Variables.FILE_NAME_AGENT_UPDATE);
     private final DownloadUtility downloadUtility;
     private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
-    private static final Path PATH_UPDATE_FILE = Paths.get(Variables.FILE_NAME_AGENT_UPDATE);
 
     public UpdateHandler(DownloadUtility downloadUtility, CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader) {
         this.downloadUtility = downloadUtility;
@@ -62,7 +62,7 @@ public class UpdateHandler {
     private void startNewApplication() {
         String command = ProcessHandle.current().info().commandLine().get();
         command = command.substring(0, command.indexOf(" "));
-        AgentApplication.logger.log(Level.INFO, "Update command: {}",command);
+        AgentApplication.logger.log(Level.INFO, "Update command: {}", command);
         try {
             new ProcessBuilder(command, "-jar", Variables.FILE_NAME_AGENT_UPDATE).start();
         } catch (IOException e) {
