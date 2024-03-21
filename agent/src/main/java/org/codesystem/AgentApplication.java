@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class AgentApplication {
-    public static final PropertiesLoader properties = new PropertiesLoader();
+    private static final PropertiesLoader propertiesLoader = new PropertiesLoader();
     public static final Logger logger = Logger.getLogger("");
-    public static String agentChecksum;
-    public static OperatingSystem operatingSystem;
+    private static String agentChecksum;
+    private static OperatingSystem operatingSystem;
 
     public static void main(String[] args) {
         initialSetup();
@@ -34,7 +34,7 @@ public class AgentApplication {
             } catch (Throwable t) {
                 throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
             }
-        }, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
+        }, 0, Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
     }
 
     private static void initialSetup() {
@@ -66,20 +66,20 @@ public class AgentApplication {
         }
         Security.addProvider(new BouncyCastleProvider());
         logger.info("Agent Startup");
-        properties.loadProperties();
+        propertiesLoader.loadProperties();
 
-        CryptoUtility cryptoUtility = new CryptoUtility(properties);
+        CryptoUtility cryptoUtility = new CryptoUtility(propertiesLoader);
         agentChecksum = cryptoUtility.calculateChecksumOfFile("Agent.jar");
 
-        UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), cryptoUtility, properties);
-        PackageUtility packageUtility = new PackageUtility(operatingSystem, properties);
-        ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, properties, agentChecksum, updateHandler, packageUtility);
+        UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), cryptoUtility, propertiesLoader);
+        PackageUtility packageUtility = new PackageUtility(operatingSystem, propertiesLoader);
+        ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility);
         serverCommunicationRegistration.validateRegistration();
     }
 
     private static void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(new CryptoUtility(properties), properties, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoUtility(properties), properties), new PackageUtility(operatingSystem, properties));
+        ServerCommunication serverCommunication = new ServerCommunication(new CryptoUtility(propertiesLoader), propertiesLoader, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoUtility(propertiesLoader), propertiesLoader), new PackageUtility(operatingSystem, propertiesLoader));
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");
