@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class UpdateHandler {
@@ -60,8 +61,12 @@ public class UpdateHandler {
     }
 
     private void startNewApplication() {
-        String command = ProcessHandle.current().info().commandLine().get();
-        command = command.substring(0, command.indexOf(" "));
+        String command = "java";
+        Optional<String> optionalString = ProcessHandle.current().info().commandLine();
+        if (optionalString.isPresent()) {
+            command = optionalString.get();
+            command = command.substring(0, command.indexOf(" "));
+        }
         AgentApplication.logger.log(Level.INFO, "Update command: {}", command);
         try {
             new ProcessBuilder(command, "-jar", Variables.FILE_NAME_AGENT_UPDATE).start();

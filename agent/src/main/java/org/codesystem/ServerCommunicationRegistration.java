@@ -16,7 +16,7 @@ public class ServerCommunicationRegistration {
     private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     private final ServerCommunication serverCommunication;
-
+    private static final String JSON_PUBLIC_KEY_NAME = "publicKeyBase64";
     public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageUtility packageUtility) {
         this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;
@@ -59,7 +59,7 @@ public class ServerCommunicationRegistration {
 
         MediaType mediaType = MediaType.parse("application/json");
         JSONObject jsonRequestBody = new JSONObject()
-                .put("publicKeyBase64", propertiesLoader.getProperty("Agent.ECC.Public-Key"))
+                .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty("Agent.ECC.Public-Key"))
                 .put("name", inetAddress.getCanonicalHostName())
                 .put("authenticationToken", propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN));
 
@@ -75,14 +75,14 @@ public class ServerCommunicationRegistration {
             }
             JSONObject jsonResponse = new JSONObject(response.body().string());
 
-            propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, jsonResponse.get("publicKeyBase64").toString());
+            propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, jsonResponse.get(JSON_PUBLIC_KEY_NAME).toString());
             propertiesLoader.saveProperties();
             String verificationToken = cryptoUtility.decryptECC(Base64.getDecoder().decode(jsonResponse.get("encryptedValidationToken").toString()));
 
             verificationToken = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
 
             jsonRequestBody = new JSONObject()
-                    .put("publicKeyBase64", propertiesLoader.getProperty("Agent.ECC.Public-Key"))
+                    .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty("Agent.ECC.Public-Key"))
                     .put("verificationToken", verificationToken);
 
             body = RequestBody.create(jsonRequestBody.toString(), mediaType);
