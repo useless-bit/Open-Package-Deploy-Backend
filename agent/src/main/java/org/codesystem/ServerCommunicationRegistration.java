@@ -13,10 +13,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class ServerCommunicationRegistration {
+    private static final String JSON_PUBLIC_KEY_NAME = "publicKeyBase64";
     private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     private final ServerCommunication serverCommunication;
-    private static final String JSON_PUBLIC_KEY_NAME = "publicKeyBase64";
+
     public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageUtility packageUtility) {
         this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;

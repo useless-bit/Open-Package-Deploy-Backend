@@ -1,7 +1,6 @@
 package org.codesystem.utility;
 
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import okhttp3.*;
 import org.codesystem.AgentApplication;
 import org.codesystem.PropertiesLoader;
@@ -26,6 +25,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 public class PackageUtility {
     private final CryptoUtility cryptoUtility;
@@ -70,8 +70,10 @@ public class PackageUtility {
         //clear download folder
         Path downloadFolder = Paths.get("download");
         if (Files.exists(downloadFolder)) {
-            try {
-                Files.walk(downloadFolder).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            try (Stream<Path> stream = Files.walk(downloadFolder)) {
+                stream.sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
             } catch (IOException e) {
                 throw new SevereAgentErrorException("Cannot delete download folder: " + e.getMessage());
             }
@@ -80,7 +82,7 @@ public class PackageUtility {
     }
 
     private void downloadPackage() {
-        MediaType mediaType = MediaType.parse("application/json");
+        MediaType mediaType = Variables.MEDIA_TYPE_JSON;
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID()).post(body).build();
 
@@ -109,7 +111,7 @@ public class PackageUtility {
     }
 
     private void getPackageDetails() {
-        MediaType mediaType = MediaType.parse("application/json");
+        MediaType mediaType = Variables.MEDIA_TYPE_JSON;
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package").post(body).build();
 
@@ -157,17 +159,16 @@ public class PackageUtility {
     }
 
     private void extractPackage(String zipFileLocation, String destinationFolderLocation) {
-        ZipFile zipFile = new ZipFile(zipFileLocation);
-        try {
+        try (ZipFile zipFile = new ZipFile(zipFileLocation)) {
             zipFile.extractAll(destinationFolderLocation);
-        } catch (ZipException e) {
+        } catch (Exception e) {
             throw new SevereAgentErrorException("Error whe extracting package: " + e.getMessage());
         }
     }
 
     private void sendDeploymentResponse(String responseMessage) {
         DeploymentResult deploymentResult = new DeploymentResult(packageDetailResponse.getDeploymentUUID(), responseMessage);
-        MediaType mediaType = MediaType.parse("application/json");
+        MediaType mediaType = Variables.MEDIA_TYPE_JSON;
         RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/deploymentResult").post(body).build();
 
@@ -196,13 +197,16 @@ public class PackageUtility {
         if (!file.exists()) {
             return PackageDeploymentErrorState.ENTRYPOINT_NOT_FOUND.toString();
         }
-        file.setExecutable(true);
+        if (!file.setExecutable(true)) {
+            AgentApplication.logger.warning("Cannot set file as executable");
+        }
         ProcessBuilder processBuilder = new ProcessBuilder(file.getAbsolutePath());
         String returnValue;
         try {
             Process process = processBuilder.start();
             returnValue = String.valueOf(process.waitFor());
-        } catch (InterruptedException | IOException e) {
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
             return e.getMessage();
         }
         return returnValue;

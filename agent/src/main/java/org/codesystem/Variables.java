@@ -1,5 +1,7 @@
 package org.codesystem;
 
+import okhttp3.MediaType;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -15,6 +17,7 @@ public class Variables {
     public static final String FILE_NAME_PACKAGE_DECRYPTED = "download/file.zip";
 
     //urls
+    public static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
     public static final String URL_AGENT_DOWNLOAD = "/api/agent/communication/agent";
     public static final String URL_UPDATE_CHECK_REQUEST = "/api/agent/communication/checkForUpdates";
 

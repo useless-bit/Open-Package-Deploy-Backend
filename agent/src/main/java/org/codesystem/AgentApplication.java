@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class AgentApplication {
-    private static final PropertiesLoader propertiesLoader = new PropertiesLoader();
     public static final Logger logger = Logger.getLogger("");
+    private static final PropertiesLoader propertiesLoader = new PropertiesLoader();
     private static String agentChecksum;
     private static OperatingSystem operatingSystem;
 
