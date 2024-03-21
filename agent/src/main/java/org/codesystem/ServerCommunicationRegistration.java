@@ -29,7 +29,7 @@ public class ServerCommunicationRegistration {
         AgentApplication.logger.info("The Server is available. Staring registration");
 
         //clear server public key when not registered
-        if (propertiesLoader.getProperty("Server.Registered").equals("false")) {
+        if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("false")) {
             propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, "");
             propertiesLoader.saveProperties();
         }
@@ -59,13 +59,13 @@ public class ServerCommunicationRegistration {
 
         MediaType mediaType = MediaType.parse("application/json");
         JSONObject jsonRequestBody = new JSONObject()
-                .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty("Agent.ECC.Public-Key"))
+                .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY))
                 .put("name", inetAddress.getCanonicalHostName())
                 .put("authenticationToken", propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN));
 
         RequestBody body = RequestBody.create(jsonRequestBody.toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/registration")
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/registration")
                 .post(body)
                 .build();
 
@@ -82,12 +82,12 @@ public class ServerCommunicationRegistration {
             verificationToken = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
 
             jsonRequestBody = new JSONObject()
-                    .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty("Agent.ECC.Public-Key"))
+                    .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY))
                     .put("verificationToken", verificationToken);
 
             body = RequestBody.create(jsonRequestBody.toString(), mediaType);
             request = new Request.Builder()
-                    .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/registration/verify")
+                    .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/registration/verify")
                     .post(body)
                     .build();
             Response responseSecond = client.newCall(request).execute();
@@ -95,7 +95,7 @@ public class ServerCommunicationRegistration {
                 throw new SevereAgentErrorException("Cannot register on Server. Response: " + responseSecond);
             }
 
-            propertiesLoader.setProperty("Server.Registered", "true");
+            propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_REGISTERED, "true");
             propertiesLoader.remove(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN);
             propertiesLoader.saveProperties();
         } catch (IOException e) {

@@ -5,6 +5,7 @@ import net.lingala.zip4j.exception.ZipException;
 import okhttp3.*;
 import org.codesystem.AgentApplication;
 import org.codesystem.PropertiesLoader;
+import org.codesystem.Variables;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
 import org.codesystem.exceptions.SevereAgentErrorException;
@@ -85,7 +86,7 @@ public class PackageUtility {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
                 .post(body)
                 .build();
 
@@ -117,7 +118,7 @@ public class PackageUtility {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/package")
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package")
                 .post(body)
                 .build();
 
@@ -184,7 +185,7 @@ public class PackageUtility {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/deploymentResult")
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/deploymentResult")
                 .post(body)
                 .build();
 

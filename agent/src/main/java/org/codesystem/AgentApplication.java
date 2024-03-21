@@ -34,7 +34,7 @@ public class AgentApplication {
             } catch (Throwable t) {
                 throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
             }
-        }, 0, Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
+        }, 0, Integer.parseInt(propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_UPDATE_INTERVAL)), TimeUnit.SECONDS);
     }
 
     private static void initialSetup() {

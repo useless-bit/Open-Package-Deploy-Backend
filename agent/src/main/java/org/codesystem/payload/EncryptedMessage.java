@@ -1,6 +1,7 @@
 package org.codesystem.payload;
 
 import org.codesystem.PropertiesLoader;
+import org.codesystem.Variables;
 import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 
@@ -17,7 +18,7 @@ public class EncryptedMessage {
             publicKeyBase64 = null;
             message = null;
         } else {
-            this.publicKeyBase64 = propertiesLoader.getProperty("Agent.ECC.Public-Key");
+            this.publicKeyBase64 = propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY);
             this.message = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
         }
     }

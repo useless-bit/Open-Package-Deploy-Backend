@@ -1,8 +1,16 @@
 package org.codesystem;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Variables {
     // files
     public static final String FILE_NAME_AGENT_UPDATE = "Agent_update.jar";
+    public static final String FILE_NAME_AGENT_UPDATE_BACKUP = "Agent_backup.jar";
+    public static final String FILE_NAME_AGENT = "Agent.jar";
+    public static final Path PATH_UPDATE_FILE = Paths.get(FILE_NAME_AGENT_UPDATE);
+    public static final Path PATH_BACKUP_FILE = Paths.get(FILE_NAME_AGENT_UPDATE_BACKUP);
+    public static final Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
 
     //urls
     public static final String URL_AGENT_DOWNLOAD = "/api/agent/communication/agent";

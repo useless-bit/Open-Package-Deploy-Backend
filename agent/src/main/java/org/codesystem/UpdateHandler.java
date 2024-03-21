@@ -42,7 +42,7 @@ public class UpdateHandler {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + Variables.URL_AGENT_DOWNLOAD)
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_AGENT_DOWNLOAD)
                 .post(body)
                 .build();
 
