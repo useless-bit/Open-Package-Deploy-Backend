@@ -1,6 +1,6 @@
 package org.codesystem.payload;
 
-import org.codesystem.CryptoHandler;
+import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 
 import java.util.Base64;
@@ -16,8 +16,8 @@ public class UpdateCheckRequest extends EmptyRequest {
     }
 
     @Override
-    public JSONObject toJsonObject(CryptoHandler cryptoHandler) {
-        if (cryptoHandler == null) {
+    public JSONObject toJsonObject(CryptoUtility cryptoUtility) {
+        if (cryptoUtility == null) {
             return null;
         }
         JSONObject jsonObject = new JSONObject();
@@ -32,7 +32,7 @@ public class UpdateCheckRequest extends EmptyRequest {
         } else {
             jsonObject.put("agentChecksum", agentChecksum.trim());
         }
-        String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
+        String signature = Base64.getEncoder().encodeToString(cryptoUtility.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;
     }

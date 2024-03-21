@@ -1,6 +1,5 @@
 package org.codesystem.utility;
 
-import org.codesystem.SystemExit;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -25,14 +24,14 @@ class AutoUpdateUtilityTest {
     Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
     AutoUpdateUtility autoUpdateUtility;
 
-    MockedStatic<SystemExit> systemExitMockedStatic;
+    MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
     void setUp() {
         autoUpdateUtility = new AutoUpdateUtility();
 
-        systemExitMockedStatic = Mockito.mockStatic(SystemExit.class);
-        systemExitMockedStatic.when(() -> SystemExit.exit(Mockito.anyInt())).then(invocationOnMock -> null);
+        systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
+        systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).then(invocationOnMock -> null);
         deleteFiles();
     }
 

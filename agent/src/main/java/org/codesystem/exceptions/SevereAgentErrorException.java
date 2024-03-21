@@ -1,11 +1,11 @@
 package org.codesystem.exceptions;
 
 import org.codesystem.AgentApplication;
-import org.codesystem.SystemExit;
+import org.codesystem.utility.SystemExitUtility;
 
 public class SevereAgentErrorException extends RuntimeException {
     public SevereAgentErrorException(String errorMessage) {
         AgentApplication.logger.severe(errorMessage);
-        SystemExit.exit(-1);
+        SystemExitUtility.exit(-1);
     }
 }

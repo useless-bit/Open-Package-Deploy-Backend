@@ -6,6 +6,9 @@ import org.codesystem.payload.DetailedSystemInformation;
 import org.codesystem.payload.EncryptedMessage;
 import org.codesystem.payload.UpdateCheckRequest;
 import org.codesystem.payload.UpdateCheckResponse;
+import org.codesystem.utility.CryptoUtility;
+import org.codesystem.utility.PackageUtility;
+import org.codesystem.utility.SystemExitUtility;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -13,23 +16,23 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 public class ServerCommunication {
-    private final CryptoHandler cryptoHandler;
+    private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     private final String agentChecksum;
     private final UpdateHandler updateHandler;
-    private final PackageHandler packageHandler;
+    private final PackageUtility packageUtility;
 
-    public ServerCommunication(CryptoHandler cryptoHandler, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageHandler packageHandler) {
-        this.cryptoHandler = cryptoHandler;
+    public ServerCommunication(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageUtility packageUtility) {
+        this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;
         this.agentChecksum = agentChecksum;
         this.updateHandler = updateHandler;
-        this.packageHandler = packageHandler;
+        this.packageUtility = packageUtility;
     }
 
     private boolean isServerAvailable() {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url(propertiesLoader.getProperty("Server.Url") + "/monitoring/health").build();
+        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/monitoring/health").build();
         Response response;
         try {
             response = client.newCall(request).execute();
@@ -56,9 +59,9 @@ public class ServerCommunication {
 
     public boolean sendUpdateRequest() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(agentChecksum, new DetailedSystemInformation(new HardwareInfo())).toJsonObject(cryptoHandler), cryptoHandler, propertiesLoader).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest(agentChecksum, new DetailedSystemInformation(new HardwareInfo())).toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty("Server.Url") + "/api/agent/communication/checkForUpdates")
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_UPDATE_CHECK_REQUEST)
                 .post(body)
                 .build();
 
@@ -69,7 +72,7 @@ public class ServerCommunication {
                 return false;
             }
             String responseBody = new JSONObject(response.body().string()).getString("message");
-            String decrypted = cryptoHandler.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
+            String decrypted = cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
             UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
             return processUpdateCheckResponse(updateCheckResponse);
         } catch (Exception e) {
@@ -87,15 +90,15 @@ public class ServerCommunication {
             updateHandler.startUpdateProcess(updateCheckResponse.getAgentChecksum());
         }
 
-        if (Integer.parseInt(propertiesLoader.getProperty("Agent.Update-Interval")) != updateCheckResponse.getUpdateInterval() && updateCheckResponse.getUpdateInterval() >= 1) {
-            propertiesLoader.setProperty("Agent.Update-Interval", String.valueOf(updateCheckResponse.getUpdateInterval()));
+        if (Integer.parseInt(propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_UPDATE_INTERVAL)) != updateCheckResponse.getUpdateInterval() && updateCheckResponse.getUpdateInterval() >= 1) {
+            propertiesLoader.setProperty(Variables.PROPERTIES_AGENT_UPDATE_INTERVAL, String.valueOf(updateCheckResponse.getUpdateInterval()));
             propertiesLoader.saveProperties();
-            SystemExit.exit(-10);
+            SystemExitUtility.exit(-10);
         }
 
         if (updateCheckResponse.isDeploymentAvailable()) {
             AgentApplication.logger.info("Deployment Found");
-            packageHandler.initiateDeployment();
+            packageUtility.initiateDeployment();
             return true;
         }
         return false;

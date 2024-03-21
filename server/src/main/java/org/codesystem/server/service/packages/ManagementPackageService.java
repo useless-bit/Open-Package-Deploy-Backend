@@ -26,13 +26,11 @@ import java.io.InputStream;
 @Service
 @RequiredArgsConstructor
 public class ManagementPackageService {
+    private static final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
+    private static final String ERROR_INVALID_ZIP_FILE = "Invalid zip-file";
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
     private final DeploymentRepository deploymentRepository;
-
-    private static final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
-    private static final String ERROR_INVALID_ZIP_FILE = "Invalid zip-file";
-
 
     public ResponseEntity<ApiResponse> getAllPackages() {
         return ResponseEntity.ok().body(new GetAllPackagesResponse(packageRepository.findAll()));

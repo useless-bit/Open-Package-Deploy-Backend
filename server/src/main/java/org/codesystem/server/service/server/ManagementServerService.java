@@ -21,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ManagementServerService {
     private final ServerRepository serverRepository;
+
     public ResponseEntity<ApiResponse> getRegistrationToken() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         return ResponseEntity.status(HttpStatus.OK).body(new GetRegistrationTokenResponse(serverEntity.getAgentRegistrationToken()));
@@ -40,7 +41,7 @@ public class ManagementServerService {
     }
 
     public ResponseEntity<ApiResponse> setUpdateInterval(UpdateIntervalRequest updateIntervalRequest) {
-        if (updateIntervalRequest == null || updateIntervalRequest.getUpdateInterval() == null || updateIntervalRequest.getUpdateInterval() <= 0){
+        if (updateIntervalRequest == null || updateIntervalRequest.getUpdateInterval() == null || updateIntervalRequest.getUpdateInterval() <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
@@ -55,7 +56,7 @@ public class ManagementServerService {
     }
 
     public ResponseEntity<ApiResponse> setInstallRetryInterval(InstallRetryIntervalRequest installRetryIntervalRequest) {
-        if (installRetryIntervalRequest == null || installRetryIntervalRequest.getInstallRetryInterval() == null || installRetryIntervalRequest.getInstallRetryInterval() <= 0){
+        if (installRetryIntervalRequest == null || installRetryIntervalRequest.getInstallRetryInterval() == null || installRetryIntervalRequest.getInstallRetryInterval() <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);

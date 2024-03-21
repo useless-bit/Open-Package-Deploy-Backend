@@ -1,7 +1,9 @@
-package org.codesystem;
+package org.codesystem.utility;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.IESParameterSpec;
+import org.codesystem.PropertiesLoader;
+import org.codesystem.Variables;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import javax.crypto.Cipher;
@@ -18,7 +20,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-public class CryptoHandler {
+public class CryptoUtility {
     private final Cipher cipherEcc;
     private final Cipher cipherAES;
 
@@ -33,22 +35,22 @@ public class CryptoHandler {
             /* nonce = */ null,
             /* usePointCompression = */ false);
 
-    public CryptoHandler() {
+    public CryptoUtility(PropertiesLoader propertiesLoader) {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             this.cipherEcc = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Agent.ECC.Private-Key"))));
+            this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY))));
             //load with null when Server Key was not retrieved yet
-            if (!AgentApplication.properties.getProperty("Server.ECC.Public-Key").isBlank()) {
-                this.publicKeyServer = keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(AgentApplication.properties.getProperty("Server.ECC.Public-Key"))));
+            if (!propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY).isBlank()) {
+                this.publicKeyServer = keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY))));
             } else {
                 this.publicKeyServer = null;
             }
         } catch (Exception e) {
-            throw new SevereAgentErrorException(e.getMessage());
+            throw new SevereAgentErrorException("Cannot initialize Crypto Utility: " + e.getMessage());
         }
     }
 
