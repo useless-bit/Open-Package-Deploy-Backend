@@ -15,14 +15,11 @@ import org.codesystem.payload.PackageDetailResponse;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.stream.Stream;
@@ -31,12 +28,14 @@ public class PackageUtility {
     private final CryptoUtility cryptoUtility;
     private final OperatingSystem operatingSystem;
     private final PropertiesLoader propertiesLoader;
+    private final DownloadUtility downloadUtility;
     private PackageDetailResponse packageDetailResponse;
 
-    public PackageUtility(OperatingSystem operatingSystem, PropertiesLoader propertiesLoader) {
+    public PackageUtility(CryptoUtility cryptoUtility, OperatingSystem operatingSystem, PropertiesLoader propertiesLoader, DownloadUtility downloadUtility) {
+        this.cryptoUtility = cryptoUtility;
         this.operatingSystem = operatingSystem;
         this.propertiesLoader = propertiesLoader;
-        this.cryptoUtility = new CryptoUtility(propertiesLoader);
+        this.downloadUtility = downloadUtility;
     }
 
     public void initiateDeployment() {
@@ -45,9 +44,15 @@ public class PackageUtility {
         AgentApplication.logger.info("Get Package Details");
         getPackageDetails();
         AgentApplication.logger.info("Download Package");
-        downloadPackage();
+        MediaType mediaType = Variables.MEDIA_TYPE_JSON;
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
+        Request request = new Request.Builder()
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
+                .post(body)
+                .build();
+        downloadUtility.downloadFile(Variables.PATH_PACKAGE_ENCRYPTED, request);
         AgentApplication.logger.info("Verifiy");
-        if (!validatePackage(Variables.FILE_NAME_PACKAGE_ENCRYPTED, packageDetailResponse.getChecksumEncrypted())) {
+        if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_ENCRYPTED).equals(packageDetailResponse.getChecksumEncrypted())) {
             sendDeploymentResponse(PackageDeploymentErrorState.ENCRYPTED_CHECKSUM_MISMATCH.toString());
         }
         AgentApplication.logger.info("Decrypt");
@@ -55,7 +60,7 @@ public class PackageUtility {
             sendDeploymentResponse(PackageDeploymentErrorState.DECRYPTION_FAILED.toString());
         }
         AgentApplication.logger.info("Verify");
-        if (!validatePackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, packageDetailResponse.getChecksumPlaintext())) {
+        if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_DECRYPTED).equals(packageDetailResponse.getChecksumPlaintext())) {
             sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
         }
         AgentApplication.logger.info("extract");
@@ -71,49 +76,18 @@ public class PackageUtility {
         Path downloadFolder = Paths.get("download");
         if (Files.exists(downloadFolder)) {
             try (Stream<Path> stream = Files.walk(downloadFolder)) {
-                stream.sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
+                stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException e) {
                 throw new SevereAgentErrorException("Cannot delete download folder: " + e.getMessage());
             }
         }
-        new File(downloadFolder.toAbsolutePath().toString()).mkdir();
-    }
-
-    private void downloadPackage() {
-        MediaType mediaType = Variables.MEDIA_TYPE_JSON;
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID()).post(body).build();
-
-        Response response;
-        OkHttpClient client = new OkHttpClient();
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to send response: " + e.getMessage());
-        }
-        if (response.code() != 200) {
-            throw new SevereAgentErrorException("Unable to download package. Response code: " + response.code());
-        }
-
-        byte[] data;
-        try {
-            data = response.body().bytes();
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to load package from response: " + e.getMessage());
-        }
-        try (FileOutputStream fos = new FileOutputStream(Variables.FILE_NAME_PACKAGE_ENCRYPTED)) {
-            fos.write(data);
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to write downloaded package to file: " + e.getMessage());
-        }
+        new File(downloadFolder.toAbsolutePath().toString()).mkdirs();
     }
 
     private void getPackageDetails() {
         MediaType mediaType = Variables.MEDIA_TYPE_JSON;
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package").post(body).build();
+        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_PACKAGE_DETAIL).post(body).build();
 
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {
@@ -125,31 +99,6 @@ public class PackageUtility {
             this.packageDetailResponse = new PackageDetailResponse(new JSONObject(decrypted));
         } catch (Exception e) {
             throw new SevereAgentErrorException("Cannot process Package Detail request: " + e.getMessage());
-        }
-
-    }
-
-    private boolean validatePackage(String file, String targetChecksum) {
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA3-512");
-
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-
-            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                messageDigest.update(buffer, 0, bytesRead);
-            }
-
-            byte[] checkSum = messageDigest.digest();
-
-            StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
-            for (byte b : checkSum) {
-                stringBuilder.append(String.format("%02x", b));
-            }
-            return stringBuilder.toString().equals(targetChecksum);
-        } catch (Exception e) {
-            throw new SevereAgentErrorException("Error whe validating package: " + e.getMessage());
         }
 
     }
@@ -170,7 +119,7 @@ public class PackageUtility {
         DeploymentResult deploymentResult = new DeploymentResult(packageDetailResponse.getDeploymentUUID(), responseMessage);
         MediaType mediaType = Variables.MEDIA_TYPE_JSON;
         RequestBody body = RequestBody.create(new EncryptedMessage(deploymentResult.toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/deploymentResult").post(body).build();
+        Request request = new Request.Builder().url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_DEPLOYMENT_RESULT).post(body).build();
 
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {

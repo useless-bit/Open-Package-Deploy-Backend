@@ -81,7 +81,9 @@ class CryptoUtilityTest {
     @AfterEach
     void tearDown() {
         systemExitMockedStatic.close();
-
+        encryptedFile.delete();
+        pathForDecryptedFile.toFile().delete();
+        plaintextFile.delete();
     }
 
     @Test

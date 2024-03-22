@@ -72,14 +72,15 @@ public class AgentApplication {
         agentChecksum = cryptoUtility.calculateChecksumOfFile("Agent.jar");
 
         UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), cryptoUtility, propertiesLoader);
-        PackageUtility packageUtility = new PackageUtility(operatingSystem, propertiesLoader);
+        PackageUtility packageUtility = new PackageUtility(cryptoUtility, operatingSystem, propertiesLoader, new DownloadUtility());
         ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility);
         serverCommunicationRegistration.validateRegistration();
     }
 
     private static void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(new CryptoUtility(propertiesLoader), propertiesLoader, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoUtility(propertiesLoader), propertiesLoader), new PackageUtility(operatingSystem, propertiesLoader));
+        CryptoUtility cryptoUtility = new CryptoUtility(propertiesLoader);
+        ServerCommunication serverCommunication = new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, new UpdateHandler(new DownloadUtility(), new CryptoUtility(propertiesLoader), propertiesLoader), new PackageUtility(cryptoUtility, operatingSystem, propertiesLoader, new DownloadUtility()));
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");
