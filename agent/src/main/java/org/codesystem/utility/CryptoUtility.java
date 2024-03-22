@@ -55,7 +55,7 @@ public class CryptoUtility {
     }
 
     public String decryptECC(byte[] message) {
-        byte[] decryptedMessage = null;
+        byte[] decryptedMessage;
         try {
             cipherEcc.init(Cipher.DECRYPT_MODE, this.privateKeyAgent, iesParamSpec);
             decryptedMessage = cipherEcc.doFinal(message);
@@ -88,11 +88,11 @@ public class CryptoUtility {
         return signatureForMessage;
     }
 
-    public boolean verifySignatureECC(String message, String base64Signature) {
+    public boolean verifySignatureECC(String message, byte[] messageSignature) {
         try {
             signature.initVerify(publicKeyServer);
             signature.update(message.getBytes(StandardCharsets.UTF_8));
-            return signature.verify(Base64.getDecoder().decode(base64Signature));
+            return signature.verify(messageSignature);
         } catch (Exception e) {
             throw new SevereAgentErrorException("Unable to load the Public-Key: " + e.getMessage());
         }
