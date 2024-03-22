@@ -105,9 +105,9 @@ public class CryptoUtility {
         packageEntity.setEncryptionToken(keyGeneratorAES.generateKey());
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             cipher.init(Cipher.ENCRYPT_MODE, packageEntity.getEncryptionToken());
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException e) {
             return false;
         }
         packageEntity.setInitializationVector(cipher.getIV());
@@ -129,8 +129,8 @@ public class CryptoUtility {
     public boolean decryptFile(PackageEntity packageEntity, File encryptedFile, Path targetPath) {
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            cipher = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException e) {
             return false;
         }
         try (

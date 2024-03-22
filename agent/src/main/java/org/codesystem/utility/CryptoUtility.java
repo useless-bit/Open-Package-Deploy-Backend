@@ -39,7 +39,7 @@ public class CryptoUtility {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             this.cipherEcc = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
+            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
             this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY))));
@@ -113,6 +113,7 @@ public class CryptoUtility {
                 inputStreamByte = cipherInputStream.readNBytes(1024);
             }
         } catch (Exception e) {
+            System.out.println(e);
             return false;
         }
         return true;
@@ -120,17 +121,14 @@ public class CryptoUtility {
 
     public String calculateChecksumOfFile(String filePath) {
         try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
-
             MessageDigest messageDigest;
             messageDigest = MessageDigest.getInstance("SHA3-512");
 
             byte[] buffer = new byte[4096];
             int bytesRead;
-
             while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 messageDigest.update(buffer, 0, bytesRead);
             }
-
             byte[] checkSum = messageDigest.digest();
 
             StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
