@@ -113,7 +113,6 @@ public class CryptoUtility {
                 inputStreamByte = cipherInputStream.readNBytes(1024);
             }
         } catch (Exception e) {
-            System.out.println(e);
             return false;
         }
         return true;
