@@ -71,7 +71,6 @@ public class AgentApplication {
             throw new SevereAgentErrorException("Unsupported OS");
         }
         logger.info("Agent Startup");
-        propertiesLoader.loadProperties();
 
         agentChecksum = cryptoUtility.calculateChecksumOfFile("Agent.jar");
 

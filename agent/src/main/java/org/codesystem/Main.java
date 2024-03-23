@@ -10,6 +10,7 @@ public class Main {
         Security.addProvider(new BouncyCastleProvider());
 
         PropertiesLoader propertiesLoader = new PropertiesLoader();
+        propertiesLoader.loadProperties();
         CryptoUtility cryptoUtility = new CryptoUtility(propertiesLoader);
 
         new AgentApplication(
