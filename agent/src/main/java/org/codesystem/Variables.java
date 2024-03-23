@@ -15,11 +15,16 @@ public class Variables {
     public static final Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
     public static final String FILE_NAME_PACKAGE_ENCRYPTED = "download/file";
     public static final String FILE_NAME_PACKAGE_DECRYPTED = "download/file.zip";
+    public static final Path PATH_PACKAGE_ENCRYPTED = Paths.get(FILE_NAME_PACKAGE_ENCRYPTED);
 
     //urls
     public static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json");
     public static final String URL_AGENT_DOWNLOAD = "/api/agent/communication/agent";
     public static final String URL_UPDATE_CHECK_REQUEST = "/api/agent/communication/checkForUpdates";
+    public static final String URL_PACKAGE_DETAIL = "/api/agent/communication/package";
+    public static final String URL_DEPLOYMENT_RESULT = "/api/agent/communication/deploymentResult";
+    public static final String URL_REGISTRATION_REQUEST = "/api/agent/registration";
+    public static final String URL_REGISTRATION_VERIFICATION_REQUEST = "/api/agent/registration/verify";
 
     // properties
     public static final String PROPERTIES_SERVER_REGISTRATION_TOKEN = "Server.Registration-Token";

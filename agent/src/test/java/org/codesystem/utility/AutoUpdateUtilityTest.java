@@ -23,7 +23,6 @@ class AutoUpdateUtilityTest {
     String FILE_NAME_AGENT = "Agent.jar";
     Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
     AutoUpdateUtility autoUpdateUtility;
-
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach

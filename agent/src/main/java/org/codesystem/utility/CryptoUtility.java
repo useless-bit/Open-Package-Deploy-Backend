@@ -39,7 +39,7 @@ public class CryptoUtility {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             this.cipherEcc = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding");
+            this.cipherAES = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
             this.privateKeyAgent = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY))));
@@ -55,7 +55,7 @@ public class CryptoUtility {
     }
 
     public String decryptECC(byte[] message) {
-        byte[] decryptedMessage = null;
+        byte[] decryptedMessage;
         try {
             cipherEcc.init(Cipher.DECRYPT_MODE, this.privateKeyAgent, iesParamSpec);
             decryptedMessage = cipherEcc.doFinal(message);
@@ -88,11 +88,11 @@ public class CryptoUtility {
         return signatureForMessage;
     }
 
-    public boolean verifySignatureECC(String message, String base64Signature) {
+    public boolean verifySignatureECC(String message, byte[] messageSignature) {
         try {
             signature.initVerify(publicKeyServer);
             signature.update(message.getBytes(StandardCharsets.UTF_8));
-            return signature.verify(Base64.getDecoder().decode(base64Signature));
+            return signature.verify(messageSignature);
         } catch (Exception e) {
             throw new SevereAgentErrorException("Unable to load the Public-Key: " + e.getMessage());
         }
@@ -120,17 +120,14 @@ public class CryptoUtility {
 
     public String calculateChecksumOfFile(String filePath) {
         try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
-
             MessageDigest messageDigest;
             messageDigest = MessageDigest.getInstance("SHA3-512");
 
             byte[] buffer = new byte[4096];
             int bytesRead;
-
             while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                 messageDigest.update(buffer, 0, bytesRead);
             }
-
             byte[] checkSum = messageDigest.digest();
 
             StringBuilder stringBuilder = new StringBuilder(checkSum.length * 2);
