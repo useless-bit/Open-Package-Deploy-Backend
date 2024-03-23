@@ -1,18 +1,13 @@
 package org.codesystem;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
-import org.codesystem.utility.AutoUpdateUtility;
 import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.DownloadUtility;
 import org.codesystem.utility.PackageUtility;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.security.Security;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,16 +40,7 @@ public class AgentApplication {
     }
 
     private void initialSetup() {
-        String filename;
-        try {
-            filename = String.valueOf(new File(AgentApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
-        } catch (URISyntaxException e) {
-            throw new SevereAgentErrorException("Cannot get filename");
-        }
-        if (filename.endsWith(Variables.FILE_NAME_AGENT_UPDATE)) {
-            logger.info("Entering Update Mode");
-            new AutoUpdateUtility().updateApplication();
-        } else if (Files.exists(Variables.PATH_UPDATE_FILE)) {
+        if (Files.exists(Variables.PATH_UPDATE_FILE)) {
             try {
                 Files.deleteIfExists(Variables.PATH_UPDATE_FILE);
             } catch (IOException e) {
