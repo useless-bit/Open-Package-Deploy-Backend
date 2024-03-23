@@ -8,8 +8,6 @@ import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.exception.TestSystemExitException;
 import org.codesystem.server.repository.ServerRepository;
 import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Base64;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -42,6 +38,19 @@ class CryptoUtilityTest {
     PublicKey serverPublicKey;
     PrivateKey agentPrivateKey;
     PublicKey agentPublicKey;
+
+    @BeforeAll
+    public static void init() {
+        DB = new MariaDB4jSpringService();
+        DB.setDefaultPort(3307);
+        DB.setDefaultOsUser("root");
+        DB.start();
+    }
+
+    @AfterAll
+    public static void cleanupDB() {
+        if (DB != null) DB.stop();
+    }
 
     @BeforeEach
     void setUp() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -75,21 +84,8 @@ class CryptoUtilityTest {
         serverRepository.deleteAll();
     }
 
-    @BeforeAll
-    public static void init() {
-        DB = new MariaDB4jSpringService();
-        DB.setDefaultPort(3307);
-        DB.setDefaultOsUser("root");
-        DB.start();
-    }
-
-    @AfterAll
-    public static void cleanupDB() {
-        if (DB != null) DB.stop();
-    }
-
     @Test
-    void decryptECC(){
-        Assertions.assertThrows(RuntimeException.class,() -> cryptoUtility.decryptECC("".getBytes(StandardCharsets.UTF_8)));
+    void decryptECC() {
+        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.decryptECC("".getBytes(StandardCharsets.UTF_8)));
     }
 }

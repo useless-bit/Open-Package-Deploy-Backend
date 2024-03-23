@@ -6,7 +6,6 @@ import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.utility.CryptoUtility;
 import org.codesystem.server.utility.SystemExitUtility;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
