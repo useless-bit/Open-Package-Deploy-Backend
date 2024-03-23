@@ -93,111 +93,126 @@ public class PropertiesLoader extends Properties {
         AgentApplication.logger.info("Validating properties file");
         for (String propertiesKey : requiredPropertiesOptions) {
             switch (propertiesKey) {
-                case Variables.PROPERTIES_SERVER_URL -> {
-                    checkPropertiesPresentAndSet(propertiesKey);
-                    URL url;
-                    try {
-                        url = new URL(this.getProperty(propertiesKey));
-                    } catch (MalformedURLException e) {
-                        throw new SevereAgentErrorException("Error when parsing the Server URL: '" + e.getMessage() + "'");
-                    }
-                    switch (url.getProtocol()) {
-                        case "https" -> {
-                            //required, to not trigger warning
-                        }
-                        case "http" ->
-                                AgentApplication.logger.warning("The HTTP protocol is used to communicate with the Server. HTTPS is highly recommended");
-                        default ->
-                                throw new SevereAgentErrorException("The protocol is used, but not supported, to communicate with the Server: '" + url.getProtocol() + "'");
-                    }
-                }
+                case Variables.PROPERTIES_SERVER_URL -> validateServerUrl(propertiesKey);
 
-                case Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY -> {
-                    if (isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
-                        //load existing Key Pair
-                        KeyFactory keyFactory;
-                        try {
-                            //load KeyFactory and public Key
-                            keyFactory = KeyFactory.getInstance("EC");
-                            X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY)));
-                            keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
-                        } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm fo existing pair: " + e.getMessage());
-                        }
-                        try {
-                            //load private Key
-                            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)));
-                            keyFactory.generatePrivate(pkcs8EncodedKeySpec);
-                        } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the Private-Key: " + e.getMessage());
-                        }
-                    } else if (!isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && !isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
-                        //generate new Key Pair
-                        AgentApplication.logger.info("No Key-Pair found. Generating Public and Private Key");
-                        KeyPairGenerator keyPairGenerator;
-                        try {
-                            keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
-                        } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm for new pair: " + e.getMessage());
-                        }
-                        try {
-                            keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
-                        } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the Algorithm: " + e.getMessage());
-                        }
-                        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-                        this.setProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
-                        this.setProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
-                        saveProperties();
-                        AgentApplication.logger.info("Key Pair generated and stored in Properties File");
+                case Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY ->
+                        validateAgentKeys();
 
-                    } else {
-                        //only one variable is set
-                        throw new SevereAgentErrorException("Unable to load the Public and Private Key. Make sure both values are set. Clear both values to generate a new Key-Pair on startup");
-                    }
+                case Variables.PROPERTIES_SERVER_REGISTERED -> validateServerRegistrationStatus(propertiesKey);
 
-                }
+                case Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY -> validateServerKey(propertiesKey);
 
-                case Variables.PROPERTIES_SERVER_REGISTERED -> {
-                    if (!isPropertiesPresentAndSet(propertiesKey)) {
-                        this.setProperty(propertiesKey, "false");
-                        saveProperties();
-                    } else if (!this.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("false") && !this.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("true")) {
-                        throw new SevereAgentErrorException("Only 'true' or 'false' values are allowed for: " + propertiesKey);
-                    }
-                }
-
-                case Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY -> {
-                    if (isPropertiesPresentAndSet(propertiesKey)) {
-                        KeyFactory keyFactory;
-                        try {
-                            //load KeyFactory and server public Key
-                            keyFactory = KeyFactory.getInstance("EC");
-                            X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY)));
-                            keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
-                        } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to load the Server Public-Key: " + e.getMessage());
-                        }
-                    }
-                }
-
-                case Variables.PROPERTIES_AGENT_UPDATE_INTERVAL -> {
-                    if (!isPropertiesPresentAndSet(propertiesKey)) {
-                        this.setProperty(propertiesKey, "60");
-                        saveProperties();
-                    } else {
-                        try {
-                            Integer.parseInt(this.getProperty(propertiesKey));
-                        } catch (Exception e) {
-                            throw new SevereAgentErrorException("Unable to parse " + propertiesKey + ": " + e.getMessage());
-                        }
-                    }
-                }
+                case Variables.PROPERTIES_AGENT_UPDATE_INTERVAL -> validateUpdateInterval(propertiesKey);
 
                 default -> checkPropertiesPresentAndSet(propertiesKey);
             }
         }
         AgentApplication.logger.info("Properties file successfully validated");
+    }
+
+    private void validateServerUrl(String propertiesKey) {
+        checkPropertiesPresentAndSet(propertiesKey);
+        URL url;
+        try {
+            url = new URL(this.getProperty(propertiesKey));
+        } catch (MalformedURLException e) {
+            throw new SevereAgentErrorException("Error when parsing the Server URL: '" + e.getMessage() + "'");
+        }
+        switch (url.getProtocol()) {
+            case "https" -> {
+                //required, to not trigger warning
+            }
+            case "http" ->
+                    AgentApplication.logger.warning("The HTTP protocol is used to communicate with the Server. HTTPS is highly recommended");
+            default ->
+                    throw new SevereAgentErrorException("The protocol is used, but not supported, to communicate with the Server: '" + url.getProtocol() + "'");
+        }
+
+    }
+
+    private void validateServerRegistrationStatus(String propertiesKey) {
+        if (!isPropertiesPresentAndSet(propertiesKey)) {
+            this.setProperty(propertiesKey, "false");
+            saveProperties();
+        } else if (!this.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("false") && !this.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("true")) {
+            throw new SevereAgentErrorException("Only 'true' or 'false' values are allowed for: " + propertiesKey);
+        }
+
+    }
+
+    private void validateServerKey(String propertiesKey) {
+        if (isPropertiesPresentAndSet(propertiesKey)) {
+            KeyFactory keyFactory;
+            try {
+                //load KeyFactory and server public Key
+                keyFactory = KeyFactory.getInstance("EC");
+                X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY)));
+                keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
+            } catch (Exception e) {
+                throw new SevereAgentErrorException("Unable to load the Server Public-Key: " + e.getMessage());
+            }
+        }
+
+    }
+
+    private void validateUpdateInterval(String propertiesKey) {
+        if (!isPropertiesPresentAndSet(propertiesKey)) {
+            this.setProperty(propertiesKey, "60");
+            saveProperties();
+        } else {
+            try {
+                Integer.parseInt(this.getProperty(propertiesKey));
+            } catch (Exception e) {
+                throw new SevereAgentErrorException("Unable to parse " + propertiesKey + ": " + e.getMessage());
+            }
+        }
+
+    }
+
+    private void validateAgentKeys() {
+        if (isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
+            //load existing Key Pair
+            KeyFactory keyFactory;
+            try {
+                //load KeyFactory and public Key
+                keyFactory = KeyFactory.getInstance("EC");
+                X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY)));
+                keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
+            } catch (Exception e) {
+                throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm fo existing pair: " + e.getMessage());
+            }
+            try {
+                //load private Key
+                PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)));
+                keyFactory.generatePrivate(pkcs8EncodedKeySpec);
+            } catch (Exception e) {
+                throw new SevereAgentErrorException("Unable to load the Private-Key: " + e.getMessage());
+            }
+        } else if (!isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && !isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
+            //generate new Key Pair
+            AgentApplication.logger.info("No Key-Pair found. Generating Public and Private Key");
+            KeyPairGenerator keyPairGenerator;
+            try {
+                keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
+            } catch (Exception e) {
+                throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm for new pair: " + e.getMessage());
+            }
+            try {
+                keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
+            } catch (Exception e) {
+                throw new SevereAgentErrorException("Unable to load the Algorithm: " + e.getMessage());
+            }
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            this.setProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY, Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+            this.setProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY, Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
+            saveProperties();
+            AgentApplication.logger.info("Key Pair generated and stored in Properties File");
+
+        } else {
+            //only one variable is set
+            throw new SevereAgentErrorException("Unable to load the Public and Private Key. Make sure both values are set. Clear both values to generate a new Key-Pair on startup");
+        }
+
     }
 }
 
