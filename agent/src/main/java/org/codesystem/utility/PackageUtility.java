@@ -96,8 +96,13 @@ public class PackageUtility {
                 throw new SevereAgentErrorException("Error getting details: " + response.code());
             }
             String responseBody = new JSONObject(response.body().string()).getString("message");
-            String decrypted = cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
-            this.packageDetailResponse = new PackageDetailResponse(new JSONObject(decrypted));
+            JSONObject jsonObject = new JSONObject(cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8))));
+            String signature = jsonObject.getString("signature");
+            jsonObject.remove("signature");
+            if (!cryptoUtility.verifySignatureECC(jsonObject.toString(), Base64.getDecoder().decode(signature))) {
+                throw new SevereAgentErrorException("Invalid Signature when processing Package Details");
+            }
+            this.packageDetailResponse = new PackageDetailResponse(jsonObject);
         } catch (Exception e) {
             throw new SevereAgentErrorException("Cannot process Package Detail request: " + e.getMessage());
         }

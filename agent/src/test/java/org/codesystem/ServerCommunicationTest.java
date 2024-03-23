@@ -69,7 +69,7 @@ class ServerCommunicationTest {
         mockServer.when(request().withMethod("GET").withPath("/monitoring/health")).respond(HttpResponse.response().withStatusCode(500));
         new Thread(() -> {
             try {
-                TimeUnit.SECONDS.sleep(30);
+                TimeUnit.SECONDS.sleep(5);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

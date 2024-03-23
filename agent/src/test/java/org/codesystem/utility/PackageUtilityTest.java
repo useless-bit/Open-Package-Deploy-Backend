@@ -183,7 +183,7 @@ class PackageUtilityTest {
     }
 
     @Test
-    void initiateDeployment_valid() {
+    void initiateDeployment_invalidSignature() {
         // valid deployment Linux
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -208,6 +208,36 @@ class PackageUtilityTest {
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/deploymentResult")).respond(HttpResponse.response().withStatusCode(200));
-        Assertions.assertDoesNotThrow(() -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+    }
+    @Test
+    void initiateDeployment_valid() {
+        // valid deployment Linux
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        JSONObject jsonObject = new JSONObject().put("deploymentUUID", "deploymentUUID").put("encryptionToken", "encryptionToken").put("initializationVector", "initializationVector").put("checksumPlaintext", "checksumPlaintext").put("checksumEncrypted", "checksumEncrypted").put("signature", Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
+        Mockito.when(downloadUtility.downloadFile(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
+            Paths.get("download/file").toFile().createNewFile();
+            return null;
+        });
+        Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
+        Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file.zip")).thenReturn("checksumPlaintext");
+        Mockito.when(cryptoUtility.verifySignatureECC(Mockito.any(), Mockito.any())).thenReturn(true);
+        Mockito.when(cryptoUtility.decryptFile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).then(invocationOnMock -> {
+            ZipEntry zipEntry = new ZipEntry("test");
+            ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("download/file.zip"));
+            zipOutputStream.putNextEntry(zipEntry);
+            zipOutputStream.write("Test content".getBytes(StandardCharsets.UTF_8));
+            zipOutputStream.closeEntry();
+            zipOutputStream.close();
+            Paths.get("download/extracted").toFile().mkdirs();
+            Paths.get("download/extracted/start.sh").toFile().createNewFile();
+            return true;
+        });
+        mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
+        mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/deploymentResult")).respond(HttpResponse.response().withStatusCode(200));
+        packageUtility.initiateDeployment();
+        //Assertions.assertDoesNotThrow(() -> packageUtility.initiateDeployment());
     }
 }
