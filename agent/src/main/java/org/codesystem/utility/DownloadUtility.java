@@ -3,12 +3,14 @@ package org.codesystem.utility;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.codesystem.AgentApplication;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Level;
 
 public class DownloadUtility {
     /**
@@ -29,6 +31,7 @@ public class DownloadUtility {
              FileOutputStream fileOutputStream = new FileOutputStream(targetFileLocation.toString())) {
             if (response.code() != 200) {
                 Files.deleteIfExists(targetFileLocation);
+                AgentApplication.logger.log(Level.WARNING, "Error during download. Response Code: {0}", response.code());
                 return false;
             }
             byte[] data = response.body() != null ? response.body().bytes() : new byte[0];
