@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Comparator;
-import java.util.logging.Level;
 import java.util.stream.Stream;
 
 public class PackageUtility {
@@ -40,35 +39,43 @@ public class PackageUtility {
     }
 
     public void initiateDeployment() {
-        AgentApplication.logger.info("Clean Folder");
-        cleanupDownloadFolder();
-        AgentApplication.logger.info("Get Package Details");
-        getPackageDetails();
-        AgentApplication.logger.info("Download Package");
-        MediaType mediaType = Variables.MEDIA_TYPE_JSON;
-        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
-                .post(body)
-                .build();
-        downloadUtility.downloadFile(Variables.PATH_PACKAGE_ENCRYPTED, request);
-        AgentApplication.logger.info("Verifiy");
-        if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_ENCRYPTED).equals(packageDetailResponse.getChecksumEncrypted())) {
-            sendDeploymentResponse(PackageDeploymentErrorState.ENCRYPTED_CHECKSUM_MISMATCH.toString());
+        try {
+            AgentApplication.logger.info("Clean Folder");
+            cleanupDownloadFolder();
+            AgentApplication.logger.info("Get Package Details");
+            getPackageDetails();
+            AgentApplication.logger.info("Download Package");
+            MediaType mediaType = Variables.MEDIA_TYPE_JSON;
+            RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
+            Request request = new Request.Builder()
+                    .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
+                    .post(body)
+                    .build();
+            downloadUtility.downloadFile(Variables.PATH_PACKAGE_ENCRYPTED, request);
+            AgentApplication.logger.info("Verifiy");
+            if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_ENCRYPTED).equals(packageDetailResponse.getChecksumEncrypted())) {
+                sendDeploymentResponse(PackageDeploymentErrorState.ENCRYPTED_CHECKSUM_MISMATCH.toString());
+            }
+            AgentApplication.logger.info("Decrypt");
+            if (!decryptPackage()) {
+                sendDeploymentResponse(PackageDeploymentErrorState.DECRYPTION_FAILED.toString());
+            }
+            AgentApplication.logger.info("Verify");
+            if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_DECRYPTED).equals(packageDetailResponse.getChecksumPlaintext())) {
+                sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
+            }
+            AgentApplication.logger.info("extract");
+            extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, "download/extracted");
+            AgentApplication.logger.info("start deployment");
+            sendDeploymentResponse(executeDeployment());
+            AgentApplication.logger.info("Final cleanup");
+        } catch (Exception e) {
+            try {
+                sendDeploymentResponse(PackageDeploymentErrorState.UNKNOWN_ERROR + ": " + e.getMessage());
+            } catch (Exception exception) {
+                throw new SevereAgentErrorException("Error when sending deployment result: " + exception.getMessage());
+            }
         }
-        AgentApplication.logger.info("Decrypt");
-        if (!decryptPackage()) {
-            sendDeploymentResponse(PackageDeploymentErrorState.DECRYPTION_FAILED.toString());
-        }
-        AgentApplication.logger.info("Verify");
-        if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_DECRYPTED).equals(packageDetailResponse.getChecksumPlaintext())) {
-            sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
-        }
-        AgentApplication.logger.info("extract");
-        extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, "download/extracted");
-        AgentApplication.logger.info("start deployment");
-        sendDeploymentResponse(executeDeployment());
-        AgentApplication.logger.info("Final cleanup");
         cleanupDownloadFolder();
     }
 

@@ -237,7 +237,6 @@ class PackageUtilityTest {
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/deploymentResult")).respond(HttpResponse.response().withStatusCode(200));
-        packageUtility.initiateDeployment();
-        //Assertions.assertDoesNotThrow(() -> packageUtility.initiateDeployment());
+        Assertions.assertDoesNotThrow(() -> packageUtility.initiateDeployment());
     }
 }
