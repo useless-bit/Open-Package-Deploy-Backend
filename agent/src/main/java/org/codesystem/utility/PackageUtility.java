@@ -47,7 +47,6 @@ public class PackageUtility {
         AgentApplication.logger.info("Download Package");
         MediaType mediaType = Variables.MEDIA_TYPE_JSON;
         RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
-        AgentApplication.logger.log(Level.INFO, "Download request: {0}", propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID());
         Request request = new Request.Builder()
                 .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/communication/package/" + packageDetailResponse.getDeploymentUUID())
                 .post(body)

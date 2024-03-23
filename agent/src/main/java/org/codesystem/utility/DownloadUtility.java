@@ -22,7 +22,7 @@ public class DownloadUtility {
         if (targetFileLocation == null || request == null) {
             return false;
         }
-        if (targetFileLocation.toFile().exists() || (targetFileLocation.toFile().getParentFile() != null && !targetFileLocation.toFile().getParentFile().mkdirs())) {
+        if (targetFileLocation.toFile().exists() || (targetFileLocation.toFile().getParentFile() != null && !targetFileLocation.toFile().getParentFile().exists() && !targetFileLocation.toFile().getParentFile().mkdirs())) {
             return false;
         }
 
