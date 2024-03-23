@@ -127,7 +127,7 @@ public class PropertiesLoader extends Properties {
                             //load private Key
                             PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)));
                             keyFactory.generatePrivate(pkcs8EncodedKeySpec);
-                        } catch (InvalidKeySpecException e) {
+                        } catch (Exception e) {
                             throw new SevereAgentErrorException("Unable to load the Private-Key: " + e.getMessage());
                         }
                     } else if (!isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY) && !isPropertiesPresentAndSet(Variables.PROPERTIES_AGENT_ECC_PRIVATE_KEY)) {
@@ -141,7 +141,7 @@ public class PropertiesLoader extends Properties {
                         }
                         try {
                             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
-                        } catch (InvalidAlgorithmParameterException e) {
+                        } catch (Exception e) {
                             throw new SevereAgentErrorException("Unable to load the Algorithm: " + e.getMessage());
                         }
                         KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -174,9 +174,7 @@ public class PropertiesLoader extends Properties {
                             keyFactory = KeyFactory.getInstance("EC");
                             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(this.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY)));
                             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
-                        } catch (NoSuchAlgorithmException e) {
-                            throw new SevereAgentErrorException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
-                        } catch (InvalidKeySpecException e) {
+                        } catch (Exception e) {
                             throw new SevereAgentErrorException("Unable to load the Server Public-Key: " + e.getMessage());
                         }
                     }
@@ -189,9 +187,8 @@ public class PropertiesLoader extends Properties {
                     } else {
                         try {
                             Integer.parseInt(this.getProperty(propertiesKey));
-                        } catch (NumberFormatException e) {
-                            AgentApplication.logger.severe(propertiesKey + " must be a valid integer");
-                            System.exit(1);
+                        } catch (Exception e) {
+                            throw new SevereAgentErrorException("Unable to parse " + propertiesKey + ": " + e.getMessage());
                         }
                     }
                 }
