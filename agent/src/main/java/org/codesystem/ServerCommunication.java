@@ -72,8 +72,13 @@ public class ServerCommunication {
                 return false;
             }
             String responseBody = new JSONObject(response.body().string()).getString("message");
-            String decrypted = cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8)));
-            UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(new JSONObject(decrypted));
+            JSONObject jsonObject = new JSONObject(cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8))));
+            String signature = jsonObject.getString("signature");
+            jsonObject.remove("signature");
+            if (!cryptoUtility.verifySignatureECC(jsonObject.toString(), Base64.getDecoder().decode(signature))) {
+                throw new SevereAgentErrorException("Invalid Signature when processing Update Check Response");
+            }
+            UpdateCheckResponse updateCheckResponse = new UpdateCheckResponse(jsonObject);
             return processUpdateCheckResponse(updateCheckResponse);
         } catch (Exception e) {
             throw new SevereAgentErrorException(e.getMessage());

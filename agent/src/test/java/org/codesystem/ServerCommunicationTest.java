@@ -98,11 +98,21 @@ class ServerCommunicationTest {
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200));
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunication.sendUpdateRequest());
 
+        // valid response, invalid signature
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        JSONObject jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum").put("signature", Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
+        Mockito.when(cryptoUtility.verifySignatureECC(Mockito.any(), Mockito.any())).thenReturn(false);
+        mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
+        Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunication.sendUpdateRequest());
+
         // valid response
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
-        JSONObject jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum");
+        jsonObject = new JSONObject().put("updateInterval", 10).put("deploymentAvailable", false).put("agentChecksum", "agentChecksum").put("signature", Base64.getEncoder().encodeToString("Signature".getBytes(StandardCharsets.UTF_8)));
         Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
+        Mockito.when(cryptoUtility.verifySignatureECC(Mockito.any(), Mockito.any())).thenReturn(true);
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/checkForUpdates")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         Assertions.assertFalse(serverCommunication.sendUpdateRequest());
     }
