@@ -1,15 +1,13 @@
 package org.codesystem.server.configuration;
 
-import ch.vorburger.exec.ManagedProcessException;
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfiguration;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.exception.TestSystemExitException;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.utility.SystemExitUtility;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
@@ -23,26 +21,11 @@ import java.util.List;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class ServerInitializationTest {
-    private static DB db;
     PrivateKey serverPrivateKey;
     PublicKey serverPublicKey;
     private ServerInitialization serverInitialization;
     private ServerRepository serverRepository;
     private ResourceLoader resourceLoader;
-
-    @BeforeAll
-    public static void init() throws ManagedProcessException {
-        DBConfiguration dbConfiguration = DBConfigurationBuilder.newBuilder()
-                .setPort(3307)
-                .build();
-        db = DB.newEmbeddedDB(dbConfiguration);
-        db.start();
-    }
-
-    @AfterAll
-    public static void cleanupDB() throws ManagedProcessException {
-        if (db != null) db.stop();
-    }
 
     @BeforeEach
     public void setUp() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
