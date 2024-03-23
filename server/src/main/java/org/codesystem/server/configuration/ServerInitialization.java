@@ -5,6 +5,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.utility.CryptoUtility;
+import org.codesystem.server.utility.SystemExitUtility;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -23,21 +24,23 @@ public class ServerInitialization {
     private final ServerRepository serverRepository;
     private final ResourceLoader resourceLoader;
     private final CryptoUtility cryptoUtility;
+    private final SystemExitUtility systemExitUtility;
 
-    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader) {
+    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader, SystemExitUtility systemExitUtility) {
         this.serverRepository = serverRepository;
         this.resourceLoader = resourceLoader;
         this.cryptoUtility = new CryptoUtility(serverRepository);
+        this.systemExitUtility = systemExitUtility;
     }
 
     @PostConstruct
     public void initializeServer() {
         if (serverRepository.findAll().size() > 1) {
-            //should not be possible
-            System.exit(1);
+            // should not be possible
+            systemExitUtility.exit(1);
         } else if (serverRepository.findAll().isEmpty()) {
             serverRepository.save(generateServerEntity());
-            System.exit(0);
+            systemExitUtility.exit(0);
         } else {
             validateServerEntity();
         }
@@ -60,15 +63,14 @@ public class ServerInitialization {
     private void validateServerEntity() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
 
+        System.out.println(serverEntity.getPublicKeyBase64());
         KeyFactory keyFactory;
         try {
             //load KeyFactory and public Key
             keyFactory = KeyFactory.getInstance("EC");
             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPublicKeyBase64()));
             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
-        } catch (InvalidKeySpecException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unable to load the Public-Key: " + e.getMessage());
         }
         try {
@@ -85,15 +87,13 @@ public class ServerInitialization {
         KeyPairGenerator keyPairGenerator;
         try {
             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Unable to load the KeyFactory Algorithm: " + e.getMessage());
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException("Unable to load the Algorithm Provider: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load KeyPair Generator: " + e.getMessage());
         }
         try {
             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
         } catch (InvalidAlgorithmParameterException e) {
-            throw new RuntimeException("Unable to load the Algorithm: " + e.getMessage());
+            throw new RuntimeException("Unable to load the KeyPair Generator Parameter: " + e.getMessage());
         }
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 

@@ -38,6 +38,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.3'
     implementation 'com.jayway.jsonpath:json-path:2.9.0'
+    testImplementation 'ch.vorburger.mariaDB4j:mariaDB4j:3.0.1'
+
 }
 
 tasks.named('test') {
