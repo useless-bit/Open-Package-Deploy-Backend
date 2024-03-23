@@ -67,7 +67,7 @@ public class UpdateHandler {
             command = optionalString.get();
             command = command.substring(0, command.indexOf(" "));
         }
-        AgentApplication.logger.log(Level.INFO, "Update command: {}", command);
+        AgentApplication.logger.log(Level.INFO, "Update command: {0}", command);
         try {
             new ProcessBuilder(command, "-jar", Variables.FILE_NAME_AGENT_UPDATE).start();
         } catch (IOException e) {
