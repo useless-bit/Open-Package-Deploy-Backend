@@ -70,7 +70,6 @@ public class AgentApplication {
         } else {
             throw new SevereAgentErrorException("Unsupported OS");
         }
-        Security.addProvider(new BouncyCastleProvider());
         logger.info("Agent Startup");
         propertiesLoader.loadProperties();
 
