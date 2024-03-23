@@ -51,28 +51,31 @@ class ServerCommunicationRegistrationTest {
     }
 
     @Test
-    void validateRegistration_registrationTokenMissing(){
+    void validateRegistration_registrationTokenMissing() {
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunicationRegistration.validateRegistration());
         Mockito.when(propertiesLoader.getProperty("Server.Registration-Token")).thenReturn("");
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunicationRegistration.validateRegistration());
         Mockito.when(propertiesLoader.getProperty("Server.Registration-Token")).thenReturn("   ");
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunicationRegistration.validateRegistration());
     }
+
     @Test
-    void validateRegistration_registrationTokenProvidedServerNotAvailable(){
+    void validateRegistration_registrationTokenProvidedServerNotAvailable() {
         Mockito.when(propertiesLoader.getProperty("Server.Registration-Token")).thenReturn("Registration Token");
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunicationRegistration.validateRegistration());
     }
+
     @Test
-    void validateRegistration_registrationTokenProvidedServerAvailable_StageOne(){
+    void validateRegistration_registrationTokenProvidedServerAvailable_StageOne() {
         Mockito.when(propertiesLoader.getProperty("Server.Registration-Token")).thenReturn("Registration Token");
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "Server Public Key").put("encryptedValidationToken", Base64.getEncoder().encodeToString("Verification Code".getBytes(StandardCharsets.UTF_8)));
         mockServer.when(request().withMethod("POST").withPath("/api/agent/registration")).respond(HttpResponse.response().withStatusCode(200).withBody(jsonObject.toString()));
         Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn("Verification Token");
         Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunicationRegistration.validateRegistration());
     }
+
     @Test
-    void validateRegistration_valid(){
+    void validateRegistration_valid() {
         Mockito.when(propertiesLoader.getProperty("Server.Registration-Token")).thenReturn("Registration Token");
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "Server Public Key").put("encryptedValidationToken", Base64.getEncoder().encodeToString("Verification Code".getBytes(StandardCharsets.UTF_8)));
         mockServer.when(request().withMethod("POST").withPath("/api/agent/registration")).respond(HttpResponse.response().withStatusCode(200).withBody(jsonObject.toString()));

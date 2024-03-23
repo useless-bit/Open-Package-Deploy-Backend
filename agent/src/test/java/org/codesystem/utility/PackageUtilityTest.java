@@ -111,7 +111,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file.zip")).thenReturn("invalidChecksum");
-        Mockito.when(cryptoUtility.decryptFile(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(true).then(invocationOnMock -> {
+        Mockito.when(cryptoUtility.decryptFile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(true).then(invocationOnMock -> {
             Paths.get("download/file.zip").toFile().createNewFile();
             return null;
         });
@@ -128,7 +128,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file.zip")).thenReturn("checksumPlaintext");
-        Mockito.when(cryptoUtility.decryptFile(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(true).then(invocationOnMock -> {
+        Mockito.when(cryptoUtility.decryptFile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(true).then(invocationOnMock -> {
             Paths.get("download/file.zip").toFile().createNewFile();
             return null;
         });
@@ -145,7 +145,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file.zip")).thenReturn("checksumPlaintext");
-        Mockito.when(cryptoUtility.decryptFile(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any())).then(invocationOnMock -> {
+        Mockito.when(cryptoUtility.decryptFile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).then(invocationOnMock -> {
             ZipEntry zipEntry = new ZipEntry("test");
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("download/file.zip"));
             zipOutputStream.putNextEntry(zipEntry);
@@ -167,7 +167,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file.zip")).thenReturn("checksumPlaintext");
-        Mockito.when(cryptoUtility.decryptFile(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any())).then(invocationOnMock -> {
+        Mockito.when(cryptoUtility.decryptFile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).then(invocationOnMock -> {
             ZipEntry zipEntry = new ZipEntry("test");
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("download/file.zip"));
             zipOutputStream.putNextEntry(zipEntry);
@@ -195,7 +195,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file.zip")).thenReturn("checksumPlaintext");
-        Mockito.when(cryptoUtility.decryptFile(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any())).then(invocationOnMock -> {
+        Mockito.when(cryptoUtility.decryptFile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).then(invocationOnMock -> {
             ZipEntry zipEntry = new ZipEntry("test");
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("download/file.zip"));
             zipOutputStream.putNextEntry(zipEntry);

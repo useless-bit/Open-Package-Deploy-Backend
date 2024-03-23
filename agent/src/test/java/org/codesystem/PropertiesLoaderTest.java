@@ -63,6 +63,7 @@ class PropertiesLoaderTest {
         propertiesLoader = new PropertiesLoader();
         Assertions.assertThrows(TestSystemExitException.class, () -> propertiesLoader.loadProperties());
     }
+
     @Test
     void load_reader() {
         propertiesLoader = new PropertiesLoader();
@@ -106,6 +107,7 @@ class PropertiesLoaderTest {
         propertiesLoader.saveProperties();
         Assertions.assertThrows(TestSystemExitException.class, () -> propertiesLoader.loadProperties());
     }
+
     @Test
     void loadProperties_invalidKeys() {
         propertiesLoader = new PropertiesLoader();
@@ -119,6 +121,7 @@ class PropertiesLoaderTest {
         propertiesLoader.saveProperties();
         Assertions.assertThrows(TestSystemExitException.class, () -> propertiesLoader.loadProperties());
     }
+
     @Test
     void loadProperties_invalidUpdateInterval() {
         propertiesLoader = new PropertiesLoader();
@@ -132,6 +135,7 @@ class PropertiesLoaderTest {
         propertiesLoader.saveProperties();
         Assertions.assertThrows(TestSystemExitException.class, () -> propertiesLoader.loadProperties());
     }
+
     @Test
     void loadProperties_validNotRegisteredNoKeys() {
         propertiesLoader = new PropertiesLoader();

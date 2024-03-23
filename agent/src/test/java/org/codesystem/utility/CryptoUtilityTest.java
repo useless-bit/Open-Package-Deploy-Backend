@@ -242,7 +242,7 @@ class CryptoUtilityTest {
     }
 
     @Test
-    void calculateChecksumOfFile_invalid(){
+    void calculateChecksumOfFile_invalid() {
         Mockito.when(propertiesLoader.getProperty("Agent.ECC.Private-Key")).thenReturn(Base64.getEncoder().encodeToString(agentPrivateKey.getEncoded()));
         Mockito.when(propertiesLoader.getProperty("Server.ECC.Public-Key")).thenReturn(Base64.getEncoder().encodeToString(serverPublicKey.getEncoded()));
         cryptoUtility = new CryptoUtility(propertiesLoader);
