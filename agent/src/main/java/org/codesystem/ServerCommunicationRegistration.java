@@ -27,7 +27,6 @@ public class ServerCommunicationRegistration {
     }
 
     public void validateRegistration() {
-        AgentApplication.logger.info("Checking if Server is available");
         serverCommunication.waitForServerAvailability();
         AgentApplication.logger.info("The Server is available. Staring registration");
 

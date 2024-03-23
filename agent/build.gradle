@@ -37,7 +37,7 @@ tasks.named('test') {
 
 tasks.register('fatJar', Jar) {
     manifest {
-        attributes 'Main-Class': 'org.codesystem.AgentApplication'
+        attributes 'Main-Class': 'org.codesystem.Main'
     }
     archiveBaseName.set("Agent")
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
