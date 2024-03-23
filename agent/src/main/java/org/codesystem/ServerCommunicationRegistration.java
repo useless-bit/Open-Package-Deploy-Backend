@@ -31,13 +31,13 @@ public class ServerCommunicationRegistration {
         serverCommunication.waitForServerAvailability();
         AgentApplication.logger.info("The Server is available. Staring registration");
 
-        //clear server public key when not registered
+        // clear server public key when not registered
         if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTERED).equals("false")) {
             propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, "");
             propertiesLoader.saveProperties();
         }
 
-        //register on server
+        // register on server
         if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY).isBlank()) {
             AgentApplication.logger.info("No Server Public Key found. Registering on Server.");
             if (propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN) == null || propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN).isBlank()) {
