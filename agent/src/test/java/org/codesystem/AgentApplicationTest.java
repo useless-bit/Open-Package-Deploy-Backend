@@ -27,7 +27,7 @@ class AgentApplicationTest {
     File updateFile = Paths.get("Agent_update.jar").toFile();
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         propertiesLoader = Mockito.mock(PropertiesLoader.class);
         hardwareInfo = Mockito.mock(HardwareInfo.class);
         cryptoUtility = Mockito.mock(CryptoUtility.class);
@@ -46,7 +46,7 @@ class AgentApplicationTest {
     }
 
     @AfterEach
-    void teardown() {
+    void tearDown() {
         updateFile.delete();
         mockServer.stop();
         systemExitMockedStatic.close();

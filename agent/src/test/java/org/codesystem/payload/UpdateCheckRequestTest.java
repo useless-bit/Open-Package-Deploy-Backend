@@ -16,7 +16,7 @@ class UpdateCheckRequestTest {
     UpdateCheckRequest updateCheckRequest;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         updateCheckRequest = new UpdateCheckRequest(null, null);
         cryptoUtility = Mockito.mock(CryptoUtility.class);
         Mockito.when(cryptoUtility.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes(StandardCharsets.UTF_8));

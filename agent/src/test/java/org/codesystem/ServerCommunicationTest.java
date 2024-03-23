@@ -32,7 +32,7 @@ class ServerCommunicationTest {
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         Security.addProvider(new BouncyCastleProvider());
         propertiesLoader = Mockito.mock(PropertiesLoader.class);
         Mockito.when(propertiesLoader.getProperty("Server.Url")).thenReturn("http://localhost:8899");
@@ -50,7 +50,7 @@ class ServerCommunicationTest {
     }
 
     @AfterEach
-    void teardown() {
+    void tearDown() {
         mockServer.stop();
         systemExitMockedStatic.close();
     }

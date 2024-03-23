@@ -22,7 +22,6 @@ import java.util.Base64;
 import java.util.List;
 
 @Service
-@DependsOn("serverInitialization")
 public class CryptoUtility {
     private final KeyFactory keyFactory;
     private final KeyGenerator keyGeneratorAES;

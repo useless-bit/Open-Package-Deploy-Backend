@@ -27,7 +27,7 @@ class PropertiesLoaderTest {
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
-    void setup() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    void setUp() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         Security.addProvider(new BouncyCastleProvider());
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
         keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
@@ -46,7 +46,7 @@ class PropertiesLoaderTest {
     }
 
     @AfterEach
-    void teardown() {
+    void tearDown() {
         propertiesFile.delete();
         systemExitMockedStatic.close();
     }

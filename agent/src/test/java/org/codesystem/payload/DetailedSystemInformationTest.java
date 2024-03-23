@@ -13,7 +13,7 @@ class DetailedSystemInformationTest {
     DetailedSystemInformation detailedSystemInformation;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         detailedSystemInformation = null;
         hardwareInfo = Mockito.mock(HardwareInfo.class);
     }

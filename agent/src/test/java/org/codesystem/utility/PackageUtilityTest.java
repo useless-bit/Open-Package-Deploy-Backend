@@ -55,7 +55,7 @@ class PackageUtilityTest {
     void tearDown() {
         mockServer.stop();
         systemExitMockedStatic.close();
-        //deleteFiles();
+        deleteFiles();
     }
 
     private void deleteFiles() {

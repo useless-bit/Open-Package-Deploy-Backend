@@ -15,7 +15,7 @@ class EmptyRequestTest {
     EmptyRequest emptyRequest;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         emptyRequest = new EmptyRequest();
         cryptoUtility = Mockito.mock(CryptoUtility.class);
         Mockito.when(cryptoUtility.createSignatureECC(Mockito.any())).thenReturn("Signature".getBytes(StandardCharsets.UTF_8));

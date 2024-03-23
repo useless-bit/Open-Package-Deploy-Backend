@@ -38,8 +38,8 @@ class ServerInitializationTest {
 
         serverRepository = Mockito.spy(ServerRepository.class);
         SystemExitUtility systemExitUtility = Mockito.mock(SystemExitUtility.class);
-        resourceLoader = Mockito.mock(ResourceLoader.class);
         Mockito.doThrow(TestSystemExitException.class).when(systemExitUtility).exit(Mockito.anyInt());
+        resourceLoader = Mockito.mock(ResourceLoader.class);
         serverInitialization = new ServerInitialization(serverRepository, resourceLoader, systemExitUtility);
     }
 

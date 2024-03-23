@@ -26,7 +26,7 @@ class ServerCommunicationRegistrationTest {
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         propertiesLoader = Mockito.mock(PropertiesLoader.class);
         Mockito.when(propertiesLoader.getProperty("Server.Url")).thenReturn("http://localhost:8899");
         Mockito.when(propertiesLoader.getProperty("Agent.ECC.Public-Key")).thenReturn("PublicKey");
@@ -45,7 +45,7 @@ class ServerCommunicationRegistrationTest {
     }
 
     @AfterEach
-    void teardown() {
+    void tearDown() {
         mockServer.stop();
         systemExitMockedStatic.close();
     }
