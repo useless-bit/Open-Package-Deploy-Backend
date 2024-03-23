@@ -23,6 +23,12 @@ repositories {
     mavenCentral()
 }
 
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
 dependencies {
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
@@ -52,7 +58,7 @@ sonar {
         property "sonar.projectName", "OPD-Server"
         property "sonar.qualitygate.wait", true
         property "sonar.java.fileByFile", true
-        property "sonar.exclusions", "src/test/**"
+        property "sonar.test.exclusions", "src/test/java/**/*"
         property "sonar.token", System.getenv("SONAR_TOKEN_SERVER")
     }
 }
