@@ -1,9 +1,11 @@
 package org.codesystem;
 
-import okhttp3.*;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.CryptoUtility;
-import org.codesystem.utility.PackageUtility;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -18,10 +20,10 @@ public class ServerCommunicationRegistration {
     private final PropertiesLoader propertiesLoader;
     private final ServerCommunication serverCommunication;
 
-    public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, String agentChecksum, UpdateHandler updateHandler, PackageUtility packageUtility) {
+    public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, ServerCommunication serverCommunication) {
         this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;
-        this.serverCommunication = new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility);
+        this.serverCommunication = serverCommunication;
     }
 
     public void validateRegistration() {
@@ -58,15 +60,14 @@ public class ServerCommunicationRegistration {
 
         OkHttpClient client = new OkHttpClient();
 
-        MediaType mediaType = MediaType.parse("application/json");
         JSONObject jsonRequestBody = new JSONObject()
                 .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY))
                 .put("name", inetAddress.getCanonicalHostName())
                 .put("authenticationToken", propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN));
 
-        RequestBody body = RequestBody.create(jsonRequestBody.toString(), mediaType);
+        RequestBody body = RequestBody.create(jsonRequestBody.toString(), Variables.MEDIA_TYPE_JSON);
         Request request = new Request.Builder()
-                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/registration")
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_REGISTRATION_REQUEST)
                 .post(body)
                 .build();
 
@@ -86,9 +87,9 @@ public class ServerCommunicationRegistration {
                     .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY))
                     .put("verificationToken", verificationToken);
 
-            body = RequestBody.create(jsonRequestBody.toString(), mediaType);
+            body = RequestBody.create(jsonRequestBody.toString(), Variables.MEDIA_TYPE_JSON);
             request = new Request.Builder()
-                    .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + "/api/agent/registration/verify")
+                    .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_REGISTRATION_VERIFICATION_REQUEST)
                     .post(body)
                     .build();
             Response responseSecond = client.newCall(request).execute();
@@ -100,7 +101,7 @@ public class ServerCommunicationRegistration {
             propertiesLoader.remove(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN);
             propertiesLoader.saveProperties();
         } catch (IOException e) {
-            throw new SevereAgentErrorException("Cannot get Hostname: " + e.getMessage());
+            throw new SevereAgentErrorException("Cannot register on Server: " + e.getMessage());
         }
 
 

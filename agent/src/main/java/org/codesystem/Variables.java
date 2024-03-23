@@ -23,6 +23,8 @@ public class Variables {
     public static final String URL_UPDATE_CHECK_REQUEST = "/api/agent/communication/checkForUpdates";
     public static final String URL_PACKAGE_DETAIL = "/api/agent/communication/package";
     public static final String URL_DEPLOYMENT_RESULT = "/api/agent/communication/deploymentResult";
+    public static final String URL_REGISTRATION_REQUEST = "/api/agent/registration";
+    public static final String URL_REGISTRATION_VERIFICATION_REQUEST = "/api/agent/registration/verify";
 
     // properties
     public static final String PROPERTIES_SERVER_REGISTRATION_TOKEN = "Server.Registration-Token";
