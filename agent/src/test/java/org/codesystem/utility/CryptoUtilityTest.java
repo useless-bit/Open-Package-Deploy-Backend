@@ -234,7 +234,6 @@ class CryptoUtilityTest {
         ) {
             byte[] inputStreamByte = fileInputStream.readNBytes(1024);
             while (inputStreamByte.length != 0) {
-                System.out.println(inputStreamByte.length);
                 cipherOutputStream.write(inputStreamByte);
                 inputStreamByte = fileInputStream.readNBytes(1024);
             }
