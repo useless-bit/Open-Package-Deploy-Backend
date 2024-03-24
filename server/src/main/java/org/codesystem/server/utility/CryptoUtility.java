@@ -40,7 +40,7 @@ public class CryptoUtility {
         try {
             this.keyFactory = KeyFactory.getInstance("EC");
             this.keyGeneratorAES = KeyGenerator.getInstance("AES");
-            this.keyGeneratorAES.init(128);
+            this.keyGeneratorAES.init(256, new SecureRandom());
             if (!serverEntityList.isEmpty()) {
                 this.privateKeyServer = this.keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntityList.get(0).getPrivateKeyBase64())));
             } else {
@@ -55,6 +55,7 @@ public class CryptoUtility {
         byte[] decryptedMessage;
         try {
             Cipher cipher = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+            System.out.println(privateKeyServer);
             cipher.init(Cipher.DECRYPT_MODE, this.privateKeyServer, iesParamSpec);
             decryptedMessage = cipher.doFinal(message);
         } catch (Exception e) {
