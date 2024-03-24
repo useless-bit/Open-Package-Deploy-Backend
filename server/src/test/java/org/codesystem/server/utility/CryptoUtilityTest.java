@@ -20,7 +20,10 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,13 +36,13 @@ import java.util.Base64;
 class CryptoUtilityTest {
     private static MariaDB4jSpringService DB;
 
-    CryptoUtility cryptoUtility;
     @MockBean
     ServerInitialization serverInitialization;
     @MockBean
     SecurityConfiguration securityConfiguration;
     @Autowired
     ServerRepository serverRepository;
+    CryptoUtility cryptoUtility;
 
     PrivateKey serverPrivateKey;
     PublicKey serverPublicKey;
@@ -73,7 +76,6 @@ class CryptoUtilityTest {
     @BeforeEach
     void setUp() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         Security.addProvider(new BouncyCastleProvider());
-        MockitoAnnotations.openMocks(this);
 
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
         keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
@@ -241,7 +243,7 @@ class CryptoUtilityTest {
     }
 
     @Test
-    void decryptFile_valid() throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException {
+    void decryptFile_valid() throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         PackageEntity packageEntity = new PackageEntity();
         new FileOutputStream(plaintextFile).write("Test Content".getBytes(StandardCharsets.UTF_8));
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
