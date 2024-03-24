@@ -9,7 +9,10 @@ import org.codesystem.server.repository.ServerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
 import javax.crypto.spec.GCMParameterSpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +58,6 @@ public class CryptoUtility {
         byte[] decryptedMessage;
         try {
             Cipher cipher = Cipher.getInstance("ECIES/None/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-            System.out.println(privateKeyServer);
             cipher.init(Cipher.DECRYPT_MODE, this.privateKeyServer, iesParamSpec);
             decryptedMessage = cipher.doFinal(message);
         } catch (Exception e) {
@@ -106,7 +108,7 @@ public class CryptoUtility {
         try {
             cipher = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             cipher.init(Cipher.ENCRYPT_MODE, packageEntity.getEncryptionToken());
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException e) {
+        } catch (Exception e) {
             return false;
         }
         packageEntity.setInitializationVector(cipher.getIV());
@@ -129,7 +131,7 @@ public class CryptoUtility {
         Cipher cipher;
         try {
             cipher = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | NoSuchProviderException e) {
+        } catch (Exception e) {
             return false;
         }
         try (
