@@ -10,11 +10,12 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
-public class RequestValidator {
+public class RequestUtility {
     private final AgentRepository agentRepository;
     private final CryptoUtility cryptoUtility;
 
@@ -27,17 +28,27 @@ public class RequestValidator {
         if (agentEntity == null || !agentEntity.isRegistrationCompleted()) {
             return null;
         }
-        JSONObject decryptedMessage = new JSONObject(cryptoUtility.decryptECC(Base64.getDecoder().decode(agentEncryptedRequest.getMessage())));
+        JSONObject decryptedMessage;
+        try {
+            decryptedMessage = new JSONObject(cryptoUtility.decryptECC(Base64.getDecoder().decode(agentEncryptedRequest.getMessage())));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
         if (decryptedMessage.isEmpty() || decryptedMessage.isNull("signature") || decryptedMessage.isNull("timestamp")) {
             return null;
         }
-        Instant messageTimestamp = Instant.parse(decryptedMessage.getString("timestamp"));
-        if (messageTimestamp == null || messageTimestamp.isAfter(Instant.now().plusSeconds(300)) && !messageTimestamp.isBefore(Instant.now().minusSeconds(300))) {
+        Instant messageTimestamp;
+        try {
+            messageTimestamp = Instant.parse(decryptedMessage.getString("timestamp"));
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+        if (messageTimestamp.isAfter(Instant.now().plusSeconds(300)) || messageTimestamp.isBefore(Instant.now().minusSeconds(300))) {
             return null;
         }
         String messageSignature = decryptedMessage.getString("signature");
         decryptedMessage.remove("signature");
-        if (messageSignature == null || messageSignature.isBlank()) {
+        if (messageSignature.isBlank()) {
             return null;
         }
 
@@ -48,7 +59,7 @@ public class RequestValidator {
     }
 
     public AgentEncryptedResponse generateAgentEncryptedResponse(JSONObject jsonObject, AgentEntity agentEntity) {
-        if (jsonObject == null || jsonObject.isEmpty()) {
+        if (jsonObject == null || jsonObject.isEmpty() || agentEntity == null) {
             return null;
         }
         jsonObject.put("timestamp", Instant.now());

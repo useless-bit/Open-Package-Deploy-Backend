@@ -129,6 +129,18 @@ class DownloadUtilityTest {
         Assertions.assertArrayEquals(Files.readAllBytes(downloadFileTwo), "Test-Content".getBytes(StandardCharsets.UTF_8));
         deleteFolderWithContent();
 
+        // valid
+        mockServer.stop();
+        mockServer = ClientAndServer.startClientAndServer(8899);
+        mockServer.when(request().withMethod("GET").withPath("/download/test")).respond(HttpResponse.response().withStatusCode(200).withBody("Test-Content".getBytes(StandardCharsets.UTF_8)));
+        request = new Request.Builder()
+                .url("http://localhost:8899/download/test")
+                .build();
+        Assertions.assertTrue(downloadUtility.downloadFile(downloadFileTwo, request));
+        Assertions.assertTrue(Files.exists(downloadFileTwo));
+        Assertions.assertArrayEquals(Files.readAllBytes(downloadFileTwo), "Test-Content".getBytes(StandardCharsets.UTF_8));
+        deleteFolderWithContent();
+
         // file already present
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -136,6 +148,7 @@ class DownloadUtilityTest {
         request = new Request.Builder()
                 .url("http://localhost:8899/download/test")
                 .build();
+        Files.createDirectory(Paths.get("test-download"));
         Assertions.assertTrue(downloadUtility.downloadFile(downloadFileOne, request));
         Assertions.assertTrue(Files.exists(downloadFileOne));
         Assertions.assertArrayEquals(Files.readAllBytes(downloadFileOne), "Test-Content".getBytes(StandardCharsets.UTF_8));

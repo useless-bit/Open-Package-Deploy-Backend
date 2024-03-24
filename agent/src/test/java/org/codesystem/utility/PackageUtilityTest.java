@@ -55,7 +55,7 @@ class PackageUtilityTest {
     void tearDown() {
         mockServer.stop();
         systemExitMockedStatic.close();
-        //deleteFiles();
+        deleteFiles();
     }
 
     private void deleteFiles() {
@@ -210,6 +210,7 @@ class PackageUtilityTest {
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/deploymentResult")).respond(HttpResponse.response().withStatusCode(200));
         Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
     }
+
     @Test
     void initiateDeployment_valid() {
         // valid deployment Linux

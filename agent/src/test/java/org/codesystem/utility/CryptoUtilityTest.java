@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
@@ -65,7 +66,7 @@ class CryptoUtilityTest {
         this.cipherAes = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
         this.signature = Signature.getInstance("SHA512withECDSA", BouncyCastleProvider.PROVIDER_NAME);
         this.keyGenerator = KeyGenerator.getInstance("AES");
-        this.keyGenerator.init(128);
+        this.keyGenerator.init(256, new SecureRandom());
         this.aesKey = keyGenerator.generateKey();
 
         cryptoUtility = null;
@@ -202,7 +203,6 @@ class CryptoUtilityTest {
         cryptoUtility = new CryptoUtility(propertiesLoader);
         cipherAes.init(Cipher.ENCRYPT_MODE, aesKey);
         Assertions.assertFalse(cryptoUtility.decryptFile(null, null, null, null));
-        //Assertions.assertFalse();(cryptoUtility.decryptFile(aesKey, cipherAes.getIV(), encryptedFile, pathForDecryptedFile));
         Assertions.assertFalse(cryptoUtility.decryptFile(null, cipherAes.getIV(), encryptedFile, pathForDecryptedFile));
         Assertions.assertFalse(cryptoUtility.decryptFile(aesKey, null, encryptedFile, pathForDecryptedFile));
         Assertions.assertFalse(cryptoUtility.decryptFile(aesKey, cipherAes.getIV(), null, null));
@@ -239,6 +239,7 @@ class CryptoUtilityTest {
             }
         }
         Assertions.assertTrue(cryptoUtility.decryptFile(aesKey, cipherAes.getIV(), encryptedFile, pathForDecryptedFile));
+        Assertions.assertArrayEquals("Test Message".getBytes(StandardCharsets.UTF_8), Files.readAllBytes(pathForDecryptedFile));
     }
 
     @Test

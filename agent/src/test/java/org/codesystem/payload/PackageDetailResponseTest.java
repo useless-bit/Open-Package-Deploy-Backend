@@ -13,7 +13,7 @@ class PackageDetailResponseTest {
     PackageDetailResponse packageDetailResponse;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         packageDetailResponse = null;
     }
 

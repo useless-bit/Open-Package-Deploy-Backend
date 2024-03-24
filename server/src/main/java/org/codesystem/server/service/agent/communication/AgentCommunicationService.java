@@ -16,7 +16,7 @@ import org.codesystem.server.response.agent.communication.AgentCheckForUpdateRes
 import org.codesystem.server.response.agent.communication.AgentPackageDetailResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.utility.RequestValidator;
+import org.codesystem.server.utility.RequestUtility;
 import org.json.JSONObject;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -37,12 +37,12 @@ import java.util.List;
 public class AgentCommunicationService {
     private final AgentRepository agentRepository;
     private final DeploymentRepository deploymentRepository;
-    private final RequestValidator requestValidator;
+    private final RequestUtility requestUtility;
     private final ServerRepository serverRepository;
     private final ResourceLoader resourceLoader;
 
     public ResponseEntity<ApiResponse> checkForUpdates(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
@@ -55,7 +55,7 @@ public class AgentCommunicationService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
         boolean deploymentAvailable = !deploymentEntities.isEmpty();
-        return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
+        return ResponseEntity.ok().body(requestUtility.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
     }
 
     private void updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
@@ -79,7 +79,7 @@ public class AgentCommunicationService {
     }
 
     public ResponseEntity<byte[]> getAgent(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -98,7 +98,7 @@ public class AgentCommunicationService {
     }
 
     public ResponseEntity<FileSystemResource> getPackage(AgentEncryptedRequest agentEncryptedRequest, String deploymentUUID) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -118,7 +118,7 @@ public class AgentCommunicationService {
     }
 
     public ResponseEntity<ApiResponse> getPackageDetails(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -134,11 +134,11 @@ public class AgentCommunicationService {
         }
 
         DeploymentEntity deploymentEntity = deploymentEntities.get(0);
-        return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentPackageDetailResponse(deploymentEntity).toJsonObject(), agentEntity));
+        return ResponseEntity.ok().body(requestUtility.generateAgentEncryptedResponse(new AgentPackageDetailResponse(deploymentEntity).toJsonObject(), agentEntity));
     }
 
     public ResponseEntity<ApiResponse> sendDeploymentResult(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }

@@ -13,13 +13,13 @@ class SevereAgentErrorExceptionTest {
     MockedStatic<SystemExitUtility> systemExitMockedStatic;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
         systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
     }
 
     @AfterEach
-    void teardown() {
+    void tearDown() {
         systemExitMockedStatic.close();
     }
 

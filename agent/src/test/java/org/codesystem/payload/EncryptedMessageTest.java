@@ -17,11 +17,10 @@ class EncryptedMessageTest {
     CryptoUtility cryptoUtility;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         encryptedMessage = null;
         propertiesLoader = Mockito.mock(PropertiesLoader.class);
         cryptoUtility = Mockito.mock(CryptoUtility.class);
-
     }
 
     @Test

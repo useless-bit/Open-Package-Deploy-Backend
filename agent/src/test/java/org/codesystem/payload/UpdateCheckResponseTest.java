@@ -9,7 +9,7 @@ class UpdateCheckResponseTest {
     UpdateCheckResponse updateCheckResponse;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         updateCheckResponse = null;
     }
 
