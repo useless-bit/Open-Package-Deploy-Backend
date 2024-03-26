@@ -1,7 +1,6 @@
 package org.codesystem.server.service.agent.communication;
 
 import ch.vorburger.mariadb4j.springframework.MariaDB4jSpringService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
@@ -11,7 +10,6 @@ import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.request.agent.AgentEncryptedRequest;
 import org.codesystem.server.response.agent.AgentEncryptedResponse;
-import org.codesystem.server.response.agent.communication.AgentCheckForUpdateResponse;
 import org.codesystem.server.utility.RequestUtility;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
@@ -120,5 +118,52 @@ class AgentCommunicationServiceTest {
         Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
         Assertions.assertEquals(false, jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
+        Assertions.assertNull(agentRepository.findFirstByPublicKeyBase64("agentPublicKey").getLastConnectionTime());
+    }
+
+    @Test
+    void checkForUpdates_nullValuesSystemInformation_AgentCheckForUpdateRequest() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "LINUX",
+                    "operatingSystemFamily": "Windows Family",
+                    "operatingSystemArchitecture": "64-bit",
+                    "operatingSystemVersion": "10.0",
+                    "operatingSystemCodeName": "Anniversary Update",
+                    "operatingSystemBuildNumber": "14393",
+                    "cpuName": "Intel Core i7",
+                    "cpuArchitecture": "x64",
+                    "cpuLogicalCores": "8",
+                    "cpuPhysicalCores": "4",
+                    "cpuSockets": "1",
+                    "memory": "32 GB"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        System.out.println(jsonObject.toString());
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
+            System.out.println(invocationOnMock.getArgument(0).toString());
+            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
+        });
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
+        System.out.println(jsonResponse);
+        Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
+        Assertions.assertEquals(false, jsonResponse.getBoolean("deploymentAvailable"));
+        Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
+        Assertions.assertNull(agentRepository.findFirstByPublicKeyBase64("agentPublicKey").getLastConnectionTime());
+        // todo: check if values were written to db
     }
 }
