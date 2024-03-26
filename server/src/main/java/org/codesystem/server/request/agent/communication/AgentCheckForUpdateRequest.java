@@ -11,7 +11,15 @@ public class AgentCheckForUpdateRequest {
     private String agentChecksum;
 
     public AgentCheckForUpdateRequest(JSONObject jsonObject) {
-        this.systemInformationRequest = new SystemInformationRequest(jsonObject.getJSONObject("systemInformation"));
-        this.agentChecksum = jsonObject.getString("agentChecksum");
+        if (!jsonObject.isNull("systemInformation")) {
+            this.systemInformationRequest = new SystemInformationRequest(jsonObject.getJSONObject("systemInformation"));
+        } else {
+            this.systemInformationRequest = null;
+        }
+        if (!jsonObject.isNull("agentChecksum")) {
+            this.agentChecksum = jsonObject.getString("agentChecksum");
+        } else {
+            this.agentChecksum = null;
+        }
     }
 }
