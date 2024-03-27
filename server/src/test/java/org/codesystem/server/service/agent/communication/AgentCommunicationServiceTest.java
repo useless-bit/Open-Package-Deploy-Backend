@@ -5,6 +5,7 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.ServerRepository;
@@ -137,10 +138,10 @@ class AgentCommunicationServiceTest {
         JSONObject hardwareInfo = new JSONObject("""
                 {
                     "operatingSystem": "LINUX",
-                    "operatingSystemFamily": "Windows Family",
+                    "operatingSystemFamily": "Family",
                     "operatingSystemArchitecture": "64-bit",
-                    "operatingSystemVersion": "10.0",
-                    "operatingSystemCodeName": "Anniversary Update",
+                    "operatingSystemVersion": "Version",
+                    "operatingSystemCodeName": "CodeName",
                     "operatingSystemBuildNumber": "14393",
                     "cpuName": "Intel Core i7",
                     "cpuArchitecture": "x64",
@@ -159,11 +160,22 @@ class AgentCommunicationServiceTest {
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
-        System.out.println(jsonResponse);
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
         Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
-        Assertions.assertEquals(false, jsonResponse.getBoolean("deploymentAvailable"));
+        Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
-        Assertions.assertNull(agentRepository.findFirstByPublicKeyBase64("agentPublicKey").getLastConnectionTime());
-        // todo: check if values were written to db
+        Assertions.assertNotNull(agentRepository.findFirstByPublicKeyBase64("agentPublicKey").getLastConnectionTime());
+        Assertions.assertEquals(OperatingSystem.LINUX, agentEntity.getOperatingSystem());
+        Assertions.assertEquals("Family", agentEntity.getOperatingSystemFamily());
+        Assertions.assertEquals("64-bit", agentEntity.getOperatingSystemArchitecture());
+        Assertions.assertEquals("Version", agentEntity.getOperatingSystemVersion());
+        Assertions.assertEquals("CodeName", agentEntity.getOperatingSystemCodeName());
+        Assertions.assertEquals("14393", agentEntity.getOperatingSystemBuildNumber());
+        Assertions.assertEquals("Intel Core i7", agentEntity.getCpuName());
+        Assertions.assertEquals("x64", agentEntity.getCpuArchitecture());
+        Assertions.assertEquals("8", agentEntity.getCpuLogicalCores());
+        Assertions.assertEquals("4", agentEntity.getCpuPhysicalCores());
+        Assertions.assertEquals("1", agentEntity.getCpuSockets());
+        Assertions.assertEquals("32 GB", agentEntity.getMemory());
     }
 }
