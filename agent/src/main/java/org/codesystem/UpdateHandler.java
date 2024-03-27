@@ -57,22 +57,6 @@ public class UpdateHandler {
             }
             throw new SevereAgentErrorException("Checksum of new Agent is invalid");
         }
-        startNewApplication();
-    }
-
-    private void startNewApplication() {
-        String command = "java";
-        Optional<String> optionalString = ProcessHandle.current().info().commandLine();
-        if (optionalString.isPresent()) {
-            command = optionalString.get();
-            command = command.substring(0, command.indexOf(" "));
-        }
-        AgentApplication.logger.log(Level.INFO, "Update command: {0}", command);
-        try {
-            new ProcessBuilder(command, "-jar", Variables.FILE_NAME_AGENT_UPDATE).start();
-        } catch (IOException e) {
-            throw new SevereAgentErrorException("Unable to execute update process: " + e.getMessage());
-        }
-        SystemExitUtility.exit(-10);
+        SystemExitUtility.exit(0);
     }
 }
