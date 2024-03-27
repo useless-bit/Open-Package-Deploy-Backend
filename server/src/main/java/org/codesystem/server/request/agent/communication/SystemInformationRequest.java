@@ -22,7 +22,11 @@ public class SystemInformationRequest {
     private String memory;
 
     public SystemInformationRequest(JSONObject jsonObject) {
-        this.operatingSystem = OperatingSystem.valueOf(jsonObject.getString("operatingSystem").toUpperCase());
+        try {
+            this.operatingSystem = OperatingSystem.valueOf(jsonObject.getString("operatingSystem").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            this.operatingSystem = OperatingSystem.UNKNOWN;
+        }
         this.operatingSystemFamily = jsonObject.optString("operatingSystemFamily");
         this.operatingSystemArchitecture = jsonObject.optString("operatingSystemArchitecture");
         this.operatingSystemVersion = jsonObject.optString("operatingSystemVersion");

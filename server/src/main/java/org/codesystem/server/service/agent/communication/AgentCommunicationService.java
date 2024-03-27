@@ -5,6 +5,7 @@ import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
@@ -53,7 +54,10 @@ public class AgentCommunicationService {
 
         AgentCheckForUpdateRequest agentCheckForUpdateRequest = new AgentCheckForUpdateRequest(request);
         if (agentCheckForUpdateRequest.getSystemInformationRequest() != null) {
-            updateAgent(agentEntity, agentCheckForUpdateRequest);
+            String updateAgentResponse = updateAgent(agentEntity, agentCheckForUpdateRequest);
+            if (updateAgentResponse != null) {
+                return ResponseEntity.badRequest().body(new ApiError(updateAgentResponse));
+            }
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
@@ -61,7 +65,16 @@ public class AgentCommunicationService {
         return ResponseEntity.ok().body(requestUtility.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
     }
 
-    private void updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
+    private String updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
+
+        if (agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem() == OperatingSystem.UNKNOWN) {
+            return "Cannot set 'UNKNOWN' OperatingSystem";
+        }
+
+        if (agentEntity.getOperatingSystem() != OperatingSystem.UNKNOWN && agentEntity.getOperatingSystem() != agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem()) {
+            return "Cannot change Operating System";
+        }
+
         agentEntity.setAgentChecksum(agentCheckForUpdateRequest.getAgentChecksum());
 
         agentEntity.setOperatingSystem(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem());
@@ -79,6 +92,7 @@ public class AgentCommunicationService {
 
         agentEntity.setLastConnectionTime(Instant.now());
         agentRepository.save(agentEntity);
+        return null;
     }
 
     public ResponseEntity<byte[]> getAgent(AgentEncryptedRequest agentEncryptedRequest) {
