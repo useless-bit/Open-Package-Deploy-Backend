@@ -1,5 +1,6 @@
 package org.codesystem.utility;
 
+import org.codesystem.TestSystemExitException;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -60,7 +61,8 @@ class AutoUpdateUtilityTest {
     @Test
     void updateApplication_agentMissingUpdatePresent() throws IOException {
         Files.writeString(PATH_UPDATE_FILE, "Agent_Update_File_Content");
-        Assertions.assertThrows(SevereAgentErrorException.class, () -> autoUpdateUtility.updateApplication());
+        Assertions.assertDoesNotThrow(() -> autoUpdateUtility.updateApplication());
+        Assertions.assertTrue(Files.exists(Path.of("Agent.jar")));
     }
 
     @Test

@@ -9,7 +9,6 @@ import org.codesystem.server.request.agent.AgentEncryptedRequest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,7 +31,7 @@ class RequestUtilityTest {
     @Autowired
     AgentRepository agentRepository;
     CryptoUtility cryptoUtility;
-    private RequestUtility requestUtility;
+    RequestUtility requestUtility;
 
     @BeforeAll
     public static void init() {
@@ -49,7 +48,6 @@ class RequestUtilityTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         cryptoUtility = Mockito.mock(CryptoUtility.class);
         requestUtility = new RequestUtility(agentRepository, cryptoUtility);
     }

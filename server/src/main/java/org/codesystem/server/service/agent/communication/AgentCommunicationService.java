@@ -51,7 +51,10 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().body(new ApiError("Invalid Key"));
         }
 
-        updateAgent(agentEntity, new AgentCheckForUpdateRequest(request));
+        AgentCheckForUpdateRequest agentCheckForUpdateRequest = new AgentCheckForUpdateRequest(request);
+        if (agentCheckForUpdateRequest.getSystemInformationRequest() != null) {
+            updateAgent(agentEntity, agentCheckForUpdateRequest);
+        }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
         boolean deploymentAvailable = !deploymentEntities.isEmpty();
