@@ -23,16 +23,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -53,6 +60,8 @@ class AgentCommunicationServiceTest {
     RequestUtility requestUtility;
     ResourceLoader resourceLoader;
     AgentCommunicationService agentCommunicationService;
+    Path packageFolder = Paths.get("/opt/OPD/Packages");
+
 
     @BeforeAll
     public static void init() {
@@ -68,18 +77,30 @@ class AgentCommunicationServiceTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         requestUtility = Mockito.mock(RequestUtility.class);
         resourceLoader = Mockito.mock(ResourceLoader.class);
         agentCommunicationService = new AgentCommunicationService(agentRepository, deploymentRepository, requestUtility, serverRepository, resourceLoader);
+        deleteFolderWithContent();
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws IOException {
         deploymentRepository.deleteAll();
         packageRepository.deleteAll();
         serverRepository.deleteAll();
         agentRepository.deleteAll();
+        deleteFolderWithContent();
+    }
+
+    private void deleteFolderWithContent() throws IOException {
+        if (Files.exists(packageFolder)) {
+            try (Stream<Path> pathStream = Files.walk(packageFolder)) {
+                pathStream.sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+        }
     }
 
     @Test
@@ -137,7 +158,7 @@ class AgentCommunicationServiceTest {
     }
 
     @Test
-    void checkForUpdates_newDeploymentAvailabl() {
+    void checkForUpdates_newDeploymentAvailable() {
         PackageEntity packageEntity = new PackageEntity();
         packageEntity.setChecksumPlaintext("CheckSum");
         packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
@@ -173,6 +194,60 @@ class AgentCommunicationServiceTest {
         Assertions.assertTrue(jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
         Assertions.assertNull(agentRepository.findFirstByPublicKeyBase64("agentPublicKey").getLastConnectionTime());
+    }
+
+    @Test
+    void checkForUpdates_newDeploymentPackageNotProcessed() {
+        PackageEntity packageEntity = new PackageEntity();
+        packageEntity.setChecksumPlaintext("CheckSum");
+        packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntity.setName("Package");
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
+        packageEntity = packageRepository.save(packageEntity);
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity = agentRepository.save(agentEntity);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentRepository.save(deploymentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
+            System.out.println(invocationOnMock.getArgument(0).toString());
+            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
+        });
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
+        System.out.println(jsonResponse);
+        Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
+        Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
+        Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
+        Assertions.assertNull(agentRepository.findFirstByPublicKeyBase64("agentPublicKey").getLastConnectionTime());
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        packageEntity = packageRepository.save(packageEntity);
+        responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
+        packageEntity = packageRepository.save(packageEntity);
+        responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+        packageRepository.save(packageEntity);
+        responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
     }
 
     @Test
@@ -443,6 +518,7 @@ class AgentCommunicationServiceTest {
         agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
         Assertions.assertEquals(OperatingSystem.UNKNOWN, agentEntity.getOperatingSystem());
     }
+
     @Test
     void checkForUpdates_updateFromLinuxToUnknown() {
         AgentEntity agentEntity = new AgentEntity();
@@ -528,7 +604,223 @@ class AgentCommunicationServiceTest {
         ResponseEntity responseEntity = agentCommunicationService.getAgent(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         byte[] response = (byte[]) responseEntity.getBody();
-        Assertions.assertArrayEquals("Test File Content".getBytes(StandardCharsets.UTF_8),response);
+        Assertions.assertArrayEquals("Test File Content".getBytes(StandardCharsets.UTF_8), response);
     }
 
+    @Test
+    void getPackage_invalidRequest() {
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(null, null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(null);
+        responseEntity = agentCommunicationService.getPackage(null, null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        JSONObject jsonObject = new JSONObject();
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        responseEntity = agentCommunicationService.getPackage(null, null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void getPackage_invalidAgent() {
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void getPackage_invalidDeployment() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void getPackage_deploymentAlreadyCompleted() {
+        PackageEntity packageEntity = new PackageEntity();
+        packageEntity.setChecksumPlaintext("CheckSum");
+        packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntity.setName("Package");
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
+        packageEntity = packageRepository.save(packageEntity);
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity = agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentEntity.setDeployed(true);
+        deploymentEntity = deploymentRepository.save(deploymentEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void getPackage_deploymentNotProcessed() {
+        PackageEntity packageEntity = new PackageEntity();
+        packageEntity.setChecksumPlaintext("CheckSum");
+        packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntity.setName("Package");
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
+        packageEntity = packageRepository.save(packageEntity);
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity = agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentEntity = deploymentRepository.save(deploymentEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        packageEntity = packageRepository.save(packageEntity);
+        responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
+        packageEntity = packageRepository.save(packageEntity);
+        responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+        packageRepository.save(packageEntity);
+        responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void getPackage_deploymentTimestampNotNullInvalidTimestamp() {
+        PackageEntity packageEntity = new PackageEntity();
+        packageEntity.setChecksumPlaintext("CheckSum");
+        packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntity.setName("Package");
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
+        packageEntity = packageRepository.save(packageEntity);
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity = agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverEntity.setAgentInstallRetryInterval(60000);
+        serverRepository.save(serverEntity);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentEntity.setDeployed(false);
+        deploymentEntity.setLastDeploymentTimestamp(Instant.now());
+        deploymentEntity = deploymentRepository.save(deploymentEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        deploymentEntity.setLastDeploymentTimestamp(Instant.now().minus(600, ChronoUnit.SECONDS));
+        deploymentRepository.save(deploymentEntity);
+        responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+    }
+
+    @Test
+    void getPackage_deploymentTimestampNull() throws IOException {
+        PackageEntity packageEntity = new PackageEntity();
+        packageEntity.setChecksumPlaintext("CheckSum");
+        packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntity.setName("Package");
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
+        packageEntity = packageRepository.save(packageEntity);
+        packageFolder.toFile().mkdirs();
+        new FileOutputStream(packageFolder.toString() + "/" + packageEntity.getUuid()).write("Test Content".getBytes(StandardCharsets.UTF_8));
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity = agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentEntity.setDeployed(false);
+        deploymentEntity.setLastDeploymentTimestamp(null);
+        deploymentEntity = deploymentRepository.save(deploymentEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        FileSystemResource response = (FileSystemResource) responseEntity.getBody();
+        Assertions.assertArrayEquals("Test Content".getBytes(StandardCharsets.UTF_8), response.getContentAsByteArray());
+    }
+
+    @Test
+    void getPackage_deploymentTimestampOlderThanLimit() throws IOException {
+        PackageEntity packageEntity = new PackageEntity();
+        packageEntity.setChecksumPlaintext("CheckSum");
+        packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntity.setName("Package");
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
+        packageEntity = packageRepository.save(packageEntity);
+        packageFolder.toFile().mkdirs();
+        new FileOutputStream(packageFolder.toString() + "/" + packageEntity.getUuid()).write("Test Content".getBytes(StandardCharsets.UTF_8));
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity = agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentEntity.setDeployed(false);
+        deploymentEntity.setLastDeploymentTimestamp(Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
+        deploymentEntity = deploymentRepository.save(deploymentEntity);
+        JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        ResponseEntity responseEntity = agentCommunicationService.getPackage(new AgentEncryptedRequest("agentPublicKey", ""), deploymentEntity.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        FileSystemResource response = (FileSystemResource) responseEntity.getBody();
+        Assertions.assertArrayEquals("Test Content".getBytes(StandardCharsets.UTF_8), response.getContentAsByteArray());
+    }
 }
