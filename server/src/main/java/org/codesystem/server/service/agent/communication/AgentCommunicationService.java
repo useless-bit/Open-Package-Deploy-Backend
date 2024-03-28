@@ -146,7 +146,7 @@ public class AgentCommunicationService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
         if (deploymentEntities.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError("No Deployment available"));
         }
 
         DeploymentEntity deploymentEntity = deploymentEntities.get(0);
