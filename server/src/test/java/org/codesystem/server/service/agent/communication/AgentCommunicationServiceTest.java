@@ -30,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
 import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -147,14 +146,10 @@ class AgentCommunicationServiceTest {
         serverRepository.save(serverEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
-        System.out.println(jsonResponse);
         Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
         Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
@@ -186,10 +181,7 @@ class AgentCommunicationServiceTest {
         serverRepository.save(serverEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
@@ -224,14 +216,10 @@ class AgentCommunicationServiceTest {
         serverRepository.save(serverEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
-        System.out.println(jsonResponse);
         Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
         Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
@@ -279,14 +267,10 @@ class AgentCommunicationServiceTest {
         serverRepository.save(serverEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
-        System.out.println(jsonResponse);
         Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
         Assertions.assertFalse(jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
@@ -319,14 +303,10 @@ class AgentCommunicationServiceTest {
         deploymentRepository.save(deploymentEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
-        System.out.println(jsonResponse);
         Assertions.assertEquals(100, jsonResponse.getInt("updateInterval"));
         Assertions.assertTrue(jsonResponse.getBoolean("deploymentAvailable"));
         Assertions.assertEquals("AgentChecksum", jsonResponse.getString("agentChecksum"));
@@ -362,12 +342,8 @@ class AgentCommunicationServiceTest {
                     "memory": "32 GB"
                 }""");
         JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
-        System.out.println(jsonObject.toString());
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
@@ -431,12 +407,8 @@ class AgentCommunicationServiceTest {
                     "memory": "32 GB"
                 }""");
         JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
-        System.out.println(jsonObject.toString());
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonResponse = new JSONObject(new JSONObject(responseEntity.getBody()).getString("message"));
@@ -478,12 +450,8 @@ class AgentCommunicationServiceTest {
                     "operatingSystem": "LINUX"
                 }""");
         JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
-        System.out.println(jsonObject.toString());
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
@@ -509,12 +477,8 @@ class AgentCommunicationServiceTest {
                     "operatingSystem": "INVALID"
                 }""");
         JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
-        System.out.println(jsonObject.toString());
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Cannot set 'UNKNOWN' OperatingSystem", new JSONObject(responseEntity.getBody()).getString("message"));
@@ -541,12 +505,8 @@ class AgentCommunicationServiceTest {
                     "operatingSystem": "INVALID"
                 }""");
         JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
-        System.out.println(jsonObject.toString());
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Cannot set 'UNKNOWN' OperatingSystem", new JSONObject(responseEntity.getBody()).getString("message"));
@@ -583,10 +543,7 @@ class AgentCommunicationServiceTest {
         agentRepository.save(agentEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         ResponseEntity responseEntity = agentCommunicationService.getAgent(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
     }
@@ -599,10 +556,7 @@ class AgentCommunicationServiceTest {
         agentRepository.save(agentEntity);
         JSONObject jsonObject = new JSONObject().put("publicKeyBase64", "agentPublicKey");
         Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
-        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(invocationOnMock.getArgument(0).toString());
-            return new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString());
-        });
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
         Mockito.when(resourceLoader.getResource(Mockito.any())).thenReturn(new ClassPathResource("Test-File"));
         ResponseEntity responseEntity = agentCommunicationService.getAgent(new AgentEncryptedRequest("agentPublicKey", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
