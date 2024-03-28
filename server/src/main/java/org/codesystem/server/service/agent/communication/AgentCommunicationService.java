@@ -169,10 +169,10 @@ public class AgentCommunicationService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
                 || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS)))) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Deployment"));
         }
 
-        if (agentDeploymentResultRequest.getResultCode().startsWith("AGENT-DEPLOYMENT-ERROR")) {
+        if (agentDeploymentResultRequest.getResultCode() == null || agentDeploymentResultRequest.getResultCode().startsWith("AGENT-DEPLOYMENT-ERROR")) {
             deploymentEntity.setDeployed(false);
         } else if (deploymentEntity.getPackageEntity().getExpectedReturnValue() == null || deploymentEntity.getPackageEntity().getExpectedReturnValue().isBlank()) {
             deploymentEntity.setDeployed(true);

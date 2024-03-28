@@ -11,7 +11,15 @@ public class AgentDeploymentResultRequest {
     private String resultCode;
 
     public AgentDeploymentResultRequest(JSONObject jsonObject) {
-        this.deploymentUUID = jsonObject.getString("deploymentUUID");
-        this.resultCode = jsonObject.getString("resultCode");
+        if (!jsonObject.isNull("deploymentUUID")) {
+            this.deploymentUUID = jsonObject.getString("deploymentUUID");
+        } else {
+            this.deploymentUUID = null;
+        }
+        if (!jsonObject.isNull("resultCode")) {
+            this.resultCode = jsonObject.getString("resultCode");
+        } else {
+            this.resultCode = null;
+        }
     }
 }
