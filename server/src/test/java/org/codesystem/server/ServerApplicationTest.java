@@ -8,7 +8,6 @@ import java.security.Security;
 
 @SpringBootTest
 public class ServerApplicationTest {
-    public static final String PACKAGE_LOCATION = "/opt/OPD/Packages/";
 
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());

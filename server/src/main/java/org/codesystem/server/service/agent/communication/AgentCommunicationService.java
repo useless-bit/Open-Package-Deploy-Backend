@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -106,11 +107,10 @@ public class AgentCommunicationService {
         }
 
         Resource resource = resourceLoader.getResource("classpath:agent/Agent.jar");
-
         try {
             return ResponseEntity.ok().body(resource.getContentAsByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -137,11 +137,11 @@ public class AgentCommunicationService {
     public ResponseEntity<ApiResponse> getPackageDetails(AgentEncryptedRequest agentEncryptedRequest) {
         JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
         AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentEncryptedRequest.getPublicKeyBase64());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Key"));
         }
 
         ServerEntity serverEntity = serverRepository.findAll().get(0);
@@ -157,11 +157,11 @@ public class AgentCommunicationService {
     public ResponseEntity<ApiResponse> sendDeploymentResult(AgentEncryptedRequest agentEncryptedRequest) {
         JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
         AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentEncryptedRequest.getPublicKeyBase64());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Key"));
         }
 
         AgentDeploymentResultRequest agentDeploymentResultRequest = new AgentDeploymentResultRequest(request);
