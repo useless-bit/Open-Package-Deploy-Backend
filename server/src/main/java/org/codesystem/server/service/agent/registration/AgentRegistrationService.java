@@ -42,7 +42,7 @@ public class AgentRegistrationService {
             }
             agentEntity.setPublicKeyBase64(agentRegistrationRequest.getPublicKeyBase64());
             agentEntity.setValidationToken(UUID.randomUUID().toString());
-            agentEntity.setName(agentRegistrationRequest.getName());
+            agentEntity.setName(agentRegistrationRequest.getName().trim());
             agentEntity = agentRepository.save(agentEntity);
 
 

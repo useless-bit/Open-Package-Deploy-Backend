@@ -144,7 +144,7 @@ class AgentRegistrationServiceTest {
     @Test
     void addNewAgent_newAgent() {
         Mockito.when(cryptoUtility.encryptECC(Mockito.any(), Mockito.any())).thenReturn("Encrypted Message".getBytes(StandardCharsets.UTF_8));
-        ResponseEntity responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("publicKeyForAgent", "Agent Name", "Registration Token"));
+        ResponseEntity responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("publicKeyForAgent", " Agent Name ", "Registration Token"));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         JSONObject jsonObjectResponse = new JSONObject(responseEntity.getBody());
         Assertions.assertEquals("Public Key", jsonObjectResponse.getString("publicKeyBase64"));
