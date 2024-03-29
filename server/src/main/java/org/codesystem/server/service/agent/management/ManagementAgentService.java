@@ -31,16 +31,15 @@ public class ManagementAgentService {
     }
 
     public ResponseEntity<ApiResponse> updateAgent(String agentUUID, AgentUpdateRequest agentUpdateRequest) {
-        //todo: add null checks
+        if (agentUpdateRequest.getName() == null || agentUpdateRequest.getName().isBlank()) {
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
+        }
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
         }
-        if (agentUpdateRequest.getName().isBlank()) {
-            return ResponseEntity.badRequest().body(new ApiError("Name cannot be empty"));
-        }
 
-        agentEntity.setName(agentUpdateRequest.getName());
+        agentEntity.setName(agentUpdateRequest.getName().trim());
         agentRepository.save(agentEntity);
         return ResponseEntity.ok().build();
 
