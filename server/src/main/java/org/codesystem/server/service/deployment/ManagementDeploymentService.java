@@ -29,11 +29,11 @@ public class ManagementDeploymentService {
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
 
-    public ResponseEntity<ApiResponse> getAllPackages() {
+    public ResponseEntity<ApiResponse> getAllDeployments() {
         return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deploymentRepository.findAll()));
     }
 
-    public ResponseEntity<ApiResponse> detDeployment(String deploymentUUID) {
+    public ResponseEntity<ApiResponse> getDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
@@ -76,7 +76,7 @@ public class ManagementDeploymentService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<ApiResponse> getAllPackagesForAgent(String agentUUID) {
+    public ResponseEntity<ApiResponse> getAllDeploymentsForAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));

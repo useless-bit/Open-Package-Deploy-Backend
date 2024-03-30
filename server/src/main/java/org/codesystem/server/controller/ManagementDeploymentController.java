@@ -17,17 +17,17 @@ public class ManagementDeploymentController {
 
     @GetMapping()
     public ResponseEntity<ApiResponse> getAllDeployments() {
-        return managementDeploymentService.getAllPackages();
+        return managementDeploymentService.getAllDeployments();
     }
 
     @GetMapping("{deploymentUUID}")
     public ResponseEntity<ApiResponse> getDeployment(@PathVariable String deploymentUUID) {
-        return managementDeploymentService.detDeployment(deploymentUUID);
+        return managementDeploymentService.getDeployment(deploymentUUID);
     }
 
     @GetMapping("agent/{agentUUID}")
     public ResponseEntity<ApiResponse> getAllDeploymentsForAgent(@PathVariable String agentUUID) {
-        return managementDeploymentService.getAllPackagesForAgent(agentUUID);
+        return managementDeploymentService.getAllDeploymentsForAgent(agentUUID);
     }
 
     @PostMapping()
