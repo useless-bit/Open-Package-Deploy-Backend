@@ -42,7 +42,6 @@ public class ManagementDeploymentService {
     }
 
     public ResponseEntity<ApiResponse> createNewDeployment(CreateNewDeploymentRequest createNewDeploymentRequest) {
-        //todo: add null checks
         AgentEntity agentEntity = agentRepository.findFirstByUuid(createNewDeploymentRequest.getAgentUUID());
         PackageEntity packageEntity = packageRepository.findFirstByUuid(createNewDeploymentRequest.getPackageUUID());
         if (agentEntity == null) {
@@ -57,10 +56,11 @@ public class ManagementDeploymentService {
         if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
             return ResponseEntity.badRequest().body(new ApiError("Deployment already present"));
         }
+        if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN || packageEntity.getTargetOperatingSystem() == OperatingSystem.UNKNOWN) {
+            return ResponseEntity.badRequest().body(new ApiError("Invalid OS"));
+        }
         if (agentEntity.getOperatingSystem() != packageEntity.getTargetOperatingSystem()) {
             return ResponseEntity.badRequest().body(new ApiError("OS mismatch"));
-        } else if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN) {
-            return ResponseEntity.badRequest().body(new ApiError("OS invalid "));
         }
         DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
         deploymentEntity = deploymentRepository.save(deploymentEntity);
@@ -88,7 +88,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
         }
         deploymentRepository.resetDeployment(deploymentUUID);
         return ResponseEntity.status(HttpStatus.OK).build();
