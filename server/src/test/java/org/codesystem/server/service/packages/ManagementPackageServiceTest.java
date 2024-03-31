@@ -5,6 +5,7 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
+import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.AddNewPackageRequest;
@@ -17,9 +18,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -38,6 +49,8 @@ class ManagementPackageServiceTest {
     PackageEntity packageEntityOne;
     PackageEntity packageEntityTwo;
     ManagementPackageService managementPackageService;
+    Path packageFolder = Paths.get("/opt/OPD/Packages");
+
 
     @BeforeAll
     public static void init() {
@@ -53,7 +66,7 @@ class ManagementPackageServiceTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         packageEntityOne = new PackageEntity();
         packageEntityOne.setChecksumPlaintext("Plaintext Checksum");
         packageEntityOne.setChecksumEncrypted("Encrypted Checksum");
@@ -70,12 +83,14 @@ class ManagementPackageServiceTest {
         cryptoUtility = Mockito.mock(CryptoUtility.class);
 
         managementPackageService = new ManagementPackageService(packageRepository, cryptoUtility, deploymentRepository);
+        deleteFolderWithContent();
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws IOException {
         deploymentRepository.deleteAll();
         packageRepository.deleteAll();
+        deleteFolderWithContent();
     }
 
     @Test
@@ -84,6 +99,16 @@ class ManagementPackageServiceTest {
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Assertions.assertEquals(packageRepository.findAll().get(0).getName(), new JSONObject(new JSONObject(responseEntity.getBody()).getJSONArray("packages").get(0).toString()).getString("name"));
         Assertions.assertEquals(packageRepository.findAll().get(1).getName(), new JSONObject(new JSONObject(responseEntity.getBody()).getJSONArray("packages").get(1).toString()).getString("name"));
+    }
+
+    private void deleteFolderWithContent() throws IOException {
+        if (Files.exists(packageFolder)) {
+            try (Stream<Path> pathStream = Files.walk(packageFolder)) {
+                pathStream.sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+        }
     }
 
     @Test
@@ -105,13 +130,87 @@ class ManagementPackageServiceTest {
         ResponseEntity responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(null, null, null, null), null);
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(null, null, OperatingSystem.UNKNOWN, null), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(null, null, null, null), null);
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("", null, OperatingSystem.UNKNOWN, null), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("   ", null, OperatingSystem.UNKNOWN, null), null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, null, null), null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, OperatingSystem.UNKNOWN, null), null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+    }
 
+    @Test
+    void addNewPackage_invalidMultiPartFile() {
+        ResponseEntity responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, OperatingSystem.LINUX, null), null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        byte[] multiPartFileContent = null;
+        MultipartFile multipartFile = new MockMultipartFile("FileName", "FileName", null, multiPartFileContent);
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, OperatingSystem.LINUX, null), multipartFile);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
+        multipartFile = new MockMultipartFile("FileName", "FileName", null, multiPartFileContent);
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, OperatingSystem.LINUX, null), multipartFile);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
+        multipartFile = new MockMultipartFile("FileName", "FileName", "wrong content-type", multiPartFileContent);
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, OperatingSystem.LINUX, null), multipartFile);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+    }
+
+    @Test
+    void addNewPackage_invalidChecksum() {
+        byte[] multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
+        MultipartFile multipartFile = new MockMultipartFile("FileName", "FileName", "application/zip", multiPartFileContent);
+        Mockito.when(cryptoUtility.calculateChecksum(Mockito.any())).thenReturn("Test CheckSum");
+        ResponseEntity responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", null, OperatingSystem.LINUX, null), multipartFile);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Checksum mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
+        multipartFile = new MockMultipartFile("FileName", "FileName", "application/zip", multiPartFileContent);
+        Mockito.when(cryptoUtility.calculateChecksum(Mockito.any())).thenReturn("Test CheckSum");
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("New Package", "invalid CheckSum", OperatingSystem.LINUX, null), multipartFile);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Checksum mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+    }
+
+    @Test
+    void addNewPackage_valid() {
+        byte[] multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
+        MultipartFile multipartFile = new MockMultipartFile("FileName", "FileName", "application/zip", multiPartFileContent);
+        Mockito.when(cryptoUtility.calculateChecksum(Mockito.any())).thenReturn("Test CheckSum");
+        ResponseEntity responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(" New Package ", "Test CheckSum", OperatingSystem.LINUX, null), multipartFile);
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        PackageEntity packageEntity = packageRepository.findFirstByPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        Assertions.assertEquals("New Package", packageEntity.getName());
+        Assertions.assertNull(packageEntity.getExpectedReturnValue());
+        Assertions.assertEquals("Test CheckSum", packageEntity.getChecksumPlaintext());
+        Assertions.assertNull(packageEntity.getChecksumEncrypted());
+        Assertions.assertEquals(OperatingSystem.LINUX, packageEntity.getTargetOperatingSystem());
+
+        multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
+        multipartFile = new MockMultipartFile("FileName", "FileName", "application/zip", multiPartFileContent);
+        Mockito.when(cryptoUtility.calculateChecksum(Mockito.any())).thenReturn("Test CheckSum");
+        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(" New Package ", "Test CheckSum", OperatingSystem.LINUX, "Return Value"), multipartFile);
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        packageEntity = packageRepository.findFirstByPackageStatusInternal(PackageStatusInternal.UPLOADED);
+        Assertions.assertEquals("New Package", packageEntity.getName());
+        Assertions.assertEquals("Return Value", packageEntity.getExpectedReturnValue());
+        Assertions.assertEquals("Test CheckSum", packageEntity.getChecksumPlaintext());
+        Assertions.assertNull(packageEntity.getChecksumEncrypted());
+        Assertions.assertEquals(OperatingSystem.LINUX, packageEntity.getTargetOperatingSystem());
     }
 
 }

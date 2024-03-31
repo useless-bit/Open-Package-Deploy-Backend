@@ -51,11 +51,11 @@ public class ManagementPackageService {
             return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
         }
 
-        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
         } else {
             String contentType = multipartFile.getContentType();
-            if (contentType == null || contentType.isBlank() || !contentType.equalsIgnoreCase("application/zip")) {
+            if (contentType == null || !contentType.equalsIgnoreCase("application/zip")) {
                 return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
             }
         }
@@ -63,7 +63,7 @@ public class ManagementPackageService {
         String calculatedChecksum;
         try {
             calculatedChecksum = cryptoUtility.calculateChecksum(multipartFile.getInputStream());
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiError("Error when reading zip-file and creating checksum"));
         }
         if (!calculatedChecksum.equals(addNewPackageRequest.getPackageChecksum())) {
@@ -71,13 +71,14 @@ public class ManagementPackageService {
         }
 
         PackageEntity packageEntity = new PackageEntity();
-        packageEntity.setName(addNewPackageRequest.getPackageName());
+        packageEntity.setName(addNewPackageRequest.getPackageName().trim());
         packageEntity.setChecksumPlaintext(calculatedChecksum);
         packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
         packageEntity.setExpectedReturnValue(addNewPackageRequest.getExpectedReturnValue());
         packageEntity = packageRepository.save(packageEntity);
 
         if (!savePackage(multipartFile, packageEntity)) {
+            packageRepository.delete(packageEntity);
             return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
         }
 
@@ -165,7 +166,7 @@ public class ManagementPackageService {
                 fileOutputStream.write(inputStreamByte);
                 inputStreamByte = inputStream.readNBytes(1024);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
         return true;
