@@ -3,6 +3,7 @@ package org.codesystem.server.service.packages;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.PackageEntity;
+import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -45,6 +46,11 @@ public class ManagementPackageService {
     }
 
     public ResponseEntity<ApiResponse> addNewNewPackage(AddNewPackageRequest addNewPackageRequest, MultipartFile multipartFile) {
+        if (addNewPackageRequest.getPackageName() == null || addNewPackageRequest.getPackageName().isBlank()
+                || addNewPackageRequest.getOperatingSystem() == null || addNewPackageRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
+        }
+
         if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null) {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
         } else {
@@ -54,9 +60,6 @@ public class ManagementPackageService {
             }
         }
 
-        if (addNewPackageRequest == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
-        }
         String calculatedChecksum;
         try {
             calculatedChecksum = cryptoUtility.calculateChecksum(multipartFile.getInputStream());
