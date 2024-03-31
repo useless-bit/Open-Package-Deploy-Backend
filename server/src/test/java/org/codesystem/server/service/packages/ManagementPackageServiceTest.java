@@ -200,6 +200,8 @@ class ManagementPackageServiceTest {
         Assertions.assertNull(packageEntity.getChecksumEncrypted());
         Assertions.assertEquals(OperatingSystem.LINUX, packageEntity.getTargetOperatingSystem());
 
+        packageRepository.deleteAll();
+
         multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
         multipartFile = new MockMultipartFile("FileName", "FileName", "application/zip", multiPartFileContent);
         Mockito.when(cryptoUtility.calculateChecksum(Mockito.any())).thenReturn("Test CheckSum");
