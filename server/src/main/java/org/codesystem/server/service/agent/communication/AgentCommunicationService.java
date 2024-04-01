@@ -69,11 +69,11 @@ public class AgentCommunicationService {
     private String updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
 
         if (agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem() == OperatingSystem.UNKNOWN) {
-            return Variables.AGENT_ENTITY_ERROR_INVALID_OS;
+            return Variables.AGENT_ERROR_INVALID_OS;
         }
 
         if (agentEntity.getOperatingSystem() != OperatingSystem.UNKNOWN && agentEntity.getOperatingSystem() != agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem()) {
-            return Variables.AGENT_ENTITY_ERROR_CHANGING_OS;
+            return Variables.AGENT_ERROR_CHANGING_OS;
         }
 
         agentEntity.setAgentChecksum(agentCheckForUpdateRequest.getAgentChecksum());
@@ -147,7 +147,7 @@ public class AgentCommunicationService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
         if (deploymentEntities.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT_AVAILABLE));
         }
 
         DeploymentEntity deploymentEntity = deploymentEntities.get(0);
@@ -173,7 +173,7 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_DEPLOYMENT));
         }
 
-        if (agentDeploymentResultRequest.getResultCode() == null || agentDeploymentResultRequest.getResultCode().startsWith(Variables.PACKAGE_ENTITY_AGENT_ERROR_BEGINNING)) {
+        if (agentDeploymentResultRequest.getResultCode() == null || agentDeploymentResultRequest.getResultCode().startsWith(Variables.PACKAGE_AGENT_ERROR_BEGINNING)) {
             deploymentEntity.setDeployed(false);
         } else if (deploymentEntity.getPackageEntity().getExpectedReturnValue() == null || deploymentEntity.getPackageEntity().getExpectedReturnValue().isBlank()) {
             deploymentEntity.setDeployed(true);

@@ -1,6 +1,7 @@
 package org.codesystem.server.utility;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.request.agent.AgentEncryptedRequest;
@@ -34,20 +35,20 @@ public class RequestUtility {
         } catch (IllegalArgumentException e) {
             return null;
         }
-        if (decryptedMessage.isEmpty() || decryptedMessage.isNull("signature") || decryptedMessage.isNull("timestamp")) {
+        if (decryptedMessage.isEmpty() || decryptedMessage.isNull(Variables.JSON_FIELD_SIGNATURE) || decryptedMessage.isNull(Variables.JSON_FIELD_TIMESTAMP)) {
             return null;
         }
         Instant messageTimestamp;
         try {
-            messageTimestamp = Instant.parse(decryptedMessage.getString("timestamp"));
+            messageTimestamp = Instant.parse(decryptedMessage.getString(Variables.JSON_FIELD_TIMESTAMP));
         } catch (DateTimeParseException e) {
             return null;
         }
         if (messageTimestamp.isAfter(Instant.now().plusSeconds(300)) || messageTimestamp.isBefore(Instant.now().minusSeconds(300))) {
             return null;
         }
-        String messageSignature = decryptedMessage.getString("signature");
-        decryptedMessage.remove("signature");
+        String messageSignature = decryptedMessage.getString(Variables.JSON_FIELD_SIGNATURE);
+        decryptedMessage.remove(Variables.JSON_FIELD_SIGNATURE);
         if (messageSignature.isBlank()) {
             return null;
         }
@@ -62,9 +63,9 @@ public class RequestUtility {
         if (jsonObject == null || jsonObject.isEmpty() || agentEntity == null) {
             return null;
         }
-        jsonObject.put("timestamp", Instant.now());
+        jsonObject.put(Variables.JSON_FIELD_TIMESTAMP, Instant.now());
         String signature = Base64.getEncoder().encodeToString(cryptoUtility.createSignatureECC(jsonObject.toString()));
-        jsonObject.put("signature", signature);
+        jsonObject.put(Variables.JSON_FIELD_SIGNATURE, signature);
         String decryptedMessage = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8), agentEntity));
         return new AgentEncryptedResponse(decryptedMessage);
     }

@@ -1,6 +1,7 @@
 package org.codesystem.server.service.deployment;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.PackageEntity;
@@ -24,7 +25,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ManagementDeploymentService {
-    private static final String ERROR_AGENT_NOT_FOUND = "Agent not found";
     private final DeploymentRepository deploymentRepository;
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
@@ -36,7 +36,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> getDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
         }
         return ResponseEntity.ok().body(new GetDeploymentResponse(deploymentEntity));
     }
@@ -45,22 +45,22 @@ public class ManagementDeploymentService {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(createNewDeploymentRequest.getAgentUUID());
         PackageEntity packageEntity = packageRepository.findFirstByUuid(createNewDeploymentRequest.getPackageUUID());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not available for deployment"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_PACKAGE_NOT_AVAILABLE));
         }
         if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment already present"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_ALREADY_PRESENT));
         }
         if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN || packageEntity.getTargetOperatingSystem() == OperatingSystem.UNKNOWN) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid OS"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_INVALID_OS));
         }
         if (agentEntity.getOperatingSystem() != packageEntity.getTargetOperatingSystem()) {
-            return ResponseEntity.badRequest().body(new ApiError("OS mismatch"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_OS_MISMATCH));
         }
         DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
         deploymentEntity = deploymentRepository.save(deploymentEntity);
@@ -70,7 +70,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> deleteDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
         }
         deploymentRepository.delete(deploymentEntity);
         return ResponseEntity.ok().build();
@@ -79,7 +79,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> getAllDeploymentsForAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid());
         return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deployments));
@@ -88,7 +88,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
         }
         deploymentRepository.resetDeployment(deploymentUUID);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -97,7 +97,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> resetDeploymentForAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_AGENT_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         deploymentRepository.resetDeploymentsForAgent(agentEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -106,7 +106,7 @@ public class ManagementDeploymentService {
     public ResponseEntity<ApiResponse> resetDeploymentForPackage(String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
         deploymentRepository.resetDeploymentsForPackage(packageEntity);
         return ResponseEntity.status(HttpStatus.OK).build();

@@ -74,41 +74,41 @@ class AgentRegistrationServiceTest {
     void addNewAgent_invalidRequest() {
         ResponseEntity responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest(null, null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("   ", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", "", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", "   ", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", "Agent Name", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", "Agent Name", ""));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", "Agent Name", "   "));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
     }
 
     @Test
     void addNewAgent_invalidRegistrationToken() {
         ResponseEntity responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("PublicKey", "Agent Name", "Invalid Token"));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
     }
 
     @Test
@@ -157,25 +157,25 @@ class AgentRegistrationServiceTest {
     void verifyNewAgent_invalidRequest() {
         ResponseEntity responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest(null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest("", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest("   ", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest("PublicKey", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest("PublicKey", ""));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest("PublicKey", "   "));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid request", new JSONObject(responseEntity.getBody()).getString("message"));
+        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
     }
 
     @Test
