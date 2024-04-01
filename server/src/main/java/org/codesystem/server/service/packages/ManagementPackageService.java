@@ -1,5 +1,6 @@
 package org.codesystem.server.service.packages;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.PackageEntity;
@@ -88,12 +89,15 @@ public class ManagementPackageService {
     }
 
     public ResponseEntity<ApiResponse> updatePackage(UpdatePackageRequest updatePackageRequest, String packageUUID) {
+        if (updatePackageRequest == null) {
+            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
+        }
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
         if (updatePackageRequest.getPackageName() != null && !updatePackageRequest.getPackageName().isBlank() && !updatePackageRequest.getPackageName().equals(packageEntity.getName())) {
-            packageEntity.setName(updatePackageRequest.getPackageName());
+            packageEntity.setName(updatePackageRequest.getPackageName().trim());
         }
         packageEntity.setExpectedReturnValue(updatePackageRequest.getExpectedReturnValue());
         packageRepository.save(packageEntity);
@@ -106,7 +110,7 @@ public class ManagementPackageService {
             return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
         }
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.PROCESSING) {
-            return ResponseEntity.badRequest().body(new ApiError("Cannot delete package while being processed"));
+            return ResponseEntity.badRequest().body(new ApiError("Cannot delete package during processing"));
         }
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
             return ResponseEntity.badRequest().body(new ApiError("Package already marked for deletion"));
@@ -133,9 +137,6 @@ public class ManagementPackageService {
             }
         }
 
-        if (updatePackageContentRequest == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
-        }
         String calculatedChecksum;
         try {
             calculatedChecksum = cryptoUtility.calculateChecksum(multipartFile.getInputStream());
