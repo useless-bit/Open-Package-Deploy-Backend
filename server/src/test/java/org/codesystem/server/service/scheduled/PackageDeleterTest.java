@@ -57,7 +57,7 @@ class PackageDeleterTest {
         packageEntity.setTargetOperatingSystem(OperatingSystem.LINUX);
         packageEntity.setChecksumPlaintext("PlainText Checksum");
         packageEntity = packageRepository.save(packageEntity);
-        packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
         packageEntity = packageRepository.save(packageEntity);
 
         packageDeleter = new PackageDeleter(packageRepository);
@@ -88,11 +88,15 @@ class PackageDeleterTest {
 
         packageDeleter.deletePackage();
 
-        Assertions.assertNull(packageRepository.findFirstByPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED));
+        Assertions.assertEquals("Package", packageRepository.findFirstByUuid(packageEntity.getUuid()).getName());
+        Assertions.assertTrue(filePath.toFile().exists());
+
+        packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
+        packageRepository.save(packageEntity);
+
+        packageDeleter.deletePackage();
+
+        Assertions.assertNull(packageRepository.findFirstByUuid(packageEntity.getUuid()));
         Assertions.assertFalse(filePath.toFile().exists());
-
-        Assertions.assertDoesNotThrow(() -> packageDeleter.deletePackage());
     }
-
-
 }
