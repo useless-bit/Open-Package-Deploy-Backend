@@ -1,6 +1,5 @@
 package org.codesystem.utility;
 
-import org.codesystem.TestSystemExitException;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
