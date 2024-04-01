@@ -42,7 +42,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> setUpdateInterval(UpdateIntervalRequest updateIntervalRequest) {
         if (updateIntervalRequest == null || updateIntervalRequest.getUpdateInterval() == null || updateIntervalRequest.getUpdateInterval() <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid interval"));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentUpdateInterval(updateIntervalRequest.getUpdateInterval());
@@ -57,7 +57,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> setInstallRetryInterval(InstallRetryIntervalRequest installRetryIntervalRequest) {
         if (installRetryIntervalRequest == null || installRetryIntervalRequest.getInstallRetryInterval() == null || installRetryIntervalRequest.getInstallRetryInterval() <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid interval"));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentInstallRetryInterval(installRetryIntervalRequest.getInstallRetryInterval());

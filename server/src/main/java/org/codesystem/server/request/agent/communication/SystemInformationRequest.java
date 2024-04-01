@@ -16,9 +16,9 @@ public class SystemInformationRequest {
     private String operatingSystemBuildNumber;
     private String cpuName;
     private String cpuArchitecture;
+    private String cpuSockets;
     private String cpuLogicalCores;
     private String cpuPhysicalCores;
-    private String cpuSockets;
     private String memory;
 
     public SystemInformationRequest(JSONObject jsonObject) {
