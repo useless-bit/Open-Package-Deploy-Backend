@@ -1,6 +1,7 @@
 package org.codesystem.server.service.agent.management;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
@@ -25,22 +26,21 @@ public class ManagementAgentService {
     public ResponseEntity<ApiResponse> getAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         return ResponseEntity.ok().body(new GetAgentResponse(agentEntity));
     }
 
     public ResponseEntity<ApiResponse> updateAgent(String agentUUID, AgentUpdateRequest agentUpdateRequest) {
-        //todo: add null checks
+        if (agentUpdateRequest.getName() == null || agentUpdateRequest.getName().isBlank()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
+        }
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
-        }
-        if (agentUpdateRequest.getName().isBlank()) {
-            return ResponseEntity.badRequest().body(new ApiError("Name cannot be empty"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
 
-        agentEntity.setName(agentUpdateRequest.getName());
+        agentEntity.setName(agentUpdateRequest.getName().trim());
         agentRepository.save(agentEntity);
         return ResponseEntity.ok().build();
 
@@ -49,7 +49,7 @@ public class ManagementAgentService {
     public ResponseEntity<ApiResponse> deleteAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         deploymentRepository.deleteAll(deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid()));
         agentRepository.delete(agentEntity);

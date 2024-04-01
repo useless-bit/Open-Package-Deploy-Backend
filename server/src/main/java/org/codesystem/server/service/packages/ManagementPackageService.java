@@ -2,7 +2,9 @@ package org.codesystem.server.service.packages;
 
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.PackageEntity;
+import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -26,8 +28,6 @@ import java.io.InputStream;
 @Service
 @RequiredArgsConstructor
 public class ManagementPackageService {
-    private static final String ERROR_PACKAGE_NOT_FOUND = "Package not found";
-    private static final String ERROR_INVALID_ZIP_FILE = "Invalid zip-file";
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
     private final DeploymentRepository deploymentRepository;
@@ -39,43 +39,46 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> getPackage(String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
         return ResponseEntity.ok().body(new GetPackageResponse(packageEntity));
     }
 
     public ResponseEntity<ApiResponse> addNewNewPackage(AddNewPackageRequest addNewPackageRequest, MultipartFile multipartFile) {
-        if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+        if (addNewPackageRequest.getPackageName() == null || addNewPackageRequest.getPackageName().isBlank()
+                || addNewPackageRequest.getOperatingSystem() == null || addNewPackageRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
+        }
+
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_ZIP_FILE));
         } else {
             String contentType = multipartFile.getContentType();
-            if (contentType == null || contentType.isBlank() || !contentType.equalsIgnoreCase("application/zip")) {
-                return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+            if (contentType == null || !contentType.equalsIgnoreCase(Variables.CONTENT_TYPE_ZIP_FILE)) {
+                return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_ZIP_FILE));
             }
         }
 
-        if (addNewPackageRequest == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
-        }
         String calculatedChecksum;
         try {
             calculatedChecksum = cryptoUtility.calculateChecksum(multipartFile.getInputStream());
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new ApiError("Error when reading zip-file and creating checksum"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_ZIP_FILE_CHECKSUM));
         }
         if (!calculatedChecksum.equals(addNewPackageRequest.getPackageChecksum())) {
-            return ResponseEntity.badRequest().body(new ApiError("Checksum mismatch"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_CHECKSUM_MISMATCH));
         }
 
         PackageEntity packageEntity = new PackageEntity();
-        packageEntity.setName(addNewPackageRequest.getPackageName());
+        packageEntity.setName(addNewPackageRequest.getPackageName().trim());
         packageEntity.setChecksumPlaintext(calculatedChecksum);
         packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
         packageEntity.setExpectedReturnValue(addNewPackageRequest.getExpectedReturnValue());
         packageEntity = packageRepository.save(packageEntity);
 
         if (!savePackage(multipartFile, packageEntity)) {
-            return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
+            packageRepository.delete(packageEntity);
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_CANNOT_STORE_FILE));
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
@@ -84,12 +87,15 @@ public class ManagementPackageService {
     }
 
     public ResponseEntity<ApiResponse> updatePackage(UpdatePackageRequest updatePackageRequest, String packageUUID) {
+        if (updatePackageRequest == null) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
+        }
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
         if (updatePackageRequest.getPackageName() != null && !updatePackageRequest.getPackageName().isBlank() && !updatePackageRequest.getPackageName().equals(packageEntity.getName())) {
-            packageEntity.setName(updatePackageRequest.getPackageName());
+            packageEntity.setName(updatePackageRequest.getPackageName().trim());
         }
         packageEntity.setExpectedReturnValue(updatePackageRequest.getExpectedReturnValue());
         packageRepository.save(packageEntity);
@@ -99,13 +105,13 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> deletePackage(String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.PROCESSING) {
-            return ResponseEntity.badRequest().body(new ApiError("Cannot delete package while being processed"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_CANNOT_DELETE_PACKAGE_PROCESSING));
         }
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
-            return ResponseEntity.badRequest().body(new ApiError("Package already marked for deletion"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_ALREADY_DELETED));
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
@@ -117,33 +123,30 @@ public class ManagementPackageService {
     public ResponseEntity<ApiResponse> updatePackageContent(UpdatePackageContentRequest updatePackageContentRequest, MultipartFile multipartFile, String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_PACKAGE_NOT_FOUND));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
 
         if (multipartFile == null || multipartFile.isEmpty() || multipartFile.getContentType() == null) {
-            return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_ZIP_FILE));
         } else {
             String contentType = multipartFile.getContentType();
-            if (contentType == null || contentType.isBlank() || !contentType.equalsIgnoreCase("application/zip")) {
-                return ResponseEntity.badRequest().body(new ApiError(ERROR_INVALID_ZIP_FILE));
+            if (contentType == null || contentType.isBlank() || !contentType.equalsIgnoreCase(Variables.CONTENT_TYPE_ZIP_FILE)) {
+                return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_ZIP_FILE));
             }
         }
 
-        if (updatePackageContentRequest == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
-        }
         String calculatedChecksum;
         try {
             calculatedChecksum = cryptoUtility.calculateChecksum(multipartFile.getInputStream());
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new ApiError("Error when reading zip-file and creating checksum"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_ZIP_FILE_CHECKSUM));
         }
         if (!calculatedChecksum.equals(updatePackageContentRequest.getPackageChecksum())) {
-            return ResponseEntity.badRequest().body(new ApiError("Checksum mismatch"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_CHECKSUM_MISMATCH));
         }
 
         if (!savePackage(multipartFile, packageEntity)) {
-            return ResponseEntity.badRequest().body(new ApiError("Error when storing file"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_CANNOT_STORE_FILE));
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
@@ -162,7 +165,7 @@ public class ManagementPackageService {
                 fileOutputStream.write(inputStreamByte);
                 inputStreamByte = inputStream.readNBytes(1024);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
         return true;

@@ -61,20 +61,20 @@ public class AgentEntity {
     private String operatingSystemBuildNumber = null;
 
     @Column(name = "cpu_name")
-    private String CpuName = null;
+    private String cpuName = null;
 
     @Column(name = "cpu_architecture")
-    private String CpuArchitecture = null;
+    private String cpuArchitecture = null;
 
     @Column(name = "cpu_logical_cores")
-    private String CpuLogicalCores = null;
+    private String cpuLogicalCores = null;
 
     @Column(name = "cpu_physical_cores")
-    private String CpuPhysicalCores = null;
+    private String cpuPhysicalCores = null;
 
     @Column(name = "cpu_sockets")
-    private String CpuSockets = null;
+    private String cpuSockets = null;
 
     @Column(name = "memory")
-    private String Memory = null;
+    private String memory = null;
 }

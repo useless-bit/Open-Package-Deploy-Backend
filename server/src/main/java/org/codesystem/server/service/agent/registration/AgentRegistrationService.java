@@ -2,6 +2,7 @@ package org.codesystem.server.service.agent.registration;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.AgentRepository;
@@ -25,35 +26,42 @@ public class AgentRegistrationService {
     private final CryptoUtility cryptoUtility;
 
     public ResponseEntity<ApiResponse> addNewAgent(AgentRegistrationRequest agentRegistrationRequest) {
+        if (agentRegistrationRequest.getPublicKeyBase64() == null || agentRegistrationRequest.getPublicKeyBase64().isBlank() ||
+                agentRegistrationRequest.getName() == null || agentRegistrationRequest.getName().isBlank() ||
+                agentRegistrationRequest.getAuthenticationToken() == null || agentRegistrationRequest.getAuthenticationToken().isBlank()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
+        }
+
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-
-
-        //todo add null check for eveything
         if (agentRegistrationRequest.getAuthenticationToken().equals(serverEntity.getAgentRegistrationToken())) {
             AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentRegistrationRequest.getPublicKeyBase64());
             if (agentEntity == null) {
                 agentEntity = new AgentEntity();
             }
             if (agentEntity.isRegistrationCompleted()) {
-                return ResponseEntity.badRequest().body(new ApiError("A Agent with this public key is already registered"));
+                return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_AGENT_REGISTRATION_ALREADY_REGISTERED));
             }
             agentEntity.setPublicKeyBase64(agentRegistrationRequest.getPublicKeyBase64());
             agentEntity.setValidationToken(UUID.randomUUID().toString());
-            agentEntity.setName(agentRegistrationRequest.getName());
+            agentEntity.setName(agentRegistrationRequest.getName().trim());
             agentEntity = agentRepository.save(agentEntity);
 
 
             String encryptedMessage = Base64.encodeBase64String(cryptoUtility.encryptECC(agentEntity.getValidationToken().getBytes(), agentEntity));
             return ResponseEntity.ok().body(new AgentRegistrationResponse(serverEntity.getPublicKeyBase64(), encryptedMessage));
         }
-        return ResponseEntity.badRequest().body(new ApiError("Invalid Public-Key or Authentication-Token"));
+        return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
     }
 
     public ResponseEntity<ApiResponse> verifyNewAgent(AgentVerificationRequest agentVerificationRequest) {
-        //todo add null check for eveything
+        if (agentVerificationRequest.getPublicKeyBase64() == null || agentVerificationRequest.getPublicKeyBase64().isBlank() ||
+                agentVerificationRequest.getVerificationToken() == null || agentVerificationRequest.getVerificationToken().isBlank()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
+        }
+
         AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentVerificationRequest.getPublicKeyBase64());
-        if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Unknown error"));
+        if (agentEntity == null || agentEntity.isRegistrationCompleted()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_AGENT_REGISTRATION_CANNOT_VERIFY));
         }
 
 
@@ -61,8 +69,8 @@ public class AgentRegistrationService {
         if (decryptedToken.equals(agentEntity.getValidationToken())) {
             agentEntity.setRegistrationCompleted(true);
             agentRepository.save(agentEntity);
-            return ResponseEntity.ok().body(new ApiError("Success"));
+            return ResponseEntity.ok().build();
         }
-        return ResponseEntity.badRequest().body(new ApiError("Unknown error"));
+        return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_AGENT_REGISTRATION_CANNOT_VERIFY));
     }
 }

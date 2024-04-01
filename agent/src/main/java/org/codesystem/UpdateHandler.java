@@ -14,8 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.logging.Level;
 
 public class UpdateHandler {
     private static final Path PATH_UPDATE_FILE = Paths.get(Variables.FILE_NAME_AGENT_UPDATE);

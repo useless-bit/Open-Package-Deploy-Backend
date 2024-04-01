@@ -1,6 +1,7 @@
 package org.codesystem.server.service.server;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
@@ -42,7 +43,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> setUpdateInterval(UpdateIntervalRequest updateIntervalRequest) {
         if (updateIntervalRequest == null || updateIntervalRequest.getUpdateInterval() == null || updateIntervalRequest.getUpdateInterval() <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_INTERVAL));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentUpdateInterval(updateIntervalRequest.getUpdateInterval());
@@ -57,7 +58,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> setInstallRetryInterval(InstallRetryIntervalRequest installRetryIntervalRequest) {
         if (installRetryIntervalRequest == null || installRetryIntervalRequest.getInstallRetryInterval() == null || installRetryIntervalRequest.getInstallRetryInterval() <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError("Invalid update interval"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_INTERVAL));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentInstallRetryInterval(installRetryIntervalRequest.getInstallRetryInterval());

@@ -17,7 +17,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Base64;
 
 @SpringBootTest
@@ -181,7 +180,6 @@ class RequestUtilityTest {
         });
         // checks if timestamp and signature are present
         Mockito.when(cryptoUtility.encryptECC(Mockito.any(), Mockito.any())).then(invocationOnMock -> {
-            System.out.println(Arrays.toString(invocationOnMock.getArguments()));
             byte[] argument = invocationOnMock.getArgument(0);
             JSONObject jsonObjectMock = new JSONObject(new String(argument));
             if (jsonObjectMock.isEmpty() || jsonObjectMock.isNull("timestamp") || jsonObjectMock.isNull("signature")) {
