@@ -28,43 +28,49 @@ public class PackageEncryptor {
     public void encryptPackage() {
         PackageEntity packageEntity = packageRepository.findFirstByPackageStatusInternal(PackageStatusInternal.UPLOADED);
         if (packageEntity != null) {
+            System.out.println(packageEntity.getName());
             encryptPackage(packageEntity);
         }
     }
 
     private void encryptPackage(PackageEntity packageEntity) {
-        //check if file exists
-        String basePath = ServerApplication.PACKAGE_LOCATION;
-        File plaintextFile = new File(basePath + packageEntity.getUuid() + "_plaintext");
+        // check if file exists
+        Path basePath = Paths.get(ServerApplication.PACKAGE_LOCATION);
+        File plaintextFile = new File(basePath + File.separator + packageEntity.getUuid() + "_plaintext");
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSING);
         packageEntity = packageRepository.save(packageEntity);
         if (!plaintextFile.exists() || !plaintextFile.isFile()) {
-            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_FILE_NOT_FOUND);
             packageRepository.save(packageEntity);
+            plaintextFile.delete();
             return;
         }
 
 
-        //compare checksum of plaintext file
+        // compare checksum of plaintext file
         try (FileInputStream fileInputStream = new FileInputStream(plaintextFile)) {
             if (!cryptoUtility.calculateChecksum(fileInputStream).equals(packageEntity.getChecksumPlaintext())) {
-                packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+                packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH);
                 packageRepository.save(packageEntity);
+                plaintextFile.delete();
                 return;
             }
         } catch (Exception e) {
-            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH);
             packageRepository.save(packageEntity);
+            plaintextFile.delete();
             return;
         }
 
-        Path encryptedFilePath = Paths.get(basePath + packageEntity.getUuid());
-        Path decryptedTestFilePath = Paths.get(basePath + packageEntity.getUuid() + "_temp-encrypted-test");
+        Path encryptedFilePath = Paths.get(basePath + File.separator + packageEntity.getUuid());
+        Path decryptedTestFilePath = Paths.get(basePath + File.separator + packageEntity.getUuid() + "_temp-encrypted-test");
 
-        //encrypt file
+        // encrypt file
         if (!cryptoUtility.encryptFile(packageEntity, plaintextFile, encryptedFilePath)) {
-            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_ENCRYPTION);
             packageRepository.save(packageEntity);
+            decryptedTestFilePath.toFile().delete();
+            plaintextFile.delete();
             return;
         }
 
@@ -75,26 +81,34 @@ public class PackageEncryptor {
         } catch (FileNotFoundException e) {
             packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
             packageRepository.save(packageEntity);
+            decryptedTestFilePath.toFile().delete();
+            plaintextFile.delete();
             return;
         }
 
         //decrypt file
         if (!cryptoUtility.decryptFile(packageEntity, new File(encryptedFilePath.toString()), decryptedTestFilePath)) {
-            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_DECRYPTION);
             packageRepository.save(packageEntity);
+            decryptedTestFilePath.toFile().delete();
+            plaintextFile.delete();
             return;
         }
 
         //compare checksum of decrypted file
         try {
             if (!cryptoUtility.calculateChecksum(new FileInputStream(decryptedTestFilePath.toString())).equals(packageEntity.getChecksumPlaintext())) {
-                packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+                packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH);
                 packageRepository.save(packageEntity);
+                decryptedTestFilePath.toFile().delete();
+                plaintextFile.delete();
                 return;
             }
         } catch (FileNotFoundException e) {
-            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
+            packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH);
             packageRepository.save(packageEntity);
+            decryptedTestFilePath.toFile().delete();
+            plaintextFile.delete();
             return;
         }
 
@@ -102,8 +116,8 @@ public class PackageEncryptor {
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
         packageRepository.save(packageEntity);
 
-        //cleanup
-        new File(decryptedTestFilePath.toString()).delete();
+        // cleanup
+        decryptedTestFilePath.toFile().delete();
         plaintextFile.delete();
     }
 
