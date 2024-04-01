@@ -6,6 +6,8 @@ import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.utility.CryptoUtility;
 import org.codesystem.server.utility.SystemExitUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,7 @@ public class ServerInitialization {
     private final ResourceLoader resourceLoader;
     private final CryptoUtility cryptoUtility;
     private final SystemExitUtility systemExitUtility;
+    private final Logger logger = LoggerFactory.getLogger(ServerInitialization.class);
 
     public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader, SystemExitUtility systemExitUtility) {
         this.serverRepository = serverRepository;
@@ -52,8 +55,10 @@ public class ServerInitialization {
         String checksum;
         try {
             checksum = cryptoUtility.calculateChecksum(resource.getInputStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Error encountered when calculating Agent-checksum: {}", e.getMessage());
+            systemExitUtility.exit(-100);
+            return;
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentChecksum(checksum);
