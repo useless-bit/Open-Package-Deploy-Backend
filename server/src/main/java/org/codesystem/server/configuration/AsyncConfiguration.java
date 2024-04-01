@@ -13,7 +13,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class AsyncConfiguration implements AsyncConfigurer {
 
     @Bean(name = "encryptPackageTask")
-    public ThreadPoolTaskScheduler threadPoolTaskSchedulerEmailSender() {
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerEncryptPackage() {
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(1);
+        return threadPoolTaskScheduler;
+    }
+
+    @Bean(name = "deletePackageTask")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerDeletePackage() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
         threadPoolTaskScheduler.setPoolSize(1);
         return threadPoolTaskScheduler;

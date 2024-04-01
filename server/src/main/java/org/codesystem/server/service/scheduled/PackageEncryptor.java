@@ -28,7 +28,6 @@ public class PackageEncryptor {
     public void encryptPackage() {
         PackageEntity packageEntity = packageRepository.findFirstByPackageStatusInternal(PackageStatusInternal.UPLOADED);
         if (packageEntity != null) {
-            System.out.println(packageEntity.getName());
             encryptPackage(packageEntity);
         }
     }
