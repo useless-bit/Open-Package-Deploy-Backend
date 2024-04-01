@@ -5,6 +5,7 @@ import org.bouncycastle.jce.spec.IESParameterSpec;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.exception.CryptoUtilityException;
 import org.codesystem.server.repository.ServerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,7 @@ public class CryptoUtility {
                 this.privateKeyServer = null;
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CryptoUtilityException("Cannot create the class: " + e.getMessage());
         }
     }
 
@@ -61,7 +62,7 @@ public class CryptoUtility {
             cipher.init(Cipher.DECRYPT_MODE, this.privateKeyServer, iesParamSpec);
             decryptedMessage = cipher.doFinal(message);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to decrypt the message: " + e.getMessage());
+            throw new CryptoUtilityException("Unable to decrypt the message: " + e.getMessage());
         }
         return new String(decryptedMessage, StandardCharsets.UTF_8);
     }
@@ -73,7 +74,7 @@ public class CryptoUtility {
             cipher.init(Cipher.ENCRYPT_MODE, loadPublicKeyFromAgentEntity(agentEntity), iesParamSpec);
             encryptedMessage = cipher.doFinal(message);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to load the Public-Key: " + e.getMessage());
+            throw new CryptoUtilityException("Unable to load the Public-Key: " + e.getMessage());
         }
         return encryptedMessage;
     }
@@ -86,7 +87,7 @@ public class CryptoUtility {
             signature.update(message.getBytes(StandardCharsets.UTF_8));
             signatureForMessage = signature.sign();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CryptoUtilityException("Unable to create the signature: " + e.getMessage());
         }
         return signatureForMessage;
     }
@@ -98,7 +99,7 @@ public class CryptoUtility {
             signature.update(message.getBytes(StandardCharsets.UTF_8));
             return signature.verify(Base64.getDecoder().decode(base64Signature));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CryptoUtilityException("Unable to verify the signature: " + e.getMessage());
         }
     }
 
@@ -189,7 +190,7 @@ public class CryptoUtility {
         try {
             return keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(agentEntity.getPublicKeyBase64())));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CryptoUtilityException("Unable to load the Agent-PublicKey: " + e.getMessage());
         }
     }
 }

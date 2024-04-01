@@ -8,6 +8,7 @@ import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.exception.CryptoUtilityException;
 import org.codesystem.server.exception.TestSystemExitException;
 import org.codesystem.server.repository.ServerRepository;
 import org.junit.jupiter.api.*;
@@ -122,13 +123,13 @@ class CryptoUtilityTest {
         serverEntity.setAgentRegistrationToken("Registration Token");
         serverEntity.setAgentChecksum("Checksum");
         serverRepository.save(serverEntity);
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility = new CryptoUtility(serverRepository));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility = new CryptoUtility(serverRepository));
     }
 
     @Test
     void decryptECC_invalid() {
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.decryptECC(null));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.decryptECC("".getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.decryptECC(null));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.decryptECC("".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
@@ -143,10 +144,10 @@ class CryptoUtilityTest {
     void encryptECC_invalid() {
         AgentEntity agentEntity = new AgentEntity();
         agentEntity.setPublicKeyBase64(Base64.getEncoder().encodeToString(agentPublicKey.getEncoded()));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.encryptECC(null, null));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.encryptECC("Test Message".getBytes(StandardCharsets.UTF_8), null));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.encryptECC("Test Message".getBytes(StandardCharsets.UTF_8), new AgentEntity()));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.encryptECC(null, agentEntity));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.encryptECC(null, null));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.encryptECC("Test Message".getBytes(StandardCharsets.UTF_8), null));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.encryptECC("Test Message".getBytes(StandardCharsets.UTF_8), new AgentEntity()));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.encryptECC(null, agentEntity));
     }
 
     @Test
@@ -161,7 +162,7 @@ class CryptoUtilityTest {
 
     @Test
     void createSignatureECC_invalid() {
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.createSignatureECC(null));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.createSignatureECC(null));
     }
 
     @Test
@@ -179,12 +180,12 @@ class CryptoUtilityTest {
     void verifySignatureECC_invalid() {
         AgentEntity agentEntity = new AgentEntity();
         agentEntity.setPublicKeyBase64(Base64.getEncoder().encodeToString(agentPublicKey.getEncoded()));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.verifySignatureECC(null, null, null));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.verifySignatureECC("", "", new AgentEntity()));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.verifySignatureECC("Message", "Signature", agentEntity));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.verifySignatureECC(null, "Signature", agentEntity));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.verifySignatureECC("Message", null, agentEntity));
-        Assertions.assertThrows(RuntimeException.class, () -> cryptoUtility.verifySignatureECC("Message", "Signature", null));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.verifySignatureECC(null, null, null));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.verifySignatureECC("", "", new AgentEntity()));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.verifySignatureECC("Message", "Signature", agentEntity));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.verifySignatureECC(null, "Signature", agentEntity));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.verifySignatureECC("Message", null, agentEntity));
+        Assertions.assertThrows(CryptoUtilityException.class, () -> cryptoUtility.verifySignatureECC("Message", "Signature", null));
     }
 
     @Test
