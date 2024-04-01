@@ -112,7 +112,8 @@ class PackageEncryptorTest {
         packageEntity = packageRepository.findFirstByUuid(packageEntity.getUuid());
         Assertions.assertEquals(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH, packageEntity.getPackageStatusInternal());
         Assertions.assertFalse(plaintextFile.toFile().exists());
-        Assertions.assertFalse(decryptedFileTest.toFile().exists());}
+        Assertions.assertFalse(decryptedFileTest.toFile().exists());
+    }
 
     @Test
     void encryptPackage_failureEncryption() throws IOException {
@@ -126,7 +127,9 @@ class PackageEncryptorTest {
         packageEntity = packageRepository.findFirstByUuid(packageEntity.getUuid());
         Assertions.assertEquals(PackageStatusInternal.ERROR_ENCRYPTION, packageEntity.getPackageStatusInternal());
         Assertions.assertFalse(plaintextFile.toFile().exists());
-        Assertions.assertFalse(decryptedFileTest.toFile().exists());}
+        Assertions.assertFalse(decryptedFileTest.toFile().exists());
+    }
+
     @Test
     void encryptPackage_encryptedChecksumCalculationException() throws IOException {
         Mockito.when(cryptoUtility.calculateChecksum(Mockito.any())).thenReturn("PlainText Checksum");
@@ -139,7 +142,8 @@ class PackageEncryptorTest {
         packageEntity = packageRepository.findFirstByUuid(packageEntity.getUuid());
         Assertions.assertEquals(PackageStatusInternal.ERROR, packageEntity.getPackageStatusInternal());
         Assertions.assertFalse(plaintextFile.toFile().exists());
-        Assertions.assertFalse(decryptedFileTest.toFile().exists());}
+        Assertions.assertFalse(decryptedFileTest.toFile().exists());
+    }
 
     @Test
     void encryptPackage_failureDecryption() throws IOException {
@@ -156,7 +160,8 @@ class PackageEncryptorTest {
         packageEntity = packageRepository.findFirstByUuid(packageEntity.getUuid());
         Assertions.assertEquals(PackageStatusInternal.ERROR_DECRYPTION, packageEntity.getPackageStatusInternal());
         Assertions.assertFalse(plaintextFile.toFile().exists());
-        Assertions.assertFalse(decryptedFileTest.toFile().exists());}
+        Assertions.assertFalse(decryptedFileTest.toFile().exists());
+    }
 
     @Test
     void encryptPackage_compareChecksumFailureException() throws IOException {

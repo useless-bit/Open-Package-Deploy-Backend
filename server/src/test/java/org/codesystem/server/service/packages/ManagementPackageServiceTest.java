@@ -247,7 +247,7 @@ class ManagementPackageServiceTest {
         responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest(null, "-1"), packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         packageEntityOne = packageRepository.findFirstByUuid(packageEntityOne.getUuid());
-        Assertions.assertEquals("-1",packageEntityOne.getExpectedReturnValue());
+        Assertions.assertEquals("-1", packageEntityOne.getExpectedReturnValue());
         Assertions.assertEquals("Package One", packageEntityOne.getName());
 
         responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest("New Package One", null), packageEntityOne.getUuid());

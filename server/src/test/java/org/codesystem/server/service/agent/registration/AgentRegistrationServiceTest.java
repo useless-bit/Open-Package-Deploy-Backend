@@ -1,7 +1,6 @@
 package org.codesystem.server.service.agent.registration;
 
 import ch.vorburger.mariadb4j.springframework.MariaDB4jSpringService;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;

@@ -101,6 +101,7 @@ class ManagementServerServiceTest {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         Assertions.assertEquals(500, serverEntity.getAgentUpdateInterval());
     }
+
     @Test
     void getInstallRetryInterval() {
         ResponseEntity responseEntity = managementServerService.getInstallRetryInterval();

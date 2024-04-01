@@ -17,7 +17,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Base64;
 
 @SpringBootTest
