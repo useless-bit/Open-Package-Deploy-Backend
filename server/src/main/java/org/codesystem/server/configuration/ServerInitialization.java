@@ -39,9 +39,9 @@ public class ServerInitialization {
     public void initializeServer() {
         if (serverRepository.findAll().size() > 1) {
             // should not be possible
-            systemExitUtility.exit(1);
+            systemExitUtility.exit(-100);
         } else if (serverRepository.findAll().isEmpty()) {
-            serverRepository.save(generateServerEntity());
+            generateServerEntity();
             systemExitUtility.exit(0);
         } else {
             validateServerEntity();
@@ -56,7 +56,7 @@ public class ServerInitialization {
             checksum = cryptoUtility.calculateChecksum(resource.getInputStream());
         } catch (Exception e) {
             logger.error("Error encountered when calculating Agent-checksum: {}", e.getMessage());
-            systemExitUtility.exit(-100);
+            systemExitUtility.exit(-101);
             return;
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
@@ -69,34 +69,41 @@ public class ServerInitialization {
 
         KeyFactory keyFactory;
         try {
-            //load KeyFactory and public Key
+            // load KeyFactory and public Key
             keyFactory = KeyFactory.getInstance("EC");
             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPublicKeyBase64()));
             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to load the Public-Key: " + e.getMessage());
+            logger.error("Unable to load the Public-Key: {}", e.getMessage());
+            systemExitUtility.exit(-102);
+            return;
         }
         try {
-            //load private Key
+            // load private Key
             PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPrivateKeyBase64()));
             keyFactory.generatePrivate(pkcs8EncodedKeySpec);
         } catch (InvalidKeySpecException e) {
-            throw new RuntimeException("Unable to load the Private-Key: " + e.getMessage());
+            logger.error("Unable to load the Private-Key: {}", e.getMessage());
+            systemExitUtility.exit(-103);
         }
     }
 
-    private ServerEntity generateServerEntity() {
+    private void generateServerEntity() {
         Security.addProvider(new BouncyCastleProvider());
         KeyPairGenerator keyPairGenerator;
         try {
             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to load KeyPair Generator: " + e.getMessage());
+            logger.error("Unable to load KeyPair Generator: {}", e.getMessage());
+            systemExitUtility.exit(-104);
+            return;
         }
         try {
             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
         } catch (InvalidAlgorithmParameterException e) {
-            throw new RuntimeException("Unable to load the KeyPair Generator Parameter: " + e.getMessage());
+            logger.error("Unable to load the KeyPair Generator Parameter: {}", e.getMessage());
+            systemExitUtility.exit(-105);
+            return;
         }
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
@@ -105,6 +112,6 @@ public class ServerInitialization {
         serverEntity.setPublicKeyBase64(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
         serverEntity.setPrivateKeyBase64(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
         serverEntity.setAgentChecksum("");
-        return serverEntity;
+        serverRepository.save(serverEntity);
     }
 }
