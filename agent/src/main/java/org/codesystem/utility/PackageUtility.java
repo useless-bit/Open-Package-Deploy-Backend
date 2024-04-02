@@ -65,7 +65,7 @@ public class PackageUtility {
                 sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
             }
             AgentApplication.logger.info("extract");
-            extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, "download/extracted");
+            extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, "download"+File.separator+"extracted");
             AgentApplication.logger.info("start deployment");
             sendDeploymentResponse(executeDeployment());
             AgentApplication.logger.info("Final cleanup");
@@ -145,17 +145,15 @@ public class PackageUtility {
 
     }
 
-    private String executeDeployment() {
-        switch (operatingSystem) {
-            case LINUX -> {
-                return executeLinuxDeployment();
-            }
-        }
-        return "";
-    }
 
-    private String executeLinuxDeployment() {
-        File file = Paths.get("download/extracted/start.sh").toFile();
+    private String executeDeployment() {
+        File file = null;
+        switch (operatingSystem) {
+            case LINUX, MACOS ->
+                    file = Paths.get("download" + File.separator + "extracted" + File.separator + "start.sh").toFile();
+            case WINDOWS ->
+                    file = Paths.get("download" + File.separator + "extracted" + File.separator + "start.bat").toFile();
+        }
         if (!file.exists()) {
             return PackageDeploymentErrorState.ENTRYPOINT_NOT_FOUND.toString();
         }
