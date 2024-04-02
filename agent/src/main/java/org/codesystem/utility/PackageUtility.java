@@ -52,7 +52,7 @@ public class PackageUtility {
                     .post(body)
                     .build();
             downloadUtility.downloadFile(Variables.PATH_PACKAGE_ENCRYPTED, request);
-            AgentApplication.logger.info("Verifiy");
+            AgentApplication.logger.info("Verify");
             if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_PACKAGE_ENCRYPTED).equals(packageDetailResponse.getChecksumEncrypted())) {
                 sendDeploymentResponse(PackageDeploymentErrorState.ENCRYPTED_CHECKSUM_MISMATCH.toString());
             }
@@ -65,7 +65,7 @@ public class PackageUtility {
                 sendDeploymentResponse(PackageDeploymentErrorState.PLAINTEXT_CHECKSUM_MISMATCH.toString());
             }
             AgentApplication.logger.info("extract");
-            extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, "download" + File.separator + "extracted");
+            extractPackage(Variables.FILE_NAME_PACKAGE_DECRYPTED, Variables.NAME_DOWNLOAD + File.separator + Variables.NAME_EXTRACTED);
             AgentApplication.logger.info("start deployment");
             sendDeploymentResponse(executeDeployment());
             AgentApplication.logger.info("Final cleanup");
@@ -81,7 +81,7 @@ public class PackageUtility {
 
     private void cleanupDownloadFolder() {
         //clear download folder
-        Path downloadFolder = Paths.get("download");
+        Path downloadFolder = Paths.get(Variables.NAME_DOWNLOAD);
         if (Files.exists(downloadFolder)) {
             try (Stream<Path> stream = Files.walk(downloadFolder)) {
                 stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
@@ -148,13 +148,12 @@ public class PackageUtility {
 
     private String executeDeployment() {
         File file = null;
-        switch (operatingSystem) {
-            case LINUX, MACOS ->
-                    file = Paths.get("download" + File.separator + "extracted" + File.separator + "start.sh").toFile();
-            case WINDOWS ->
-                    file = Paths.get("download" + File.separator + "extracted" + File.separator + "start.bat").toFile();
+        if (operatingSystem == OperatingSystem.LINUX || operatingSystem == OperatingSystem.MACOS) {
+            file = Paths.get(Variables.NAME_DOWNLOAD + File.separator + Variables.NAME_EXTRACTED + File.separator + "start.sh").toFile();
+        } else if (operatingSystem == OperatingSystem.WINDOWS) {
+            file = Paths.get(Variables.NAME_DOWNLOAD + File.separator + Variables.NAME_EXTRACTED + File.separator + "start.bat").toFile();
         }
-        if (!file.exists()) {
+        if (file == null || !file.exists()) {
             return PackageDeploymentErrorState.ENTRYPOINT_NOT_FOUND.toString();
         }
         if (!file.setExecutable(true)) {

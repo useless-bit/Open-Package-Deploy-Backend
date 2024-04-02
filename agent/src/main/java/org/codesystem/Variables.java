@@ -7,6 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Variables {
+    public static final String NAME_DOWNLOAD = "download";
+    public static final String NAME_EXTRACTED = "extracted";
+
     // files
     public static final String FILE_NAME_AGENT_UPDATE = "Agent_update.jar";
     public static final String FILE_NAME_AGENT_UPDATE_BACKUP = "Agent_backup.jar";
