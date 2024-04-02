@@ -515,6 +515,174 @@ class AgentCommunicationServiceTest {
     }
 
     @Test
+    void checkForUpdates_updateFromLinuxToWindows() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity.setOperatingSystem(OperatingSystem.LINUX);
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "WINDOWS"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Cannot change Operating System", new JSONObject(responseEntity.getBody()).getString("message"));
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
+        Assertions.assertEquals(OperatingSystem.LINUX, agentEntity.getOperatingSystem());
+    }
+
+    @Test
+    void checkForUpdates_updateFromLinuxToMacOS() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity.setOperatingSystem(OperatingSystem.LINUX);
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "MACOS"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Cannot change Operating System", new JSONObject(responseEntity.getBody()).getString("message"));
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
+        Assertions.assertEquals(OperatingSystem.LINUX, agentEntity.getOperatingSystem());
+    }
+
+    @Test
+    void checkForUpdates_updateFromWindowsToMacOS() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity.setOperatingSystem(OperatingSystem.WINDOWS);
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "MACOS"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Cannot change Operating System", new JSONObject(responseEntity.getBody()).getString("message"));
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
+        Assertions.assertEquals(OperatingSystem.WINDOWS, agentEntity.getOperatingSystem());
+    }
+
+    @Test
+    void checkForUpdates_updateFromWindowsToLinux() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity.setOperatingSystem(OperatingSystem.WINDOWS);
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "LINUX"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Cannot change Operating System", new JSONObject(responseEntity.getBody()).getString("message"));
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
+        Assertions.assertEquals(OperatingSystem.WINDOWS, agentEntity.getOperatingSystem());
+    }
+
+    @Test
+    void checkForUpdates_updateFromMacOSToWindows() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity.setOperatingSystem(OperatingSystem.MACOS);
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "WINDOWS"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Cannot change Operating System", new JSONObject(responseEntity.getBody()).getString("message"));
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
+        Assertions.assertEquals(OperatingSystem.MACOS, agentEntity.getOperatingSystem());
+    }
+
+    @Test
+    void checkForUpdates_updateFromMacOSToLinux() {
+        AgentEntity agentEntity = new AgentEntity();
+        agentEntity.setName("Test-Agent");
+        agentEntity.setPublicKeyBase64("agentPublicKey");
+        agentEntity.setOperatingSystem(OperatingSystem.MACOS);
+        agentRepository.save(agentEntity);
+        ServerEntity serverEntity = new ServerEntity();
+        serverEntity.setAgentChecksum("AgentChecksum");
+        serverEntity.setAgentRegistrationToken("Registration Token");
+        serverEntity.setPrivateKeyBase64("Private Key");
+        serverEntity.setPublicKeyBase64("Public Key");
+        serverEntity.setAgentUpdateInterval(100);
+        serverRepository.save(serverEntity);
+        JSONObject hardwareInfo = new JSONObject("""
+                {
+                    "operatingSystem": "LINUX"
+                }""");
+        JSONObject jsonObject = new JSONObject().put("systemInformation", hardwareInfo).put("agentChecksum", "agentReportedChecksum");
+        Mockito.when(requestUtility.validateRequest(Mockito.any())).thenReturn(jsonObject);
+        Mockito.when(requestUtility.generateAgentEncryptedResponse(Mockito.any(), Mockito.any())).then(invocationOnMock -> new AgentEncryptedResponse(invocationOnMock.getArgument(0).toString()));
+        ResponseEntity responseEntity = agentCommunicationService.checkForUpdates(new AgentEncryptedRequest("agentPublicKey", ""));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Cannot change Operating System", new JSONObject(responseEntity.getBody()).getString("message"));
+        agentEntity = agentRepository.findFirstByPublicKeyBase64("agentPublicKey");
+        Assertions.assertEquals(OperatingSystem.MACOS, agentEntity.getOperatingSystem());
+    }
+
+    @Test
     void getAgent_invalidRequest() {
         ResponseEntity responseEntity = agentCommunicationService.getAgent(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
