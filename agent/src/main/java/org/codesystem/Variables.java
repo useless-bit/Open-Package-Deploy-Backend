@@ -2,10 +2,14 @@ package org.codesystem;
 
 import okhttp3.MediaType;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Variables {
+    public static final String NAME_DOWNLOAD = "download";
+    public static final String NAME_EXTRACTED = "extracted";
+
     // files
     public static final String FILE_NAME_AGENT_UPDATE = "Agent_update.jar";
     public static final String FILE_NAME_AGENT_UPDATE_BACKUP = "Agent_backup.jar";
@@ -13,8 +17,8 @@ public class Variables {
     public static final Path PATH_UPDATE_FILE = Paths.get(FILE_NAME_AGENT_UPDATE);
     public static final Path PATH_BACKUP_FILE = Paths.get(FILE_NAME_AGENT_UPDATE_BACKUP);
     public static final Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
-    public static final String FILE_NAME_PACKAGE_ENCRYPTED = "download/file";
-    public static final String FILE_NAME_PACKAGE_DECRYPTED = "download/file.zip";
+    public static final String FILE_NAME_PACKAGE_ENCRYPTED = NAME_DOWNLOAD + File.separator + "file";
+    public static final String FILE_NAME_PACKAGE_DECRYPTED = NAME_DOWNLOAD + File.separator + "file.zip";
     public static final Path PATH_PACKAGE_ENCRYPTED = Paths.get(FILE_NAME_PACKAGE_ENCRYPTED);
 
     //urls
