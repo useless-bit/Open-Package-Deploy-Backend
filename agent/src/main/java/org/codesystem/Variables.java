@@ -17,8 +17,8 @@ public class Variables {
     public static final Path PATH_UPDATE_FILE = Paths.get(FILE_NAME_AGENT_UPDATE);
     public static final Path PATH_BACKUP_FILE = Paths.get(FILE_NAME_AGENT_UPDATE_BACKUP);
     public static final Path PATH_FILE = Paths.get(FILE_NAME_AGENT);
-    public static final String FILE_NAME_PACKAGE_ENCRYPTED = "download" + File.separator + "file";
-    public static final String FILE_NAME_PACKAGE_DECRYPTED = "download" + File.separator + "file.zip";
+    public static final String FILE_NAME_PACKAGE_ENCRYPTED = NAME_DOWNLOAD + File.separator + "file";
+    public static final String FILE_NAME_PACKAGE_DECRYPTED = NAME_DOWNLOAD + File.separator + "file.zip";
     public static final Path PATH_PACKAGE_ENCRYPTED = Paths.get(FILE_NAME_PACKAGE_ENCRYPTED);
 
     //urls
