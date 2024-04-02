@@ -26,6 +26,10 @@ public class DetailedSystemInformation {
             this.operatingSystem = null;
         } else if (hardwareInfo.getOsManufacturer().toLowerCase().contains("linux")) {
             this.operatingSystem = OperatingSystem.LINUX;
+        } else if (hardwareInfo.getOsManufacturer().toLowerCase().contains("microsoft")) {
+            this.operatingSystem = OperatingSystem.WINDOWS;
+        } else if (hardwareInfo.getOsManufacturer().toLowerCase().contains("apple")) {
+            this.operatingSystem = OperatingSystem.MACOS;
         } else {
             this.operatingSystem = null;
         }
@@ -103,5 +107,9 @@ public class DetailedSystemInformation {
             jsonObject.put("memory", this.memory.trim());
         }
         return jsonObject;
+    }
+
+    public OperatingSystem getOperatingSystem() {
+        return operatingSystem;
     }
 }
