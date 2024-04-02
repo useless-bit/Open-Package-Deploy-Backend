@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) {
         String filename;
         try {
-            filename = String.valueOf(new File(AgentApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
+            filename = String.valueOf(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
         } catch (URISyntaxException e) {
             throw new SevereAgentErrorException("Cannot get filename");
         }

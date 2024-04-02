@@ -2,6 +2,7 @@ package org.codesystem;
 
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.payload.DetailedSystemInformation;
 import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.DownloadUtility;
 import org.codesystem.utility.PackageUtility;
@@ -51,10 +52,12 @@ public class AgentApplication {
             throw new SevereAgentErrorException("Application needs elevated permissions");
         }
 
-        if (hardwareInfo.getOsManufacturer().toLowerCase().contains("linux")) {
-            operatingSystem = OperatingSystem.LINUX;
+        DetailedSystemInformation detailedSystemInformation = new DetailedSystemInformation(hardwareInfo);
+        if (detailedSystemInformation.getOperatingSystem() == null) {
+            throw new SevereAgentErrorException("Unsupported OS: " + hardwareInfo.getOsManufacturer());
         } else {
-            throw new SevereAgentErrorException("Unsupported OS");
+            operatingSystem = detailedSystemInformation.getOperatingSystem();
+            logger.info("Detected OS: " + detailedSystemInformation.getOperatingSystem());
         }
         logger.info("Agent Startup");
 
