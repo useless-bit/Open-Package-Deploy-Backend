@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.service.server.ManagementServerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ManagementServerController {
     private final ManagementServerService managementServerService;
+    private final LogService logService;
 
     @GetMapping("registrationToken")
     public ResponseEntity<ApiResponse> getRegistrationToken() {
@@ -49,6 +51,11 @@ public class ManagementServerController {
     @GetMapping("agentChecksum")
     public ResponseEntity<ApiResponse> getAgentChecksum() {
         return managementServerService.getAgentChecksum();
+    }
+
+    @GetMapping("log")
+    public ResponseEntity<ApiResponse> getAllLogs() {
+        return logService.getAllEntries();
     }
 
 }

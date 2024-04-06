@@ -3,7 +3,10 @@ package org.codesystem.server.configuration;
 import jakarta.annotation.PostConstruct;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.enums.log.Severity;
+import org.codesystem.server.repository.LogRepository;
 import org.codesystem.server.repository.ServerRepository;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.codesystem.server.utility.SystemExitUtility;
 import org.slf4j.Logger;
@@ -26,13 +29,14 @@ public class ServerInitialization {
     private final ResourceLoader resourceLoader;
     private final CryptoUtility cryptoUtility;
     private final SystemExitUtility systemExitUtility;
-    private final Logger logger = LoggerFactory.getLogger(ServerInitialization.class);
+    private final LogService logService;
 
-    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader, SystemExitUtility systemExitUtility) {
+    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader, SystemExitUtility systemExitUtility, LogRepository logRepository, LogService logService) {
         this.serverRepository = serverRepository;
         this.resourceLoader = resourceLoader;
         this.cryptoUtility = new CryptoUtility(serverRepository);
         this.systemExitUtility = systemExitUtility;
+        this.logService = logService;
     }
 
     @PostConstruct
@@ -41,6 +45,7 @@ public class ServerInitialization {
             // should not be possible
             systemExitUtility.exit(-100);
         } else if (serverRepository.findAll().isEmpty()) {
+            logService.addEntry(Severity.INFO, "Setting up initial Server configuration");
             generateServerEntity();
             systemExitUtility.exit(0);
         } else {
@@ -55,7 +60,7 @@ public class ServerInitialization {
         try {
             checksum = cryptoUtility.calculateChecksum(resource.getInputStream());
         } catch (Exception e) {
-            logger.error("Error encountered when calculating Agent-checksum: {}", e.getMessage());
+            logService.addEntry(Severity.ERROR, "Error encountered when calculating Agent-checksum: " + e.getMessage());
             systemExitUtility.exit(-101);
             return;
         }
@@ -74,7 +79,7 @@ public class ServerInitialization {
             X509EncodedKeySpec x509EncodedKeySpecPublicKey = new X509EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPublicKeyBase64()));
             keyFactory.generatePublic(x509EncodedKeySpecPublicKey);
         } catch (Exception e) {
-            logger.error("Unable to load the Public-Key: {}", e.getMessage());
+            logService.addEntry(Severity.ERROR, "Unable to load the Public-Key: " + e.getMessage());
             systemExitUtility.exit(-102);
             return;
         }
@@ -83,7 +88,7 @@ public class ServerInitialization {
             PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(serverEntity.getPrivateKeyBase64()));
             keyFactory.generatePrivate(pkcs8EncodedKeySpec);
         } catch (InvalidKeySpecException e) {
-            logger.error("Unable to load the Private-Key: {}", e.getMessage());
+            logService.addEntry(Severity.ERROR, "Unable to load the Private-Key: " + e.getMessage());
             systemExitUtility.exit(-103);
         }
     }
@@ -94,14 +99,14 @@ public class ServerInitialization {
         try {
             keyPairGenerator = KeyPairGenerator.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
         } catch (Exception e) {
-            logger.error("Unable to load KeyPair Generator: {}", e.getMessage());
+            logService.addEntry(Severity.ERROR, "Unable to load KeyPair Generator: " + e.getMessage());
             systemExitUtility.exit(-104);
             return;
         }
         try {
             keyPairGenerator.initialize(new ECGenParameterSpec("sect571k1"));
         } catch (InvalidAlgorithmParameterException e) {
-            logger.error("Unable to load the KeyPair Generator Parameter: {}", e.getMessage());
+            logService.addEntry(Severity.ERROR, "Unable to load the KeyPair Generator Parameter: " + e.getMessage());
             systemExitUtility.exit(-105);
             return;
         }
