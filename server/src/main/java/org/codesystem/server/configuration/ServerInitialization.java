@@ -9,8 +9,6 @@ import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.codesystem.server.utility.SystemExitUtility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,6 @@
 package org.codesystem.server.service.scheduled;
 
 import ch.vorburger.mariadb4j.springframework.MariaDB4jSpringService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.LogEntity;
@@ -16,8 +15,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.IOException;
-
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class LogDeleterTest {
@@ -27,12 +24,12 @@ class LogDeleterTest {
     @MockBean
     SecurityConfiguration securityConfiguration;
     @Autowired
-    private ConfigurableEnvironment environment;
-    @Autowired
     LogRepository logRepository;
     @Autowired
     LogService logService;
     LogDeleter logDeleter;
+    @Autowired
+    private ConfigurableEnvironment environment;
 
     @BeforeAll
     public static void init() {
