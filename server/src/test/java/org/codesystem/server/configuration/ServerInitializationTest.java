@@ -3,7 +3,6 @@ package org.codesystem.server.configuration;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.exception.TestSystemExitException;
-import org.codesystem.server.repository.LogRepository;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.SystemExitUtility;

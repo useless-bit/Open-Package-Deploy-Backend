@@ -7,6 +7,7 @@ import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
@@ -37,6 +38,7 @@ class PackageEncryptorTest {
     PackageRepository packageRepository;
     PackageEncryptor packageEncryptor;
     CryptoUtility cryptoUtility;
+    LogService logService;
     PackageEntity packageEntity;
     Path packageFolder = Paths.get("/opt/OPD/Packages");
 
@@ -63,8 +65,10 @@ class PackageEncryptorTest {
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
         packageEntity = packageRepository.save(packageEntity);
 
+        logService = Mockito.mock(LogService.class);
+
         cryptoUtility = Mockito.mock(CryptoUtility.class);
-        packageEncryptor = new PackageEncryptor(packageRepository, cryptoUtility);
+        packageEncryptor = new PackageEncryptor(packageRepository, cryptoUtility, logService);
         deleteFolderWithContent();
     }
 

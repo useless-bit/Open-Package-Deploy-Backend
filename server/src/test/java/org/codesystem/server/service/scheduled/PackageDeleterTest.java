@@ -7,7 +7,9 @@ import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
+import org.codesystem.server.service.server.LogService;
 import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,6 +35,7 @@ class PackageDeleterTest {
     SecurityConfiguration securityConfiguration;
     @Autowired
     PackageRepository packageRepository;
+    LogService logService;
     PackageDeleter packageDeleter;
     PackageEntity packageEntity;
     Path packageFolder = Paths.get("/opt/OPD/Packages");
@@ -60,7 +63,9 @@ class PackageDeleterTest {
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
         packageEntity = packageRepository.save(packageEntity);
 
-        packageDeleter = new PackageDeleter(packageRepository);
+        logService = Mockito.mock(LogService.class);
+
+        packageDeleter = new PackageDeleter(packageRepository, logService);
         deleteFolderWithContent();
     }
 

@@ -3,11 +3,11 @@ package org.codesystem.server.service.scheduled;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.PackageEntity;
+import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class PackageEncryptor {
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
-    private final Logger logger = LoggerFactory.getLogger(PackageEncryptor.class);
+    private final LogService logService;
 
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("encryptPackageTask")
@@ -115,18 +115,18 @@ public class PackageEncryptor {
         packageRepository.save(packageEntity);
         try {
             if (decryptedTestFile != null && (Files.deleteIfExists(decryptedTestFile.toPath()))) {
-                logger.info("Could not delete the decrypted test file for: {} | {}", packageEntity.getName(), packageEntity.getUuid());
+                logService.addEntry(Severity.INFO, "Could not delete the decrypted test file for: " + packageEntity.getName() + " | " + packageEntity.getUuid());
 
             }
         } catch (Exception e) {
-            logger.info("Could not delete the decrypted test file for: {} | {}. Error: {}", packageEntity.getName(), packageEntity.getUuid(), e.getMessage());
+            logService.addEntry(Severity.INFO, "Could not delete the decrypted test file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
         }
         try {
             if (Files.deleteIfExists(plaintextFile.toPath())) {
-                logger.info("Could not delete the plaintext file for: {} | {}", packageEntity.getName(), packageEntity.getUuid());
+                logService.addEntry(Severity.INFO, "Could not delete the plaintext file for: " + packageEntity.getName() + " | " + packageEntity.getUuid());
             }
         } catch (Exception e) {
-            logger.info("Could not delete the plaintext file for: {} | {}. Error: {}", packageEntity.getName(), packageEntity.getUuid(), e.getMessage());
+            logService.addEntry(Severity.INFO, "Could not delete the plaintext file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
         }
     }
 
