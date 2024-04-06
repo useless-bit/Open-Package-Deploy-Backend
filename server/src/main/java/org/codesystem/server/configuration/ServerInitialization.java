@@ -29,7 +29,7 @@ public class ServerInitialization {
     private final SystemExitUtility systemExitUtility;
     private final LogService logService;
 
-    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader, SystemExitUtility systemExitUtility, LogRepository logRepository, LogService logService) {
+    public ServerInitialization(ServerRepository serverRepository, ResourceLoader resourceLoader, SystemExitUtility systemExitUtility, LogService logService) {
         this.serverRepository = serverRepository;
         this.resourceLoader = resourceLoader;
         this.cryptoUtility = new CryptoUtility(serverRepository);

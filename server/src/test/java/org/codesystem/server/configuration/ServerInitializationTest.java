@@ -28,7 +28,6 @@ class ServerInitializationTest {
     private ServerInitialization serverInitialization;
     private ServerRepository serverRepository;
     private ResourceLoader resourceLoader;
-    private LogRepository logRepository;
     private LogService logService;
 
     @BeforeEach
@@ -40,14 +39,13 @@ class ServerInitializationTest {
         serverPrivateKey = keyPair.getPrivate();
         serverPublicKey = keyPair.getPublic();
 
-        logRepository = Mockito.mock(LogRepository.class);
         logService = Mockito.mock(LogService.class);
 
         serverRepository = Mockito.spy(ServerRepository.class);
         SystemExitUtility systemExitUtility = Mockito.mock(SystemExitUtility.class);
         Mockito.doThrow(TestSystemExitException.class).when(systemExitUtility).exit(Mockito.anyInt());
         resourceLoader = Mockito.mock(ResourceLoader.class);
-        serverInitialization = new ServerInitialization(serverRepository, resourceLoader, systemExitUtility, logRepository, logService);
+        serverInitialization = new ServerInitialization(serverRepository, resourceLoader, systemExitUtility, logService);
     }
 
     @Test
