@@ -3,7 +3,9 @@ package org.codesystem.server.configuration;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.exception.TestSystemExitException;
+import org.codesystem.server.repository.LogRepository;
 import org.codesystem.server.repository.ServerRepository;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.SystemExitUtility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,8 @@ class ServerInitializationTest {
     private ServerInitialization serverInitialization;
     private ServerRepository serverRepository;
     private ResourceLoader resourceLoader;
+    private LogRepository logRepository;
+    private LogService logService;
 
     @BeforeEach
     public void setUp() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -36,11 +40,14 @@ class ServerInitializationTest {
         serverPrivateKey = keyPair.getPrivate();
         serverPublicKey = keyPair.getPublic();
 
+        logRepository = Mockito.mock(LogRepository.class);
+        logService = Mockito.mock(LogService.class);
+
         serverRepository = Mockito.spy(ServerRepository.class);
         SystemExitUtility systemExitUtility = Mockito.mock(SystemExitUtility.class);
         Mockito.doThrow(TestSystemExitException.class).when(systemExitUtility).exit(Mockito.anyInt());
         resourceLoader = Mockito.mock(ResourceLoader.class);
-        serverInitialization = new ServerInitialization(serverRepository, resourceLoader, systemExitUtility);
+        serverInitialization = new ServerInitialization(serverRepository, resourceLoader, systemExitUtility, logRepository, logService);
     }
 
     @Test
