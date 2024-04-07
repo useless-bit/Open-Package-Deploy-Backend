@@ -40,7 +40,9 @@ public class DownloadUtility {
         try {
             response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
         } catch (Exception e) {
+            Thread.currentThread().interrupt();
             throw new SevereAgentErrorException("Unable to download file: " + e.getMessage());
+
         }
         try (FileOutputStream fileOutputStream = new FileOutputStream(targetFileLocation.toFile())) {
             if (response.statusCode() != 200) {
