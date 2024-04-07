@@ -125,7 +125,7 @@ public class PackageUtility {
         try (ZipFile zipFile = new ZipFile(zipFileLocation)) {
             zipFile.extractAll(destinationFolderLocation);
         } catch (Exception e) {
-            throw new PackageErrorException("Error whe extracting package: " + e.getMessage());
+            throw new PackageErrorException("Error while extracting package: " + e.getMessage());
         }
     }
 
