@@ -6,6 +6,7 @@ import okhttp3.Response;
 import okio.BufferedSink;
 import okio.Okio;
 import org.codesystem.AgentApplication;
+import org.codesystem.exceptions.DownloadException;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.FileOutputStream;
@@ -49,9 +50,9 @@ public class DownloadUtility {
             try {
                 Files.deleteIfExists(targetFileLocation);
             } catch (IOException ex) {
-                throw new SevereAgentErrorException("Unable to delete file: " + e.getMessage());
+                throw new DownloadException("Unable to delete file: " + e.getMessage());
             }
-            throw new SevereAgentErrorException("Unable to download file: " + e.getMessage());
+            throw new DownloadException("Unable to download file: " + e.getMessage());
         }
         return true;
     }

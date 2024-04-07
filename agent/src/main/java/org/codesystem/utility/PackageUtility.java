@@ -7,6 +7,7 @@ import org.codesystem.PropertiesLoader;
 import org.codesystem.Variables;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
+import org.codesystem.exceptions.PackageErrorException;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.DeploymentResult;
 import org.codesystem.payload.EmptyRequest;
@@ -73,8 +74,9 @@ public class PackageUtility {
             try {
                 sendDeploymentResponse(PackageDeploymentErrorState.UNKNOWN_ERROR + ": " + e.getMessage());
             } catch (Exception exception) {
-                throw new SevereAgentErrorException("Error when sending deployment result: " + exception.getMessage());
+                throw new PackageErrorException("Error when sending deployment result: " + exception.getMessage());
             }
+            cleanupDownloadFolder();
         }
         cleanupDownloadFolder();
     }
@@ -86,7 +88,7 @@ public class PackageUtility {
             try (Stream<Path> stream = Files.walk(downloadFolder)) {
                 stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             } catch (IOException e) {
-                throw new SevereAgentErrorException("Cannot delete download folder: " + e.getMessage());
+                throw new PackageErrorException("Cannot delete download folder: " + e.getMessage());
             }
         }
         new File(downloadFolder.toAbsolutePath().toString()).mkdirs();
@@ -100,18 +102,18 @@ public class PackageUtility {
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {
             if (response.code() != 200) {
-                throw new SevereAgentErrorException("Error getting details: " + response.code());
+                throw new PackageErrorException("Error getting details: " + response.code());
             }
             String responseBody = new JSONObject(response.body().string()).getString("message");
             JSONObject jsonObject = new JSONObject(cryptoUtility.decryptECC(Base64.getDecoder().decode(responseBody.getBytes(StandardCharsets.UTF_8))));
             String signature = jsonObject.getString("signature");
             jsonObject.remove("signature");
             if (!cryptoUtility.verifySignatureECC(jsonObject.toString(), Base64.getDecoder().decode(signature))) {
-                throw new SevereAgentErrorException("Invalid Signature when processing Package Details");
+                throw new PackageErrorException("Invalid Signature when processing Package Details");
             }
             this.packageDetailResponse = new PackageDetailResponse(jsonObject);
         } catch (Exception e) {
-            throw new SevereAgentErrorException("Cannot process Package Detail request: " + e.getMessage());
+            throw new PackageErrorException("Cannot process Package Detail request: " + e.getMessage());
         }
 
     }
@@ -124,7 +126,7 @@ public class PackageUtility {
         try (ZipFile zipFile = new ZipFile(zipFileLocation)) {
             zipFile.extractAll(destinationFolderLocation);
         } catch (Exception e) {
-            throw new SevereAgentErrorException("Error whe extracting package: " + e.getMessage());
+            throw new PackageErrorException("Error whe extracting package: " + e.getMessage());
         }
     }
 
@@ -137,10 +139,10 @@ public class PackageUtility {
         OkHttpClient client = new OkHttpClient();
         try (Response response = client.newCall(request).execute()) {
             if (response.code() != 200) {
-                throw new SevereAgentErrorException("Error sending response: " + response.code());
+                throw new PackageErrorException("Error sending response: " + response.code());
             }
         } catch (IOException e) {
-            throw new SevereAgentErrorException("Cannot send Deployment Result: " + e.getMessage());
+            throw new PackageErrorException("Cannot send Deployment Result: " + e.getMessage());
         }
 
     }
