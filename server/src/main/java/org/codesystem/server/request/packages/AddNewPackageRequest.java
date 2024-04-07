@@ -7,8 +7,6 @@ import lombok.Setter;
 import org.codesystem.server.enums.agent.OperatingSystem;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class AddNewPackageRequest {
     private String packageName;

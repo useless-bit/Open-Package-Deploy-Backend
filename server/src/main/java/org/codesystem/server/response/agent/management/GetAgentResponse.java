@@ -10,26 +10,24 @@ import org.codesystem.server.response.general.ApiResponse;
 import java.time.Instant;
 
 @Getter
-@Setter
-@AllArgsConstructor
 public class GetAgentResponse implements ApiResponse {
-    private String uuid;
-    private String name;
-    private boolean registrationCompleted;
-    private Instant lastConnectionTime;
-    private String checksum;
-    private OperatingSystem operatingSystem;
-    private String operatingSystemFamily;
-    private String operatingSystemArchitecture;
-    private String operatingSystemVersion;
-    private String operatingSystemCodeName;
-    private String operatingSystemBuildNumber;
-    private String cpuName;
-    private String cpuArchitecture;
-    private String cpuLogicalCores;
-    private String cpuPhysicalCores;
-    private String cpuSockets;
-    private String memory;
+    private final String uuid;
+    private final String name;
+    private final boolean registrationCompleted;
+    private final Instant lastConnectionTime;
+    private final String checksum;
+    private final OperatingSystem operatingSystem;
+    private final String operatingSystemFamily;
+    private final String operatingSystemArchitecture;
+    private final String operatingSystemVersion;
+    private final String operatingSystemCodeName;
+    private final String operatingSystemBuildNumber;
+    private final String cpuName;
+    private final String cpuArchitecture;
+    private final String cpuLogicalCores;
+    private final String cpuPhysicalCores;
+    private final String cpuSockets;
+    private final String memory;
 
     public GetAgentResponse(AgentEntity agent) {
         this.uuid = agent.getUuid();

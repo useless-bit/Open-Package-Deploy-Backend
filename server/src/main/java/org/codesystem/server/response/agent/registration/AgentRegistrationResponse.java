@@ -7,8 +7,6 @@ import lombok.Setter;
 import org.codesystem.server.response.general.ApiResponse;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class AgentRegistrationResponse implements ApiResponse {
     private String publicKeyBase64;

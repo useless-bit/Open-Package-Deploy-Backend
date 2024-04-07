@@ -5,10 +5,9 @@ import lombok.Setter;
 import org.json.JSONObject;
 
 @Getter
-@Setter
 public class AgentDeploymentResultRequest {
-    private String deploymentUUID;
-    private String resultCode;
+    private final String deploymentUUID;
+    private final String resultCode;
 
     public AgentDeploymentResultRequest(JSONObject jsonObject) {
         if (!jsonObject.isNull("deploymentUUID")) {

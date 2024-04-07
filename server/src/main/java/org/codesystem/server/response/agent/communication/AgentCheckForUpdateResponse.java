@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.json.JSONObject;
 
-@Getter
-@Setter
 @AllArgsConstructor
 public class AgentCheckForUpdateResponse {
     private int updateInterval;

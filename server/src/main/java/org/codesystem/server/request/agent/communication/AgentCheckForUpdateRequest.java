@@ -5,10 +5,9 @@ import lombok.Setter;
 import org.json.JSONObject;
 
 @Getter
-@Setter
 public class AgentCheckForUpdateRequest {
-    private SystemInformationRequest systemInformationRequest;
-    private String agentChecksum;
+    private final SystemInformationRequest systemInformationRequest;
+    private final String agentChecksum;
 
     public AgentCheckForUpdateRequest(JSONObject jsonObject) {
         if (!jsonObject.isNull("systemInformation")) {

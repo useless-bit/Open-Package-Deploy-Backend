@@ -135,10 +135,7 @@ class ManagementPackageServiceTest {
 
     @Test
     void addNewPackage_invalidRequest() {
-        ResponseEntity responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(), null);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(null, null, OperatingSystem.UNKNOWN, null), null);
+        ResponseEntity responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest(null, null, OperatingSystem.UNKNOWN, null), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementPackageService.addNewNewPackage(new AddNewPackageRequest("", null, OperatingSystem.UNKNOWN, null), null);
@@ -225,10 +222,10 @@ class ManagementPackageServiceTest {
 
     @Test
     void updatePackage_invalid() {
-        ResponseEntity responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest(), null);
+        ResponseEntity responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest("", ""), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest(), "invlid UUID");
+        responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest("", ""), "invlid UUID");
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementPackageService.updatePackage(null, packageEntityOne.getUuid());
@@ -238,13 +235,7 @@ class ManagementPackageServiceTest {
 
     @Test
     void updatePackage_valid() {
-        ResponseEntity responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest(), packageEntityOne.getUuid());
-        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        packageEntityOne = packageRepository.findFirstByUuid(packageEntityOne.getUuid());
-        Assertions.assertNull(packageEntityOne.getExpectedReturnValue());
-        Assertions.assertEquals("Package One", packageEntityOne.getName());
-
-        responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest(null, "-1"), packageEntityOne.getUuid());
+        ResponseEntity responseEntity = managementPackageService.updatePackage(new UpdatePackageRequest(null, "-1"), packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         packageEntityOne = packageRepository.findFirstByUuid(packageEntityOne.getUuid());
         Assertions.assertEquals("-1", packageEntityOne.getExpectedReturnValue());
@@ -317,30 +308,30 @@ class ManagementPackageServiceTest {
         ResponseEntity responseEntity = managementPackageService.updatePackageContent(null, null, null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(), null, "Invalid UUID");
+        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(""), null, "Invalid UUID");
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
 
     @Test
     void updatePackageContent_invalidMultiPartFile() {
-        ResponseEntity responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(), null, packageEntityOne.getUuid());
+        ResponseEntity responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(""), null, packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
         byte[] multiPartFileContent = null;
         MultipartFile multipartFile = new MockMultipartFile("FileName", "FileName", null, multiPartFileContent);
-        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(), multipartFile, packageEntityOne.getUuid());
+        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(""), multipartFile, packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
         multipartFile = new MockMultipartFile("FileName", "FileName", null, multiPartFileContent);
-        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(), multipartFile, packageEntityOne.getUuid());
+        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(""), multipartFile, packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
         multipartFile = new MockMultipartFile("FileName", "FileName", "wrong content-type", multiPartFileContent);
-        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(), multipartFile, packageEntityOne.getUuid());
+        responseEntity = managementPackageService.updatePackageContent(new UpdatePackageContentRequest(""), multipartFile, packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid zip-file", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }

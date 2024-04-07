@@ -94,10 +94,7 @@ class ManagementAgentServiceTest {
 
     @Test
     void updateAgent_invalidRequest() {
-        ResponseEntity responseEntity = managementAgentService.updateAgent(null, new AgentUpdateRequest());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
-        responseEntity = managementAgentService.updateAgent(null, new AgentUpdateRequest(null));
+        ResponseEntity responseEntity = managementAgentService.updateAgent(null, new AgentUpdateRequest(null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = managementAgentService.updateAgent(null, new AgentUpdateRequest(""));

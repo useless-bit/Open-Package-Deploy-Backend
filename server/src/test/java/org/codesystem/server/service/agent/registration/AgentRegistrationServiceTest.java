@@ -72,10 +72,7 @@ class AgentRegistrationServiceTest {
 
     @Test
     void addNewAgent_invalidRequest() {
-        ResponseEntity responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
-        responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest(null, null, null));
+        ResponseEntity responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest(null, null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.addNewAgent(new AgentRegistrationRequest("", null, null));
@@ -155,10 +152,7 @@ class AgentRegistrationServiceTest {
 
     @Test
     void verifyNewAgent_invalidRequest() {
-        ResponseEntity responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
-        responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest(null, null));
+        ResponseEntity responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest(null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(responseEntity.getBody()).getString("message"));
         responseEntity = agentRegistrationService.verifyNewAgent(new AgentVerificationRequest("", null));
