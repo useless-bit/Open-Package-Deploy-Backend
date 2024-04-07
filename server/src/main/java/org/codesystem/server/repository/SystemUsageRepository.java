@@ -1,6 +1,5 @@
 package org.codesystem.server.repository;
 
-import org.codesystem.server.entity.LogEntity;
 import org.codesystem.server.entity.SystemUsageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

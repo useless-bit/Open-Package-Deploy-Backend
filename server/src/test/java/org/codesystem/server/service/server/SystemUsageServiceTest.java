@@ -3,8 +3,6 @@ package org.codesystem.server.service.server;
 import ch.vorburger.mariadb4j.springframework.MariaDB4jSpringService;
 import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
-import org.codesystem.server.enums.log.Severity;
-import org.codesystem.server.repository.LogRepository;
 import org.codesystem.server.repository.SystemUsageRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,10 +51,12 @@ class SystemUsageServiceTest {
     void getCpuUsage() {
         Assertions.assertDoesNotThrow(() -> systemUsageService.getCpuUsage());
     }
+
     @Test
     void getTotalMemory() {
         Assertions.assertDoesNotThrow(() -> systemUsageService.getTotalMemory());
     }
+
     @Test
     void getAvailableMemory() {
         Assertions.assertDoesNotThrow(() -> systemUsageService.getAvailableMemory());
@@ -72,6 +72,7 @@ class SystemUsageServiceTest {
         ResponseEntity responseEntity = systemUsageService.getAllEntries();
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
+
     @Test
     void getLatest30Entries() {
         ResponseEntity responseEntity = systemUsageService.getLatest30Entries();
