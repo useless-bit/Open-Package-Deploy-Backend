@@ -51,4 +51,5 @@ public class SystemUsageService {
     public ResponseEntity<ApiResponse> getStorageInformation() {
         File packageLocation = Paths.get(ServerApplication.PACKAGE_LOCATION).toFile();
         return ResponseEntity.status(HttpStatus.OK).body(new GetStorageInformationResponse(packageLocation.getTotalSpace(), packageLocation.getUsableSpace()));
-    }}
+    }
+}
