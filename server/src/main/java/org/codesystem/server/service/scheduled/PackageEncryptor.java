@@ -105,8 +105,8 @@ public class PackageEncryptor {
         packageEntity.setChecksumEncrypted(checksumEncryptedFile);
         packageEntity.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
 
-        packageEntity.setPlaintextSize((double) plaintextFile.length());
-        packageEntity.setEncryptedSize((double) encryptedFilePath.toFile().length());
+        packageEntity.setPlaintextSize(plaintextFile.length());
+        packageEntity.setEncryptedSize(encryptedFilePath.toFile().length());
 
         finish(packageEntity, plaintextFile, decryptedTestFilePath.toFile());
     }
