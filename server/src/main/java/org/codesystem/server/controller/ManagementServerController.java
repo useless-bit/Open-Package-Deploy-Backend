@@ -70,4 +70,9 @@ public class ManagementServerController {
         return systemUsageService.getAllEntries();
     }
 
+    @GetMapping("storage")
+    public ResponseEntity<ApiResponse> getStorageInformation() {
+        return systemUsageService.getStorageInformation();
+    }
+
 }

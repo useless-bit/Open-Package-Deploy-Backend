@@ -78,4 +78,10 @@ class SystemUsageServiceTest {
         ResponseEntity responseEntity = systemUsageService.getLatest30Entries();
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
+
+    @Test
+    void getStorageInformation() {
+        ResponseEntity responseEntity = systemUsageService.getStorageInformation();
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
 }
