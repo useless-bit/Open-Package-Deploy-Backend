@@ -2,6 +2,7 @@ package org.codesystem.utility;
 
 import okhttp3.Request;
 import org.codesystem.TestSystemExitException;
+import org.codesystem.exceptions.DownloadException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +74,7 @@ class DownloadUtilityTest {
 
         // server not available
         mockServer.stop();
-        Assertions.assertThrows(TestSystemExitException.class, () -> downloadUtility.downloadFile(downloadFileOne, new Request.Builder().url("http://localhost:8899").build()));
+        Assertions.assertThrows(DownloadException.class, () -> downloadUtility.downloadFile(downloadFileOne, new Request.Builder().url("http://localhost:8899").build()));
         deleteFolderWithContent();
 
         // parent folder already present
