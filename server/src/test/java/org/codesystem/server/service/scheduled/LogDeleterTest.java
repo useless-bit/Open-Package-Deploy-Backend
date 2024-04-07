@@ -28,8 +28,6 @@ class LogDeleterTest {
     @Autowired
     LogService logService;
     LogDeleter logDeleter;
-    @Autowired
-    private ConfigurableEnvironment environment;
 
     @BeforeAll
     public static void init() {
@@ -55,27 +53,27 @@ class LogDeleterTest {
     }
 
     @Test
-    void deletePackage() throws InterruptedException, NoSuchFieldException {
+    void deleteOldLogs() throws InterruptedException {
         // no log entry
-        Assertions.assertDoesNotThrow(() -> logDeleter.deletePackage());
+        Assertions.assertDoesNotThrow(() -> logDeleter.deleteOldLogs());
         Assertions.assertEquals(0, logRepository.findAll().size());
 
         // no log to delete
         logRepository.save(new LogEntity(Severity.INFO, "Test Entry"));
-        Assertions.assertDoesNotThrow(() -> logDeleter.deletePackage());
+        Assertions.assertDoesNotThrow(() -> logDeleter.deleteOldLogs());
         Assertions.assertEquals(1, logRepository.findAll().size());
         Assertions.assertEquals("Test Entry", logRepository.findAll().get(0).getMessage());
 
         // deletion disabled
         ReflectionTestUtils.setField(logDeleter, "logDeletionThreshold", 0);
-        Assertions.assertDoesNotThrow(() -> logDeleter.deletePackage());
+        Assertions.assertDoesNotThrow(() -> logDeleter.deleteOldLogs());
         Assertions.assertEquals(1, logRepository.findAll().size());
         Assertions.assertEquals("Test Entry", logRepository.findAll().get(0).getMessage());
 
         // delete log
         ReflectionTestUtils.setField(logDeleter, "logDeletionThreshold", 3);
         Thread.sleep(5000);
-        Assertions.assertDoesNotThrow(() -> logDeleter.deletePackage());
+        Assertions.assertDoesNotThrow(() -> logDeleter.deleteOldLogs());
         Assertions.assertEquals(1, logRepository.findAll().size());
         Assertions.assertEquals("Deleted 1 old Logs", logRepository.findAll().get(0).getMessage());
     }

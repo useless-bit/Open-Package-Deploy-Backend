@@ -5,7 +5,7 @@ import org.codesystem.server.entity.LogEntity;
 import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.LogRepository;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.log.GetAllLogsResponse;
+import org.codesystem.server.response.server.GetAllLogsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

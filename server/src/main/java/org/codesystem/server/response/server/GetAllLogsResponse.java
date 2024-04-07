@@ -1,4 +1,4 @@
-package org.codesystem.server.response.log;
+package org.codesystem.server.response.server;
 
 import lombok.Getter;
 import lombok.Setter;
