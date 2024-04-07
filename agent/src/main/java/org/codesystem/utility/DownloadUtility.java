@@ -1,11 +1,16 @@
 package org.codesystem.utility;
 
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
 import org.codesystem.AgentApplication;
 import org.codesystem.exceptions.SevereAgentErrorException;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -27,32 +32,20 @@ public class DownloadUtility {
             return false;
         }
 
-        HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.ALWAYS)
-                .build();
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(request.url().uri())
-                .GET()
-                .build();
-
-        HttpResponse<byte[]> response;
-        try {
-            response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-            throw new SevereAgentErrorException("Unable to download file: " + e.getMessage());
-
-        }
-        try (FileOutputStream fileOutputStream = new FileOutputStream(targetFileLocation.toFile())) {
-            if (response.statusCode() != 200) {
+        OkHttpClient client = new OkHttpClient();
+        try (Response response = client.newCall(request).execute();
+             BufferedSink bufferedSink = Okio.buffer(Okio.sink(targetFileLocation))) {
+            if (response.code() != 200) {
                 Files.deleteIfExists(targetFileLocation);
-                AgentApplication.logger.log(Level.WARNING, "Error during download. Response Code: {0}", response.statusCode());
+                AgentApplication.logger.log(Level.WARNING, "Error during download. Response Code: {0}", response.code());
                 return false;
             }
-            byte[] data = response.body();
-            fileOutputStream.write(data);
-        } catch (Exception e) {
+            if (response.body() == null) {
+                AgentApplication.logger.log(Level.WARNING, "Message Body is empty");
+                return false;
+            }
+            bufferedSink.writeAll(response.body().source());
+        } catch (IOException e) {
             try {
                 Files.deleteIfExists(targetFileLocation);
             } catch (IOException ex) {
