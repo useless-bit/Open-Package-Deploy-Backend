@@ -1,8 +1,6 @@
 package org.codesystem.server.response.agent.communication;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.json.JSONObject;
 
 @AllArgsConstructor

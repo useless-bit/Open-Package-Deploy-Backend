@@ -2,8 +2,6 @@ package org.codesystem.server.request.packages;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.codesystem.server.enums.agent.OperatingSystem;
 
 @Getter
