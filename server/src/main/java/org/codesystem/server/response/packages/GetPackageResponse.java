@@ -19,8 +19,8 @@ public class GetPackageResponse implements ApiResponse {
     private String checksumPlaintext;
     private String checksumEncrypted;
     private OperatingSystem targetOperatingSystem;
-    private Double plaintextSize;
-    private Double encryptedSize;
+    private Long plaintextSize;
+    private Long encryptedSize;
 
     public GetPackageResponse(PackageEntity packageEntity) {
         this.uuid = packageEntity.getUuid();

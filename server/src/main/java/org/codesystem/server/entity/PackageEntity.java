@@ -52,8 +52,8 @@ public class PackageEntity {
     private OperatingSystem targetOperatingSystem;
 
     @Column(name = "plaintext_size", nullable = false)
-    private Double plaintextSize = 0.0;
+    private Long plaintextSize = 0L;
 
     @Column(name = "encrypted_size", nullable = false)
-    private Double encryptedSize = 0.0;
+    private Long encryptedSize = 0L;
 }
