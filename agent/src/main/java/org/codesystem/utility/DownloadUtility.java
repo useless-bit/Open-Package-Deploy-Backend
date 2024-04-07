@@ -7,14 +7,8 @@ import okio.BufferedSink;
 import okio.Okio;
 import org.codesystem.AgentApplication;
 import org.codesystem.exceptions.DownloadException;
-import org.codesystem.exceptions.SevereAgentErrorException;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;

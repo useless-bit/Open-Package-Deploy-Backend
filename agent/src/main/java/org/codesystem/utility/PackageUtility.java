@@ -8,7 +8,6 @@ import org.codesystem.Variables;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.enums.PackageDeploymentErrorState;
 import org.codesystem.exceptions.PackageErrorException;
-import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.payload.DeploymentResult;
 import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;

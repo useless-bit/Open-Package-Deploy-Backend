@@ -45,7 +45,7 @@ public class UpdateHandler {
                 .build();
 
         boolean updateDownloaded = false;
-        try{
+        try {
             updateDownloaded = downloadUtility.downloadFile(PATH_UPDATE_FILE, request);
         } catch (Exception e) {
             throw new SevereAgentErrorException("Update-download from Server failed: " + e.getMessage());
