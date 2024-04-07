@@ -1,12 +1,8 @@
 package org.codesystem.server.response.agent.communication;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.json.JSONObject;
 
-@Getter
-@Setter
 @AllArgsConstructor
 public class AgentCheckForUpdateResponse {
     private int updateInterval;

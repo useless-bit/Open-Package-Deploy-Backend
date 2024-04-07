@@ -89,9 +89,6 @@ class ManagementServerServiceTest {
         ResponseEntity responseEntity = managementServerService.setUpdateInterval(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementServerService.setUpdateInterval(new UpdateIntervalRequest());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementServerService.setUpdateInterval(new UpdateIntervalRequest(0));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
@@ -112,9 +109,6 @@ class ManagementServerServiceTest {
     @Test
     void setInstallRetryInterval() {
         ResponseEntity responseEntity = managementServerService.setInstallRetryInterval(null);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementServerService.setInstallRetryInterval(new InstallRetryIntervalRequest());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementServerService.setInstallRetryInterval(new InstallRetryIntervalRequest(0));

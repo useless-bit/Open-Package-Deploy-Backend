@@ -1,25 +1,23 @@
 package org.codesystem.server.request.agent.communication;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.json.JSONObject;
 
 @Getter
-@Setter
 public class SystemInformationRequest {
+    private final String operatingSystemFamily;
+    private final String operatingSystemArchitecture;
+    private final String operatingSystemVersion;
+    private final String operatingSystemCodeName;
+    private final String operatingSystemBuildNumber;
+    private final String cpuName;
+    private final String cpuArchitecture;
+    private final String cpuSockets;
+    private final String cpuLogicalCores;
+    private final String cpuPhysicalCores;
+    private final String memory;
     private OperatingSystem operatingSystem;
-    private String operatingSystemFamily;
-    private String operatingSystemArchitecture;
-    private String operatingSystemVersion;
-    private String operatingSystemCodeName;
-    private String operatingSystemBuildNumber;
-    private String cpuName;
-    private String cpuArchitecture;
-    private String cpuSockets;
-    private String cpuLogicalCores;
-    private String cpuPhysicalCores;
-    private String memory;
 
     public SystemInformationRequest(JSONObject jsonObject) {
         try {

@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.service.server.ManagementServerService;
+import org.codesystem.server.service.server.SystemUsageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ManagementServerController {
     private final ManagementServerService managementServerService;
+    private final LogService logService;
+    private final SystemUsageService systemUsageService;
 
     @GetMapping("registrationToken")
     public ResponseEntity<ApiResponse> getRegistrationToken() {
@@ -49,6 +53,26 @@ public class ManagementServerController {
     @GetMapping("agentChecksum")
     public ResponseEntity<ApiResponse> getAgentChecksum() {
         return managementServerService.getAgentChecksum();
+    }
+
+    @GetMapping("log")
+    public ResponseEntity<ApiResponse> getAllLogs() {
+        return logService.getAllEntries();
+    }
+
+    @GetMapping("systemUsage")
+    public ResponseEntity<ApiResponse> getLatest30Entries() {
+        return systemUsageService.getLatest30Entries();
+    }
+
+    @GetMapping("systemUsageFull")
+    public ResponseEntity<ApiResponse> getSystemUsage() {
+        return systemUsageService.getAllEntries();
+    }
+
+    @GetMapping("storage")
+    public ResponseEntity<ApiResponse> getStorageInformation() {
+        return systemUsageService.getStorageInformation();
     }
 
 }

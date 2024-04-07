@@ -3,10 +3,10 @@ package org.codesystem.server.service.scheduled;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.PackageEntity;
+import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.PackageRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.codesystem.server.service.server.LogService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class PackageDeleter {
     private final PackageRepository packageRepository;
-    private final Logger logger = LoggerFactory.getLogger(PackageDeleter.class);
+    private final LogService logService;
 
 
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
@@ -39,10 +39,10 @@ public class PackageDeleter {
         File packageFile = new File(basePath + File.separator + packageEntity.getUuid());
         try {
             if (Files.deleteIfExists(packageFile.toPath())) {
-                logger.info("Could not delete the file for: {} | {}", packageEntity.getName(), packageEntity.getUuid());
+                logService.addEntry(Severity.INFO, "Could not delete the file for deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid());
             }
         } catch (IOException e) {
-            logger.info("Could not delete the file for: {} | {}. Error: {}", packageEntity.getName(), packageEntity.getUuid(), e.getMessage());
+            logService.addEntry(Severity.INFO, "Could not delete the file for deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
 
         }
         packageRepository.delete(packageEntity);

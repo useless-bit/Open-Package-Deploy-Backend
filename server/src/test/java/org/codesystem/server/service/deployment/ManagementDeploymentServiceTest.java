@@ -125,10 +125,7 @@ class ManagementDeploymentServiceTest {
 
     @Test
     void createNewDeployment_invalidRequest() {
-        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Agent not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(null, null));
+        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Agent not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest("", null));
