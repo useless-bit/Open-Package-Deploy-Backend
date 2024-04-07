@@ -3,6 +3,7 @@ package org.codesystem.utility;
 import org.codesystem.PropertiesLoader;
 import org.codesystem.TestSystemExitException;
 import org.codesystem.enums.OperatingSystem;
+import org.codesystem.exceptions.PackageErrorException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -64,18 +65,18 @@ class PackageUtilityTest {
 
     @Test
     void initiateDeployment_invalid() {
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(400));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
         JSONObject jsonObject = new JSONObject().put("deploymentUUID", "deploymentUUID").put("encryptionToken", "encryptionToken").put("initializationVector", "initializationVector").put("checksumPlaintext", "checksumPlaintext").put("checksumEncrypted", "checksumEncrypted");
         Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn(jsonObject.toString());
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
 
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -87,7 +88,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("invalidChecksum");
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
 
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -99,7 +100,7 @@ class PackageUtilityTest {
         });
         Mockito.when(cryptoUtility.calculateChecksumOfFile("download/file")).thenReturn("checksumEncrypted");
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
 
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -116,7 +117,7 @@ class PackageUtilityTest {
             return null;
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
 
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -133,7 +134,7 @@ class PackageUtilityTest {
             return null;
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
 
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -155,7 +156,7 @@ class PackageUtilityTest {
             return true;
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
 
         mockServer.stop();
         mockServer = ClientAndServer.startClientAndServer(8899);
@@ -179,7 +180,7 @@ class PackageUtilityTest {
             return true;
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
     }
 
     @Test
@@ -208,7 +209,7 @@ class PackageUtilityTest {
         });
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/package")).respond(HttpResponse.response().withStatusCode(200).withBody(new JSONObject().put("message", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes(StandardCharsets.UTF_8))).toString()));
         mockServer.when(request().withMethod("POST").withPath("/api/agent/communication/deploymentResult")).respond(HttpResponse.response().withStatusCode(200));
-        Assertions.assertThrows(TestSystemExitException.class, () -> packageUtility.initiateDeployment());
+        Assertions.assertThrows(PackageErrorException.class, () -> packageUtility.initiateDeployment());
     }
 
     @Test
