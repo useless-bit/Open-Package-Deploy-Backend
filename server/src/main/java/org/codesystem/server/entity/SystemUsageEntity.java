@@ -1,5 +1,6 @@
 package org.codesystem.server.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class SystemUsageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "uuid", updatable = false, nullable = false)
+    @JsonIgnore
     private String uuid;
 
     @CreationTimestamp

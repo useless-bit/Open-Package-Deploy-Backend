@@ -11,7 +11,7 @@ public class PackageErrorException extends RuntimeException {
     }
 
     @Override
-    public String getMessage(){
+    public String getMessage() {
         return message;
     }
 }
