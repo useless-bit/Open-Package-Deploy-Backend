@@ -7,9 +7,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class AgentEncryptedRequest {
     private String publicKeyBase64;
     private String message;
 }
+
