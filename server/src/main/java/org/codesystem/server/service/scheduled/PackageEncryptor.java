@@ -114,7 +114,7 @@ public class PackageEncryptor {
     private void finish(PackageEntity packageEntity, File plaintextFile, File decryptedTestFile) {
         packageRepository.save(packageEntity);
         try {
-            if (decryptedTestFile != null && (Files.deleteIfExists(decryptedTestFile.toPath()))) {
+            if (decryptedTestFile != null && !Files.deleteIfExists(decryptedTestFile.toPath())) {
                 logService.addEntry(Severity.INFO, "Could not delete the decrypted test file for: " + packageEntity.getName() + " | " + packageEntity.getUuid());
 
             }
@@ -122,7 +122,7 @@ public class PackageEncryptor {
             logService.addEntry(Severity.INFO, "Could not delete the decrypted test file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
         }
         try {
-            if (Files.deleteIfExists(plaintextFile.toPath())) {
+            if (!Files.deleteIfExists(plaintextFile.toPath())) {
                 logService.addEntry(Severity.INFO, "Could not delete the plaintext file for: " + packageEntity.getName() + " | " + packageEntity.getUuid());
             }
         } catch (Exception e) {
