@@ -2,7 +2,6 @@ package org.codesystem.server.converter;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.log.Severity;
 
 @Converter

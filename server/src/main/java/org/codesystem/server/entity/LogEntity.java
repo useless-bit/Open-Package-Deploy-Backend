@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.codesystem.server.converter.LogSeverityConverter;
-import org.codesystem.server.converter.OperatingSystemConverter;
 import org.codesystem.server.enums.log.Severity;
 import org.hibernate.annotations.CreationTimestamp;
 
