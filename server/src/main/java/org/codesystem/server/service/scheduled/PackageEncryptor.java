@@ -27,7 +27,7 @@ public class PackageEncryptor {
     private final CryptoUtility cryptoUtility;
     private final LogService logService;
 
-    private final static String WITH_ERROR = " with Error: ";
+    private static final String WITH_ERROR = " with Error: ";
 
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("encryptPackageTask")
