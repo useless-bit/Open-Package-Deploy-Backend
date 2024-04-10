@@ -3,6 +3,7 @@ package org.codesystem.server.service.agent.management;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
+import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.request.agent.management.AgentUpdateRequest;
@@ -10,6 +11,7 @@ import org.codesystem.server.response.agent.management.GetAgentResponse;
 import org.codesystem.server.response.agent.management.GetAllAgentsResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
+import org.codesystem.server.service.server.LogService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class ManagementAgentService {
     private final AgentRepository agentRepository;
     private final DeploymentRepository deploymentRepository;
+    private final LogService logService;
 
     public ResponseEntity<ApiResponse> getAllAgents() {
         return ResponseEntity.ok().body(new GetAllAgentsResponse(agentRepository.findAll()));
@@ -53,6 +56,7 @@ public class ManagementAgentService {
         }
         deploymentRepository.deleteAll(deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid()));
         agentRepository.delete(agentEntity);
+        logService.addEntry(Severity.INFO, "Successfully deleted Agent: " + agentEntity.getName() + " | " + agentEntity.getUuid());
         return ResponseEntity.ok().build();
 
     }

@@ -45,6 +45,7 @@ public class PackageDeleter {
             logService.addEntry(Severity.INFO, "Could not delete the file for deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
 
         }
+        logService.addEntry(Severity.INFO, "Deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid());
         packageRepository.delete(packageEntity);
     }
 

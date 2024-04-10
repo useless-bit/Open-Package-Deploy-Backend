@@ -3,6 +3,7 @@ package org.codesystem.server.service.server;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.Variables;
 import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ManagementServerService {
     private final ServerRepository serverRepository;
+    private final LogService logService;
 
     public ResponseEntity<ApiResponse> getRegistrationToken() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
@@ -33,6 +35,7 @@ public class ManagementServerService {
         String newToken = UUID.randomUUID() + "-" + (UUID.randomUUID());
         serverEntity.setAgentRegistrationToken(newToken);
         serverRepository.save(serverEntity);
+        logService.addEntry(Severity.INFO, "Agent registration token got updated");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -48,6 +51,7 @@ public class ManagementServerService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentUpdateInterval(updateIntervalRequest.getUpdateInterval());
         serverRepository.save(serverEntity);
+        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + " to: " + updateIntervalRequest.getUpdateInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -63,6 +67,7 @@ public class ManagementServerService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentInstallRetryInterval(installRetryIntervalRequest.getInstallRetryInterval());
         serverRepository.save(serverEntity);
+        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + " to: " + installRetryIntervalRequest.getInstallRetryInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

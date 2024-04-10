@@ -5,6 +5,7 @@ import org.codesystem.server.ServerApplication;
 import org.codesystem.server.Variables;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
+import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -15,6 +16,7 @@ import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.response.packages.GetAllPackagesResponse;
 import org.codesystem.server.response.packages.GetPackageResponse;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class ManagementPackageService {
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
     private final DeploymentRepository deploymentRepository;
+    private final LogService logService;
 
     public ResponseEntity<ApiResponse> getAllPackages() {
         return ResponseEntity.ok().body(new GetAllPackagesResponse(packageRepository.findAll()));
@@ -83,6 +86,7 @@ public class ManagementPackageService {
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
         packageRepository.save(packageEntity);
+        logService.addEntry(Severity.INFO, "New Package for: " + packageEntity.getTargetOperatingSystem() + " added and awaiting processing: " + packageEntity.getName() + " | " + packageEntity.getUuid());
         return ResponseEntity.ok().build();
     }
 
@@ -117,6 +121,7 @@ public class ManagementPackageService {
         packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
         deploymentRepository.deleteDeploymentsForPackage(packageEntity);
         packageRepository.save(packageEntity);
+        logService.addEntry(Severity.INFO, "Marked Package for deletion: " + packageEntity.getName() + " | " + packageEntity.getUuid());
         return ResponseEntity.ok().build();
     }
 
@@ -153,6 +158,7 @@ public class ManagementPackageService {
         packageEntity.setChecksumPlaintext(updatePackageContentRequest.getPackageChecksum());
         packageRepository.save(packageEntity);
         deploymentRepository.resetDeploymentsForPackage(packageEntity);
+        logService.addEntry(Severity.INFO, "Package content updated and awaiting processing: " + packageEntity.getName() + " | " + packageEntity.getUuid());
         return ResponseEntity.ok().build();
     }
 

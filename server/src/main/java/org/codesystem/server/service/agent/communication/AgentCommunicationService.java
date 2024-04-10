@@ -7,6 +7,7 @@ import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
+import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
@@ -18,6 +19,7 @@ import org.codesystem.server.response.agent.communication.AgentCheckForUpdateRes
 import org.codesystem.server.response.agent.communication.AgentPackageDetailResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.RequestUtility;
 import org.json.JSONObject;
 import org.springframework.core.io.FileSystemResource;
@@ -42,6 +44,8 @@ public class AgentCommunicationService {
     private final RequestUtility requestUtility;
     private final ServerRepository serverRepository;
     private final ResourceLoader resourceLoader;
+    private final LogService logService;
+
 
     public ResponseEntity<ApiResponse> checkForUpdates(AgentEncryptedRequest agentEncryptedRequest) {
         JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
@@ -73,6 +77,7 @@ public class AgentCommunicationService {
         }
 
         if (agentEntity.getOperatingSystem() != OperatingSystem.UNKNOWN && agentEntity.getOperatingSystem() != agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem()) {
+            logService.addEntry(Severity.ERROR, "The Agent '" + agentEntity.getName() + " | " + agentEntity.getUuid() + "' tried to change the Operating System from: " + agentEntity.getOperatingSystem() + " to: " + agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem());
             return Variables.AGENT_ERROR_CHANGING_OS;
         }
 
@@ -110,6 +115,7 @@ public class AgentCommunicationService {
         try {
             return ResponseEntity.ok().body(resource.getContentAsByteArray());
         } catch (Exception e) {
+            logService.addEntry(Severity.ERROR, "Failed to serve Agent-Update: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

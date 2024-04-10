@@ -14,6 +14,7 @@ import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.AddNewPackageRequest;
 import org.codesystem.server.request.packages.UpdatePackageContentRequest;
 import org.codesystem.server.request.packages.UpdatePackageRequest;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
@@ -54,6 +55,7 @@ class ManagementPackageServiceTest {
     @Autowired
     AgentRepository agentRepository;
     CryptoUtility cryptoUtility;
+    LogService logService;
     PackageEntity packageEntityOne;
     PackageEntity packageEntityTwo;
     ManagementPackageService managementPackageService;
@@ -89,8 +91,9 @@ class ManagementPackageServiceTest {
         packageEntityTwo = packageRepository.save(packageEntityTwo);
 
         cryptoUtility = Mockito.mock(CryptoUtility.class);
+        logService = Mockito.mock(LogService.class);
 
-        managementPackageService = new ManagementPackageService(packageRepository, cryptoUtility, deploymentRepository);
+        managementPackageService = new ManagementPackageService(packageRepository, cryptoUtility, deploymentRepository, logService);
         deleteFolderWithContent();
     }
 
