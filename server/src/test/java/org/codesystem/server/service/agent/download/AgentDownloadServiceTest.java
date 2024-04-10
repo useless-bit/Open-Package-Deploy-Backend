@@ -1,5 +1,6 @@
 package org.codesystem.server.service.agent.download;
 
+import org.codesystem.server.service.server.LogService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,11 +17,13 @@ import java.nio.charset.StandardCharsets;
 class AgentDownloadServiceTest {
     AgentDownloadService agentDownloadService;
     ResourceLoader resourceLoader;
+    LogService logService;
 
     @BeforeEach
     void setUp() {
         resourceLoader = Mockito.mock(ResourceLoader.class);
-        agentDownloadService = new AgentDownloadService(resourceLoader);
+        logService = Mockito.mock(LogService.class);
+        agentDownloadService = new AgentDownloadService(resourceLoader, logService);
     }
 
     @Test

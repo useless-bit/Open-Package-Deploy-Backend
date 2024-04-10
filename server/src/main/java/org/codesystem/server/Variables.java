@@ -7,7 +7,6 @@ public class Variables {
     public static final String JSON_FIELD_SIGNATURE = "signature";
     public static final String JSON_FIELD_TIMESTAMP = "timestamp";
 
-
     // Response Entity text
     public static final String ERROR_RESPONSE_INVALID_REQUEST = "Invalid Request";
     public static final String ERROR_RESPONSE_INVALID_KEY = "Invalid Key";

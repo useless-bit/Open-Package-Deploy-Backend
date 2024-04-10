@@ -38,12 +38,14 @@ public class ServerInitialization {
 
     @PostConstruct
     public void initializeServer() {
+        logService.addEntry(Severity.INFO, "Starting Server");
         if (serverRepository.findAll().size() > 1) {
             // should not be possible
+            logService.addEntry(Severity.ERROR, "Multiple Server configurations found");
             systemExitUtility.exit(-100);
         } else if (serverRepository.findAll().isEmpty()) {
-            logService.addEntry(Severity.INFO, "Setting up initial Server configuration");
             generateServerEntity();
+            logService.addEntry(Severity.INFO, "Setup completed, Server will stop");
             systemExitUtility.exit(0);
         } else {
             validateServerEntity();
@@ -52,6 +54,8 @@ public class ServerInitialization {
     }
 
     private void calculateAgentChecksum() {
+        logService.addEntry(Severity.INFO, "Calculating Agent checksum");
+
         Resource resource = resourceLoader.getResource("classpath:agent/Agent.jar");
         String checksum;
         try {
@@ -64,9 +68,11 @@ public class ServerInitialization {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentChecksum(checksum);
         serverRepository.save(serverEntity);
+        logService.addEntry(Severity.INFO, "Agent checksum calculated: " + checksum);
     }
 
     private void validateServerEntity() {
+        logService.addEntry(Severity.INFO, "Validating Server configuration");
         ServerEntity serverEntity = serverRepository.findAll().get(0);
 
         KeyFactory keyFactory;
@@ -88,9 +94,12 @@ public class ServerInitialization {
             logService.addEntry(Severity.ERROR, "Unable to load the Private-Key: " + e.getMessage());
             systemExitUtility.exit(-103);
         }
+        logService.addEntry(Severity.INFO, "Server configuration successfully validated");
     }
 
     private void generateServerEntity() {
+        logService.addEntry(Severity.INFO, "Creating initial Server configuration");
+
         Security.addProvider(new BouncyCastleProvider());
         KeyPairGenerator keyPairGenerator;
         try {

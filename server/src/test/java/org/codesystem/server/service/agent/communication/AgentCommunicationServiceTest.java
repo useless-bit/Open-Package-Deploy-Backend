@@ -15,6 +15,7 @@ import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.repository.ServerRepository;
 import org.codesystem.server.request.agent.AgentEncryptedRequest;
 import org.codesystem.server.response.agent.AgentEncryptedResponse;
+import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.RequestUtility;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
@@ -63,6 +64,7 @@ class AgentCommunicationServiceTest {
     RequestUtility requestUtility;
     ResourceLoader resourceLoader;
     AgentCommunicationService agentCommunicationService;
+    LogService logService;
     Path packageFolder = Paths.get("/opt/OPD/Packages");
 
 
@@ -83,7 +85,8 @@ class AgentCommunicationServiceTest {
     void setUp() throws IOException {
         requestUtility = Mockito.mock(RequestUtility.class);
         resourceLoader = Mockito.mock(ResourceLoader.class);
-        agentCommunicationService = new AgentCommunicationService(agentRepository, deploymentRepository, requestUtility, serverRepository, resourceLoader);
+        logService = Mockito.mock(LogService.class);
+        agentCommunicationService = new AgentCommunicationService(agentRepository, deploymentRepository, requestUtility, serverRepository, resourceLoader, logService);
         deleteFolderWithContent();
     }
 

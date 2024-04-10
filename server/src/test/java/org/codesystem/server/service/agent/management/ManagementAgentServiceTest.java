@@ -11,8 +11,10 @@ import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.agent.management.AgentUpdateRequest;
+import org.codesystem.server.service.server.LogService;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -35,6 +37,7 @@ class ManagementAgentServiceTest {
     @Autowired
     PackageRepository packageRepository;
     ManagementAgentService managementAgentService;
+    LogService logService;
     AgentEntity agentEntityOne;
     AgentEntity agentEntityTwo;
 
@@ -62,7 +65,10 @@ class ManagementAgentServiceTest {
         agentEntityTwo.setPublicKeyBase64("Agent Two Public Key");
         agentEntityTwo.setName("Agent Two");
         agentEntityTwo = agentRepository.save(agentEntityTwo);
-        managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository);
+
+        logService = Mockito.mock(LogService.class);
+
+        managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository, logService);
     }
 
     @AfterEach

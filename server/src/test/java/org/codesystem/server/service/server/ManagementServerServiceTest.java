@@ -9,6 +9,7 @@ import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,6 +29,7 @@ class ManagementServerServiceTest {
     SecurityConfiguration securityConfiguration;
     @Autowired
     ServerRepository serverRepository;
+    LogService logService;
     ManagementServerService managementServerService;
 
 
@@ -53,7 +55,9 @@ class ManagementServerServiceTest {
         serverEntity.setAgentRegistrationToken("Registration Token");
         serverRepository.save(serverEntity);
 
-        managementServerService = new ManagementServerService(serverRepository);
+        logService = Mockito.mock(LogService.class);
+
+        managementServerService = new ManagementServerService(serverRepository, logService);
     }
 
     @AfterEach

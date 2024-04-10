@@ -1,6 +1,7 @@
 package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.request.agent.registration.AgentRegistrationRequest;
 import org.codesystem.server.request.agent.registration.AgentVerificationRequest;
@@ -20,12 +21,12 @@ public class AgentRegistrationController {
     private final AgentRegistrationService agentRegistrationService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse> addNewAgent(@RequestBody AgentRegistrationRequest agentRegistrationRequest) {
-        return agentRegistrationService.addNewAgent(agentRegistrationRequest);
+    public ResponseEntity<ApiResponse> addNewAgent(@RequestBody AgentRegistrationRequest agentRegistrationRequest, HttpServletRequest httpServletRequest) {
+        return agentRegistrationService.addNewAgent(agentRegistrationRequest, httpServletRequest);
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponse> verifyNewAgent(@RequestBody AgentVerificationRequest agentVerificationRequest) {
-        return agentRegistrationService.verifyNewAgent(agentVerificationRequest);
+    public ResponseEntity<ApiResponse> verifyNewAgent(@RequestBody AgentVerificationRequest agentVerificationRequest, HttpServletRequest httpServletRequest) {
+        return agentRegistrationService.verifyNewAgent(agentVerificationRequest, httpServletRequest);
     }
 }

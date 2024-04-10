@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.codesystem.server.configuration.keycloak.JwtAuthConverter;
 import org.codesystem.server.filter.HeaderAuthenticationFilter;
 import org.codesystem.server.repository.ServerRepository;
+import org.codesystem.server.service.server.LogService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -21,9 +22,11 @@ public class SecurityConfiguration {
     public static final String AUTHENTICATION_ROLE = "uma_authorization";
     private final JwtAuthConverter jwtAuthConverter;
     private final ServerRepository serverRepository;
+    private final LogService logService;
 
     @Bean
     @Order(1)
+    @Profile("Development")
     public SecurityFilterChain securityFilterChainSwagger(HttpSecurity http) throws Exception {
         http.securityMatcher("/swagger-ui/**", "/v3/api-docs/**").authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         http.csrf(AbstractHttpConfigurer::disable);
@@ -79,7 +82,7 @@ public class SecurityConfiguration {
     @Profile("!Development")
     public SecurityFilterChain securityFilterChainAgentDownload(HttpSecurity http) throws Exception {
         http.securityMatcher("/download/agent/**");
-        http.addFilterBefore(new HeaderAuthenticationFilter(serverRepository), BasicAuthenticationFilter.class);
+        http.addFilterBefore(new HeaderAuthenticationFilter(serverRepository, logService), BasicAuthenticationFilter.class);
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }

@@ -38,13 +38,14 @@ public class PackageDeleter {
         Path basePath = Paths.get(ServerApplication.PACKAGE_LOCATION);
         File packageFile = new File(basePath + File.separator + packageEntity.getUuid());
         try {
-            if (Files.deleteIfExists(packageFile.toPath())) {
+            if (!Files.deleteIfExists(packageFile.toPath())) {
                 logService.addEntry(Severity.INFO, "Could not delete the file for deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid());
             }
         } catch (IOException e) {
             logService.addEntry(Severity.INFO, "Could not delete the file for deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
 
         }
+        logService.addEntry(Severity.INFO, "Deleted Package: " + packageEntity.getName() + " | " + packageEntity.getUuid());
         packageRepository.delete(packageEntity);
     }
 
