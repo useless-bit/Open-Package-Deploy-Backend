@@ -80,7 +80,7 @@ public class AgentRegistrationService {
             return ResponseEntity.ok().build();
         }
 
-        logService.addEntry(Severity.WARNING, "Incorrect Verification Information received by Agent: "  + agentEntity.getName() + " | " + agentEntity.getUuid());
+        logService.addEntry(Severity.WARNING, "Incorrect Verification Information received by Agent: " + agentEntity.getName() + " | " + agentEntity.getUuid());
         return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_AGENT_REGISTRATION_CANNOT_VERIFY));
     }
 }

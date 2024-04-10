@@ -27,6 +27,8 @@ public class PackageEncryptor {
     private final CryptoUtility cryptoUtility;
     private final LogService logService;
 
+    private final static String WITH_ERROR = " with Error: ";
+
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("encryptPackageTask")
     public void encryptPackage() {
@@ -60,7 +62,7 @@ public class PackageEncryptor {
             }
         } catch (Exception e) {
             packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH);
-            logService.addEntry(Severity.ERROR, "Detected checksum mismatch for uploaded file while processing Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + " with Error: " + e.getMessage());
+            logService.addEntry(Severity.ERROR, "Detected checksum mismatch for uploaded file while processing Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + WITH_ERROR + e.getMessage());
             finish(packageEntity, plaintextFile, null);
             return;
         }
@@ -82,7 +84,7 @@ public class PackageEncryptor {
             checksumEncryptedFile = cryptoUtility.calculateChecksum(new FileInputStream(encryptedFilePath.toString()));
         } catch (Exception e) {
             packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR);
-            logService.addEntry(Severity.ERROR, "Failed to calculate checksum of the encrypted file while processing Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + " with Error: " + e.getMessage());
+            logService.addEntry(Severity.ERROR, "Failed to calculate checksum of the encrypted file while processing Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + WITH_ERROR + e.getMessage());
             finish(packageEntity, plaintextFile, decryptedTestFilePath.toFile());
             return;
         }
@@ -105,7 +107,7 @@ public class PackageEncryptor {
             }
         } catch (FileNotFoundException e) {
             packageEntity.setPackageStatusInternal(PackageStatusInternal.ERROR_CHECKSUM_MISMATCH);
-            logService.addEntry(Severity.ERROR, "Failed to calculate checksum of the encrypted file while processing Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + " with Error: " + e.getMessage());
+            logService.addEntry(Severity.ERROR, "Failed to calculate checksum of the encrypted file while processing Package: " + packageEntity.getName() + " | " + packageEntity.getUuid() + WITH_ERROR + e.getMessage());
             finish(packageEntity, plaintextFile, decryptedTestFilePath.toFile());
             return;
         }
@@ -128,14 +130,14 @@ public class PackageEncryptor {
 
             }
         } catch (Exception e) {
-            logService.addEntry(Severity.INFO, "Could not delete the decrypted test file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
+            logService.addEntry(Severity.INFO, "Could not delete the decrypted test file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + WITH_ERROR + e.getMessage());
         }
         try {
             if (!Files.deleteIfExists(plaintextFile.toPath())) {
                 logService.addEntry(Severity.INFO, "Could not delete the plaintext file for: " + packageEntity.getName() + " | " + packageEntity.getUuid());
             }
         } catch (Exception e) {
-            logService.addEntry(Severity.INFO, "Could not delete the plaintext file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + ". Error: " + e.getMessage());
+            logService.addEntry(Severity.INFO, "Could not delete the plaintext file for: " + packageEntity.getName() + " | " + packageEntity.getUuid() + WITH_ERROR + e.getMessage());
         }
     }
 
