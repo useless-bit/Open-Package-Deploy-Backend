@@ -63,7 +63,7 @@ public class ServerCommunicationRegistration {
         String hostname = inetAddress.toString();
         if (operatingSystem == OperatingSystem.LINUX) {
             hostname = inetAddress.getCanonicalHostName();
-        } else if (operatingSystem == OperatingSystem.MACOS) {
+        } else if (operatingSystem == OperatingSystem.MACOS || operatingSystem == OperatingSystem.WINDOWS) {
             hostname = inetAddress.getHostName();
         }
 
