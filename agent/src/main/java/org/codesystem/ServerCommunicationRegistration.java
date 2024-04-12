@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
@@ -19,11 +20,13 @@ public class ServerCommunicationRegistration {
     private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     private final ServerCommunication serverCommunication;
+    private final OperatingSystem operatingSystem;
 
-    public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, ServerCommunication serverCommunication) {
+    public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, ServerCommunication serverCommunication, OperatingSystem operatingSystem) {
         this.cryptoUtility = cryptoUtility;
         this.propertiesLoader = propertiesLoader;
         this.serverCommunication = serverCommunication;
+        this.operatingSystem = operatingSystem;
     }
 
     public void validateRegistration() {
@@ -57,11 +60,18 @@ public class ServerCommunicationRegistration {
             throw new SevereAgentErrorException("Cannot get Hostname: " + e.getMessage());
         }
 
+        String hostname = inetAddress.toString();
+        if (operatingSystem == OperatingSystem.LINUX) {
+            hostname = inetAddress.getCanonicalHostName();
+        } else if (operatingSystem == OperatingSystem.MACOS || operatingSystem == OperatingSystem.WINDOWS) {
+            hostname = inetAddress.getHostName();
+        }
+
         OkHttpClient client = new OkHttpClient();
 
         JSONObject jsonRequestBody = new JSONObject()
                 .put(JSON_PUBLIC_KEY_NAME, propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY))
-                .put("name", inetAddress.getCanonicalHostName())
+                .put("name", hostname)
                 .put("authenticationToken", propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_REGISTRATION_TOKEN));
 
         RequestBody body = RequestBody.create(jsonRequestBody.toString(), Variables.MEDIA_TYPE_JSON);

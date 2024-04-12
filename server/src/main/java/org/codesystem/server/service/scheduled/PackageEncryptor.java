@@ -23,11 +23,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class PackageEncryptor {
+    private static final String WITH_ERROR = " with Error: ";
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
     private final LogService logService;
-
-    private static final String WITH_ERROR = " with Error: ";
 
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("encryptPackageTask")

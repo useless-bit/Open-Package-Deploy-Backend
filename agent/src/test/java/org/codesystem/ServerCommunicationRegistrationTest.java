@@ -1,5 +1,6 @@
 package org.codesystem;
 
+import org.codesystem.enums.OperatingSystem;
 import org.codesystem.utility.CryptoUtility;
 import org.codesystem.utility.SystemExitUtility;
 import org.json.JSONObject;
@@ -41,7 +42,7 @@ class ServerCommunicationRegistrationTest {
         systemExitMockedStatic = Mockito.mockStatic(SystemExitUtility.class);
         systemExitMockedStatic.when(() -> SystemExitUtility.exit(Mockito.anyInt())).thenThrow(TestSystemExitException.class);
         mockServer = ClientAndServer.startClientAndServer(8899);
-        serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, serverCommunication);
+        serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, serverCommunication, OperatingSystem.LINUX);
     }
 
     @AfterEach
