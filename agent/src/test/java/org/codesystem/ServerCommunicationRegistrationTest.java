@@ -82,7 +82,6 @@ class ServerCommunicationRegistrationTest {
         mockServer.when(request().withMethod("POST").withPath("/api/agent/registration")).respond(HttpResponse.response().withStatusCode(200).withBody(jsonObject.toString()));
         mockServer.when(request().withMethod("POST").withPath("/api/agent/registration/verify")).respond(HttpResponse.response().withStatusCode(200).withBody(jsonObject.toString()));
         Mockito.when(cryptoUtility.decryptECC(Mockito.any())).thenReturn("Verification Token");
-        serverCommunicationRegistration.validateRegistration();
-        Assertions.assertDoesNotThrow(() -> serverCommunicationRegistration.validateRegistration());
+        Assertions.assertThrows(TestSystemExitException.class, () -> serverCommunicationRegistration.validateRegistration());
     }
 }

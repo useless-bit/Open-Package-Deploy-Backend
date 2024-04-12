@@ -7,6 +7,7 @@ import okhttp3.Response;
 import org.codesystem.enums.OperatingSystem;
 import org.codesystem.exceptions.SevereAgentErrorException;
 import org.codesystem.utility.CryptoUtility;
+import org.codesystem.utility.SystemExitUtility;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -17,10 +18,10 @@ import java.util.Base64;
 
 public class ServerCommunicationRegistration {
     private static final String JSON_PUBLIC_KEY_NAME = "publicKeyBase64";
-    private final CryptoUtility cryptoUtility;
     private final PropertiesLoader propertiesLoader;
     private final ServerCommunication serverCommunication;
     private final OperatingSystem operatingSystem;
+    private CryptoUtility cryptoUtility;
 
     public ServerCommunicationRegistration(CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader, ServerCommunication serverCommunication, OperatingSystem operatingSystem) {
         this.cryptoUtility = cryptoUtility;
@@ -49,6 +50,7 @@ public class ServerCommunicationRegistration {
             }
             registerOnServer();
             AgentApplication.logger.info("Registered on Server.");
+            SystemExitUtility.exit(0);
         }
     }
 
@@ -88,6 +90,7 @@ public class ServerCommunicationRegistration {
 
             propertiesLoader.setProperty(Variables.PROPERTIES_SERVER_ECC_PUBLIC_KEY, jsonResponse.get(JSON_PUBLIC_KEY_NAME).toString());
             propertiesLoader.saveProperties();
+            cryptoUtility = new CryptoUtility(propertiesLoader);
             String verificationToken = cryptoUtility.decryptECC(Base64.getDecoder().decode(jsonResponse.get("encryptedValidationToken").toString()));
 
             verificationToken = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(verificationToken.getBytes(StandardCharsets.UTF_8)));
