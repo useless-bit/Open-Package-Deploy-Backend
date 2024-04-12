@@ -65,7 +65,7 @@ public class AgentApplication {
 
         UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), cryptoUtility, propertiesLoader);
         PackageUtility packageUtility = new PackageUtility(cryptoUtility, operatingSystem, propertiesLoader, new DownloadUtility());
-        ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility));
+        ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility), operatingSystem);
         serverCommunicationRegistration.validateRegistration();
     }
 
