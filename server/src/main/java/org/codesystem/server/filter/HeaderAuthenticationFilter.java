@@ -24,8 +24,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         if (auth != null && auth.equals(serverEntity.getAgentRegistrationToken())) {
             filterChain.doFilter(request, response);
+        } else {
+            logService.addEntry(Severity.WARNING, "Invalid Authentication-Token provided for: " + request.getRequestURL() + " by: " + request.getRemoteAddr());
         }
-        logService.addEntry(Severity.WARNING, "Invalid Authentication-Token provided for: " + request.getRequestURL() + " by: " + request.getRemoteAddr());
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
 }
