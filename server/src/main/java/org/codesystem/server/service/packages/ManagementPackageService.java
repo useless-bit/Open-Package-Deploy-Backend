@@ -86,7 +86,7 @@ public class ManagementPackageService {
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
         packageRepository.save(packageEntity);
-        logService.addEntry(Severity.INFO, "New Package for: " + packageEntity.getTargetOperatingSystem() + " added and awaiting processing: " + packageEntity.getName() + " | " + packageEntity.getUuid());
+        logService.addEntry(Severity.INFO, "New Package for " + packageEntity.getTargetOperatingSystem() + " added and awaiting processing: " + packageEntity.getName() + " | " + packageEntity.getUuid());
         return ResponseEntity.ok().build();
     }
 
