@@ -45,7 +45,7 @@ public class ManagementGroupController {
     public ResponseEntity<ApiResponse> removeAgent(@PathVariable String groupUUID, @PathVariable String agentUUID) {
         return managementGroupService.removeAgent(groupUUID, agentUUID);
     }
-    
+
     @PostMapping("{groupUUID}/package/{packageUUID}")
     public ResponseEntity<ApiResponse> addPackage(@PathVariable String groupUUID, @PathVariable String packageUUID) {
         return managementGroupService.addPackage(groupUUID, packageUUID);
