@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.GroupEntity;
+import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -72,6 +73,48 @@ public class ManagementGroupService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
         groupEntity.addMember(agentEntity);
+        groupRepository.save(groupEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> removeAgent(String groupUUID, String agentUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
+        if (agentEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        groupEntity.removeMember(agentEntity);
+        groupRepository.save(groupEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> addPackage(String groupUUID, String packageUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        groupEntity.addPackage(packageEntity);
+        groupRepository.save(groupEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> removePackage(String groupUUID, String packageUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        groupEntity.removePackage(packageEntity);
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
