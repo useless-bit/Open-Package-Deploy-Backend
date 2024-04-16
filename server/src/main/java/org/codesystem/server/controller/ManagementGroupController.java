@@ -4,13 +4,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.request.group.CreateEmptyGroupRequest;
 import org.codesystem.server.request.group.UpdateGroupRequest;
-import org.codesystem.server.request.server.InstallRetryIntervalRequest;
-import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.group.ManagementGroupService;
-import org.codesystem.server.service.server.LogService;
-import org.codesystem.server.service.server.ManagementServerService;
-import org.codesystem.server.service.server.SystemUsageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

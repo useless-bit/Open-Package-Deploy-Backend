@@ -49,5 +49,4 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
     List<DeploymentEntity> findDeploymentsForAgent(String agentUUID);
 
 
-
 }
