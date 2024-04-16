@@ -2,6 +2,7 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.request.server.GroupDeploymentRefreshIntervalRequest;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
@@ -75,4 +76,18 @@ public class ManagementServerController {
         return systemUsageService.getStorageInformation();
     }
 
+    @GetMapping("groupDeploymentRefresh")
+    public ResponseEntity<ApiResponse> getGroupDeploymentRefreshInterval() {
+        return managementServerService.getGroupDeploymentRefreshInterval();
+    }
+
+    @PatchMapping("groupDeploymentRefresh")
+    public ResponseEntity<ApiResponse> setGroupDeploymentRefreshInterval(@RequestBody GroupDeploymentRefreshIntervalRequest groupDeploymentRefreshIntervalRequest) {
+        return managementServerService.setGroupDeploymentRefreshInterval(groupDeploymentRefreshIntervalRequest);
+    }
+
+    @PatchMapping("groupDeploymentRefresh/reset")
+    public ResponseEntity<ApiResponse> resetGroupDeploymentRefreshInterval() {
+        return managementServerService.resetGroupDeploymentRefreshInterval();
+    }
 }

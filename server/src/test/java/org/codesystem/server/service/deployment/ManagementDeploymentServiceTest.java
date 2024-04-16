@@ -203,6 +203,7 @@ class ManagementDeploymentServiceTest {
         DeploymentEntity newDeploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         Assertions.assertEquals("Agent One", newDeploymentEntity.getAgentEntity().getName());
         Assertions.assertEquals("Package Two", newDeploymentEntity.getPackageEntity().getName());
+        Assertions.assertTrue(newDeploymentEntity.isDirectDeployment());
     }
 
     @Test

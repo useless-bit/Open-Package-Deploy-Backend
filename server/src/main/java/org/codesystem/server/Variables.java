@@ -13,6 +13,7 @@ public class Variables {
     public static final String ERROR_RESPONSE_INVALID_DEPLOYMENT = "Invalid Deployment";
     public static final String ERROR_RESPONSE_NO_DEPLOYMENT_AVAILABLE = "No Deployment available";
     public static final String ERROR_RESPONSE_NO_DEPLOYMENT = "Deployment not found";
+    public static final String ERROR_RESPONSE_NO_GROUP = "Group not found";
     public static final String ERROR_RESPONSE_NO_AGENT = "Agent not found";
     public static final String ERROR_RESPONSE_NO_PACKAGE = "Package not found";
     public static final String ERROR_RESPONSE_INVALID_ZIP_FILE = "Invalid zip-file";

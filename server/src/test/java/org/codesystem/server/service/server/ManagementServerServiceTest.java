@@ -5,6 +5,7 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
+import org.codesystem.server.request.server.GroupDeploymentRefreshIntervalRequest;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.json.JSONObject;
@@ -132,4 +133,33 @@ class ManagementServerServiceTest {
         Assertions.assertEquals("Agent Checksum", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("agentChecksum"));
     }
 
+    @Test
+    void getGroupDeploymentRefreshInterval() {
+        ResponseEntity responseEntity = managementServerService.getGroupDeploymentRefreshInterval();
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals(43200, new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getInt("groupDeploymentRefreshInterval"));
+    }
+
+    @Test
+    void setGroupDeploymentRefreshInterval() {
+        ResponseEntity responseEntity = managementServerService.setGroupDeploymentRefreshInterval(null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementServerService.setGroupDeploymentRefreshInterval(new GroupDeploymentRefreshIntervalRequest(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        responseEntity = managementServerService.setGroupDeploymentRefreshInterval(new GroupDeploymentRefreshIntervalRequest(500));
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        Assertions.assertEquals(500, serverEntity.getGroupDeploymentRefreshInterval());
+    }
+
+    @Test
+    void resetGroupDeploymentRefreshInterval() {
+        ResponseEntity responseEntity = managementServerService.resetGroupDeploymentRefreshInterval();
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        Assertions.assertNull(serverEntity.getLastGroupDeploymentRefresh());
+    }
 }

@@ -27,6 +27,9 @@ public class DeploymentEntity {
     @Column(name = "deployed")
     private boolean deployed = false;
 
+    @Column(name = "direct_deployment", nullable = false)
+    private boolean directDeployment;
+
     @Column(name = "return_value")
     private String returnValue;
 

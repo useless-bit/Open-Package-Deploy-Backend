@@ -18,11 +18,6 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
 
     @Query("""
             select d from DeploymentEntity d
-            where d.packageEntity.packageStatusInternal = "PROCESSED" and d.deployed = false and (d.lastDeploymentTimestamp < ?1 or d.lastDeploymentTimestamp is null)""")
-    List<DeploymentEntity> findAvailableDeployment_test(Instant lastDeploymentTimestamp);
-
-    @Query("""
-            select d from DeploymentEntity d
             where d.agentEntity.uuid = ?1 and d.packageEntity.packageStatusInternal = "PROCESSED" and d.deployed = false and (d.lastDeploymentTimestamp < ?2 or d.lastDeploymentTimestamp is null)""")
     List<DeploymentEntity> findAvailableDeployments(String uuid, Instant lastDeploymentTimestamp);
 
@@ -52,6 +47,7 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
 
     @Query("select d from DeploymentEntity d where d.agentEntity.uuid = ?1")
     List<DeploymentEntity> findDeploymentsForAgent(String agentUUID);
+
 
 
 }

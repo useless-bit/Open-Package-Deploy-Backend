@@ -63,6 +63,7 @@ public class ManagementDeploymentService {
             return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_OS_MISMATCH));
         }
         DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
+        deploymentEntity.setDirectDeployment(true);
         deploymentEntity = deploymentRepository.save(deploymentEntity);
         return ResponseEntity.ok().body(new CreateNewDeploymentResponse(deploymentEntity.getUuid()));
     }
