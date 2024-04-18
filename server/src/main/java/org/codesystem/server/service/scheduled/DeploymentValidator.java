@@ -42,10 +42,7 @@ public class DeploymentValidator {
                     addMissingDeployment(agentEntity, packageEntity);
                     removeUnreferencedDeployments(agentEntity, packageEntity);
                 }
-
             }
-            //TODO: check for invalid deployments (groups)
-
         }
     }
 
