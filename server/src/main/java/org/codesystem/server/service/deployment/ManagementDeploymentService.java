@@ -62,7 +62,7 @@ public class ManagementDeploymentService {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_OS_MISMATCH));
         }
         if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
-            DeploymentEntity deploymentEntity = deploymentRepository.findByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid()).get(0);
+            DeploymentEntity deploymentEntity = deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid()).get(0);
             if (deploymentEntity.isDirectDeployment()) {
                 return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_ALREADY_PRESENT));
             } else {

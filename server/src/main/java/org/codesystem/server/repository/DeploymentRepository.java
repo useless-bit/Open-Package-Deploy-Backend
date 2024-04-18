@@ -45,8 +45,10 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
     boolean isDeploymentAlreadyPresent(String agentUUID, String packageUUID);
 
     @Query("select d from DeploymentEntity d where d.agentEntity.uuid = ?1 and d.packageEntity.uuid = ?2")
-    List<DeploymentEntity> findByAgentUUIDAndPackageUUID(String agentUUID, String packageUUID);
+    List<DeploymentEntity> findAllByAgentUUIDAndPackageUUID(String agentUUID, String packageUUID);
 
     @Query("select d from DeploymentEntity d where d.agentEntity.uuid = ?1")
     List<DeploymentEntity> findDeploymentsForAgent(String agentUUID);
+
+
 }
