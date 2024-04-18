@@ -25,10 +25,10 @@ public class GroupEntity {
     @Column(name = "description", length = 1024)
     private String description;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<AgentEntity> members = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<PackageEntity> deployedPackages = new ArrayList<>(
     );
 

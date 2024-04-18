@@ -33,7 +33,7 @@ public class ManagementGroupController {
 
     @PatchMapping("{groupUUID}")
     public ResponseEntity<ApiResponse> updateGroup(@RequestBody UpdateGroupRequest updateGroupRequest, @PathVariable String groupUUID) {
-        return managementGroupService.updateGroup(updateGroupRequest, groupUUID);
+        return managementGroupService.updateGroup(groupUUID, updateGroupRequest);
     }
 
     @PostMapping("{groupUUID}/agent/{agentUUID}")
