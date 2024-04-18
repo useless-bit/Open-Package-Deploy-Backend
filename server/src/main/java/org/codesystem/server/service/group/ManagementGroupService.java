@@ -44,7 +44,7 @@ public class ManagementGroupService {
 
     public ResponseEntity<ApiResponse> createEmptyGroup(CreateEmptyGroupRequest createEmptyGroupRequest) {
         if (createEmptyGroupRequest == null || createEmptyGroupRequest.getName() == null || createEmptyGroupRequest.getName().isBlank()
-        || createEmptyGroupRequest.getOperatingSystem() == null || createEmptyGroupRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
+                || createEmptyGroupRequest.getOperatingSystem() == null || createEmptyGroupRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         GroupEntity groupEntity = new GroupEntity();
