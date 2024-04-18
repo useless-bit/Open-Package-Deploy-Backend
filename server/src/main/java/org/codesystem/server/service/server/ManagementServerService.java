@@ -5,7 +5,7 @@ import org.codesystem.server.Variables;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.ServerRepository;
-import org.codesystem.server.request.server.GroupDeploymentRefreshIntervalRequest;
+import org.codesystem.server.request.server.DeploymentValidationIntervalRequest;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiError;
@@ -74,25 +74,25 @@ public class ManagementServerService {
         return ResponseEntity.status(HttpStatus.OK).body(new GetAgentChecksumResponse(serverEntity.getAgentChecksum()));
     }
 
-    public ResponseEntity<ApiResponse> getGroupDeploymentRefreshInterval() {
+    public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetGroupDeploymentRefreshIntervalResponse(serverEntity.getGroupDeploymentRefreshInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GetGroupDeploymentRefreshIntervalResponse(serverEntity.getDeploymentValidationInterval()));
     }
 
-    public ResponseEntity<ApiResponse> setGroupDeploymentRefreshInterval(GroupDeploymentRefreshIntervalRequest groupDeploymentRefreshIntervalRequest) {
-        if (groupDeploymentRefreshIntervalRequest == null || groupDeploymentRefreshIntervalRequest.getGroupDeploymentRefreshInterval() == null || groupDeploymentRefreshIntervalRequest.getGroupDeploymentRefreshInterval() <= 0) {
+    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
+        if (deploymentValidationIntervalRequest == null || deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval() == null || deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval() <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_INTERVAL));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        serverEntity.setGroupDeploymentRefreshInterval(groupDeploymentRefreshIntervalRequest.getGroupDeploymentRefreshInterval());
+        serverEntity.setDeploymentValidationInterval(deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Group-Deployment refresh interval updated from: " + serverEntity.getGroupDeploymentRefreshInterval() + " to: " + groupDeploymentRefreshIntervalRequest.getGroupDeploymentRefreshInterval());
+        logService.addEntry(Severity.INFO, "Group-Deployment refresh interval updated from: " + serverEntity.getDeploymentValidationInterval() + " to: " + deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    public ResponseEntity<ApiResponse> resetGroupDeploymentRefreshInterval() {
+    public ResponseEntity<ApiResponse> resetDeploymentValidationInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        serverEntity.setLastGroupDeploymentRefresh(null);
+        serverEntity.setLastDeploymentValidation(null);
         serverRepository.save(serverEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

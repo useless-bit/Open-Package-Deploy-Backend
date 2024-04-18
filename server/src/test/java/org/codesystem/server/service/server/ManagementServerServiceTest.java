@@ -5,7 +5,7 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.ServerRepository;
-import org.codesystem.server.request.server.GroupDeploymentRefreshIntervalRequest;
+import org.codesystem.server.request.server.DeploymentValidationIntervalRequest;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.json.JSONObject;
@@ -94,6 +94,9 @@ class ManagementServerServiceTest {
         ResponseEntity responseEntity = managementServerService.setUpdateInterval(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementServerService.setUpdateInterval(new UpdateIntervalRequest(null));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementServerService.setUpdateInterval(new UpdateIntervalRequest(0));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
@@ -116,6 +119,9 @@ class ManagementServerServiceTest {
         ResponseEntity responseEntity = managementServerService.setInstallRetryInterval(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementServerService.setInstallRetryInterval(new InstallRetryIntervalRequest(null));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
         responseEntity = managementServerService.setInstallRetryInterval(new InstallRetryIntervalRequest(0));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
@@ -134,32 +140,35 @@ class ManagementServerServiceTest {
     }
 
     @Test
-    void getGroupDeploymentRefreshInterval() {
-        ResponseEntity responseEntity = managementServerService.getGroupDeploymentRefreshInterval();
+    void getDeploymentValidationInterval() {
+        ResponseEntity responseEntity = managementServerService.getDeploymentValidationInterval();
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Assertions.assertEquals(43200, new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getInt("groupDeploymentRefreshInterval"));
     }
 
     @Test
-    void setGroupDeploymentRefreshInterval() {
-        ResponseEntity responseEntity = managementServerService.setGroupDeploymentRefreshInterval(null);
+    void setDeploymentValidationInterval() {
+        ResponseEntity responseEntity = managementServerService.setDeploymentValidationInterval(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementServerService.setGroupDeploymentRefreshInterval(new GroupDeploymentRefreshIntervalRequest(0));
+        responseEntity = managementServerService.setDeploymentValidationInterval(new DeploymentValidationIntervalRequest(null));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementServerService.setDeploymentValidationInterval(new DeploymentValidationIntervalRequest(0));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid interval", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
-        responseEntity = managementServerService.setGroupDeploymentRefreshInterval(new GroupDeploymentRefreshIntervalRequest(500));
+        responseEntity = managementServerService.setDeploymentValidationInterval(new DeploymentValidationIntervalRequest(500));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        Assertions.assertEquals(500, serverEntity.getGroupDeploymentRefreshInterval());
+        Assertions.assertEquals(500, serverEntity.getDeploymentValidationInterval());
     }
 
     @Test
-    void resetGroupDeploymentRefreshInterval() {
-        ResponseEntity responseEntity = managementServerService.resetGroupDeploymentRefreshInterval();
+    void resetDeploymentValidationInterval() {
+        ResponseEntity responseEntity = managementServerService.resetDeploymentValidationInterval();
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        Assertions.assertNull(serverEntity.getLastGroupDeploymentRefresh());
+        Assertions.assertNull(serverEntity.getLastDeploymentValidation());
     }
 }

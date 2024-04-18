@@ -41,12 +41,12 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
     @Query("delete from DeploymentEntity d where d.packageEntity = ?1")
     void deleteDeploymentsForPackage(PackageEntity packageEntity);
 
-
     @Query("select (count(d) > 0) from DeploymentEntity d where d.agentEntity.uuid = ?1 and d.packageEntity.uuid = ?2")
     boolean isDeploymentAlreadyPresent(String agentUUID, String packageUUID);
 
+    @Query("select d from DeploymentEntity d where d.agentEntity.uuid = ?1 and d.packageEntity.uuid = ?2")
+    List<DeploymentEntity> findByAgentUUIDAndPackageUUID(String agentUUID, String packageUUID);
+
     @Query("select d from DeploymentEntity d where d.agentEntity.uuid = ?1")
     List<DeploymentEntity> findDeploymentsForAgent(String agentUUID);
-
-
 }

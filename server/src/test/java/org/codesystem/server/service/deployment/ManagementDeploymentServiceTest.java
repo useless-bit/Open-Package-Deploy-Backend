@@ -5,11 +5,13 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
 import org.json.JSONObject;
@@ -38,6 +40,8 @@ class ManagementDeploymentServiceTest {
     DeploymentRepository deploymentRepository;
     @Autowired
     PackageRepository packageRepository;
+    @Autowired
+    GroupRepository groupRepository;
     ManagementDeploymentService managementDeploymentService;
     PackageEntity packageEntityOne;
     PackageEntity packageEntityTwo;
@@ -45,6 +49,7 @@ class ManagementDeploymentServiceTest {
     AgentEntity agentEntityTwo;
     DeploymentEntity deploymentEntityOne;
     DeploymentEntity deploymentEntityTwo;
+    GroupEntity groupEntityOne;
 
     @BeforeAll
     public static void init() {
@@ -86,17 +91,25 @@ class ManagementDeploymentServiceTest {
         deploymentEntityOne = new DeploymentEntity();
         deploymentEntityOne.setPackageEntity(packageEntityOne);
         deploymentEntityOne.setAgentEntity(agentEntityOne);
+        deploymentEntityOne.setDirectDeployment(true);
         deploymentEntityOne = deploymentRepository.save(deploymentEntityOne);
         deploymentEntityTwo = new DeploymentEntity();
         deploymentEntityTwo.setPackageEntity(packageEntityTwo);
         deploymentEntityTwo.setAgentEntity(agentEntityTwo);
+        deploymentEntityTwo.setDirectDeployment(true);
         deploymentEntityTwo = deploymentRepository.save(deploymentEntityTwo);
 
-        managementDeploymentService = new ManagementDeploymentService(deploymentRepository, agentRepository, packageRepository);
+        groupEntityOne = new GroupEntity("Group 1", "Desc for Group 1");
+        groupEntityOne.addMember(agentEntityOne);
+        groupEntityOne.addPackage(packageEntityOne);
+        groupEntityOne = groupRepository.save(groupEntityOne);
+
+        managementDeploymentService = new ManagementDeploymentService(deploymentRepository, agentRepository, packageRepository, groupRepository);
     }
 
     @AfterEach
     void tearDown() {
+        groupRepository.deleteAll();
         deploymentRepository.deleteAll();
         packageRepository.deleteAll();
         agentRepository.deleteAll();
@@ -153,18 +166,6 @@ class ManagementDeploymentServiceTest {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not available for deployment", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
-        packageEntityOne.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
-        packageEntityOne = packageRepository.save(packageEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Deployment already present", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-
-        packageEntityOne.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
-        packageEntityOne = packageRepository.save(packageEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals("Deployment already present", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-
         packageEntityTwo.setTargetOperatingSystem(OperatingSystem.UNKNOWN);
         packageEntityTwo = packageRepository.save(packageEntityTwo);
         agentEntityOne.setOperatingSystem(OperatingSystem.UNKNOWN);
@@ -188,6 +189,26 @@ class ManagementDeploymentServiceTest {
         responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid OS", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        packageEntityOne.setTargetOperatingSystem(OperatingSystem.WINDOWS);
+        packageEntityOne = packageRepository.save(packageEntityOne);
+        agentEntityOne.setOperatingSystem(OperatingSystem.LINUX);
+        agentEntityOne = agentRepository.save(agentEntityOne);
+        packageEntityOne.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
+        packageEntityOne = packageRepository.save(packageEntityOne);
+        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("OS mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        packageEntityOne.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntityOne = packageRepository.save(packageEntityOne);
+        agentEntityOne.setOperatingSystem(OperatingSystem.LINUX);
+        agentEntityOne = agentRepository.save(agentEntityOne);
+        packageEntityOne.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
+        packageEntityOne = packageRepository.save(packageEntityOne);
+        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Deployment already present", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
 
     @Test
@@ -198,12 +219,22 @@ class ManagementDeploymentServiceTest {
         agentEntityOne = agentRepository.save(agentEntityOne);
         ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        String deploymentUUID = new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("deploymentUUID");
-        Assertions.assertNotNull(deploymentUUID);
-        DeploymentEntity newDeploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
+        DeploymentEntity newDeploymentEntity = deploymentRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("deploymentUUID"));
         Assertions.assertEquals("Agent One", newDeploymentEntity.getAgentEntity().getName());
         Assertions.assertEquals("Package Two", newDeploymentEntity.getPackageEntity().getName());
         Assertions.assertTrue(newDeploymentEntity.isDirectDeployment());
+
+        packageEntityOne.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntityOne = packageRepository.save(packageEntityOne);
+        deploymentEntityOne.setDirectDeployment(false);
+        deploymentEntityOne = deploymentRepository.save(deploymentEntityOne);
+        Assertions.assertFalse(deploymentEntityOne.isDirectDeployment());
+        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        newDeploymentEntity = deploymentRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("deploymentUUID"));
+        Assertions.assertEquals(packageEntityOne.getUuid(), newDeploymentEntity.getPackageEntity().getUuid());
+        Assertions.assertTrue(newDeploymentEntity.isDirectDeployment());
+        Assertions.assertEquals(3, deploymentRepository.findAll().size());
     }
 
     @Test
@@ -215,9 +246,24 @@ class ManagementDeploymentServiceTest {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Deployment not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
+        deploymentEntityOne.setDirectDeployment(false);
+        deploymentEntityOne = deploymentRepository.save(deploymentEntityOne);
+        responseEntity = managementDeploymentService.deleteDeployment(deploymentEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Deployment through Group cannot be deleted", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        deploymentEntityOne.setDirectDeployment(true);
+        deploymentEntityOne = deploymentRepository.save(deploymentEntityOne);
         responseEntity = managementDeploymentService.deleteDeployment(deploymentEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assertions.assertNull(deploymentRepository.findFirstByUuid(deploymentEntityOne.getUuid()));
+        deploymentEntityOne = deploymentRepository.findFirstByUuid(deploymentEntityOne.getUuid());
+        Assertions.assertFalse(deploymentEntityOne.isDirectDeployment());
+
+        responseEntity = managementDeploymentService.deleteDeployment(deploymentEntityTwo.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNull(deploymentRepository.findFirstByUuid(deploymentEntityTwo.getUuid()));
+
+        Assertions.assertEquals(1, deploymentRepository.findAll().size());
     }
 
     @Test

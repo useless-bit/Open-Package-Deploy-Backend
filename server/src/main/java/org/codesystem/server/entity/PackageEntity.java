@@ -11,6 +11,8 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 
 import javax.crypto.SecretKey;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -56,4 +58,7 @@ public class PackageEntity {
 
     @Column(name = "encrypted_size", nullable = false)
     private Long encryptedSize = 0L;
+
+    @ManyToMany(mappedBy = "deployedPackages")
+    List<GroupEntity> groups = new ArrayList<>();
 }

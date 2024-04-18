@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupDeploymentRefreshIntervalRequest {
+public class DeploymentValidationIntervalRequest {
     private Integer groupDeploymentRefreshInterval;
 }

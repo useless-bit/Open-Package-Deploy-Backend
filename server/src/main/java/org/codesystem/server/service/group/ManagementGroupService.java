@@ -5,6 +5,7 @@ import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
+import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -42,7 +43,8 @@ public class ManagementGroupService {
     }
 
     public ResponseEntity<ApiResponse> createEmptyGroup(CreateEmptyGroupRequest createEmptyGroupRequest) {
-        if (createEmptyGroupRequest == null || createEmptyGroupRequest.getName() == null || createEmptyGroupRequest.getName().isBlank()) {
+        if (createEmptyGroupRequest == null || createEmptyGroupRequest.getName() == null || createEmptyGroupRequest.getName().isBlank()
+        || createEmptyGroupRequest.getOperatingSystem() == null || createEmptyGroupRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         GroupEntity groupEntity = new GroupEntity();
@@ -50,6 +52,7 @@ public class ManagementGroupService {
         if (createEmptyGroupRequest.getDescription() != null && !createEmptyGroupRequest.getDescription().isBlank()) {
             groupEntity.setDescription(createEmptyGroupRequest.getDescription().trim());
         }
+        groupEntity.setOperatingSystem(createEmptyGroupRequest.getOperatingSystem());
         groupEntity = groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).body(new CreateGroupResponse(groupEntity.getUuid()));
     }
@@ -82,6 +85,9 @@ public class ManagementGroupService {
         if (agentEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
+        if (agentEntity.getOperatingSystem() != groupEntity.getOperatingSystem()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_OS_MISMATCH));
+        }
         groupEntity.addMember(agentEntity);
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -109,6 +115,9 @@ public class ManagementGroupService {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
+        }
+        if (packageEntity.getTargetOperatingSystem() != groupEntity.getOperatingSystem()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_OS_MISMATCH));
         }
         groupEntity.addPackage(packageEntity);
         groupRepository.save(groupEntity);

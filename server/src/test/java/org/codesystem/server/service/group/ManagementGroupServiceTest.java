@@ -70,33 +70,37 @@ class ManagementGroupServiceTest {
         packageEntityOne = new PackageEntity();
         packageEntityOne.setChecksumPlaintext("Plaintext Checksum");
         packageEntityOne.setChecksumEncrypted("Encrypted Checksum");
-        packageEntityOne.setTargetOperatingSystem(OperatingSystem.UNKNOWN);
+        packageEntityOne.setTargetOperatingSystem(OperatingSystem.LINUX);
         packageEntityOne.setName("Package One");
         packageEntityOne = packageRepository.save(packageEntityOne);
         packageEntityTwo = new PackageEntity();
         packageEntityTwo.setChecksumPlaintext("Plaintext Checksum");
         packageEntityTwo.setChecksumEncrypted("Encrypted Checksum");
-        packageEntityTwo.setTargetOperatingSystem(OperatingSystem.UNKNOWN);
+        packageEntityTwo.setTargetOperatingSystem(OperatingSystem.WINDOWS);
         packageEntityTwo.setName("Package Two");
         packageEntityTwo = packageRepository.save(packageEntityTwo);
 
         agentEntityOne = new AgentEntity();
         agentEntityOne.setPublicKeyBase64("Agent One Public Key");
         agentEntityOne.setName("Agent One");
+        agentEntityOne.setOperatingSystem(OperatingSystem.LINUX);
         agentEntityOne = agentRepository.save(agentEntityOne);
         agentEntityTwo = new AgentEntity();
         agentEntityTwo.setPublicKeyBase64("Agent Two Public Key");
         agentEntityTwo.setName("Agent Two");
+        agentEntityTwo.setOperatingSystem(OperatingSystem.WINDOWS);
         agentEntityTwo = agentRepository.save(agentEntityTwo);
 
         groupEntityOne = new GroupEntity("Group 1", "Desc for Group 1");
         groupEntityOne.addMember(agentEntityOne);
         groupEntityOne.addPackage(packageEntityOne);
+        groupEntityOne.setOperatingSystem(OperatingSystem.LINUX);
         groupEntityOne = groupRepository.save(groupEntityOne);
 
         groupEntityTwo = new GroupEntity("Group 2", "Desc for Group 2");
         groupEntityTwo.addMember(agentEntityTwo);
         groupEntityTwo.addPackage(packageEntityTwo);
+        groupEntityOne.setOperatingSystem(OperatingSystem.LINUX);
         groupEntityTwo = groupRepository.save(groupEntityTwo);
 
         logService = Mockito.mock(LogService.class);
@@ -137,30 +141,36 @@ class ManagementGroupServiceTest {
         ResponseEntity responseEntity = managementGroupService.createEmptyGroup(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(null, null));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(null, null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest("", null));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest("", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest("   ", null));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest("   ", null, null));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null, null));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null, OperatingSystem.UNKNOWN));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
 
     @Test
     void createEmptyGroup_valid() {
-        ResponseEntity responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null));
+        ResponseEntity responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null, OperatingSystem.LINUX));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         GroupEntity groupEntity = groupRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("groupUUID"));
         Assertions.assertEquals("new Group", groupEntity.getName());
         Assertions.assertNull(groupEntity.getDescription());
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", "   "));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", "   ", OperatingSystem.LINUX));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("groupUUID"));
         Assertions.assertEquals("new Group", groupEntity.getName());
         Assertions.assertNull(groupEntity.getDescription());
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group 1 ", " with description "));
+        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group 1 ", " with description ", OperatingSystem.LINUX));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("groupUUID"));
         Assertions.assertEquals("new Group 1", groupEntity.getName());
@@ -220,7 +230,12 @@ class ManagementGroupServiceTest {
         responseEntity = managementGroupService.addAgent("invalidUUID", agentEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Group not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.addAgent(groupEntityOne.getUuid(), agentEntityTwo.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("OS mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
+        agentEntityTwo.setOperatingSystem(OperatingSystem.LINUX);
+        agentEntityTwo = agentRepository.save(agentEntityTwo);
         groupEntityOne = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals(1, groupEntityOne.getMembers().size());
         responseEntity = managementGroupService.addAgent(groupEntityOne.getUuid(), agentEntityOne.getUuid());
@@ -276,7 +291,12 @@ class ManagementGroupServiceTest {
         responseEntity = managementGroupService.addPackage("invalidUUID", packageEntityOne.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Group not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.addPackage(groupEntityOne.getUuid(), packageEntityTwo.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("OS mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
+        packageEntityTwo.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntityTwo = packageRepository.save(packageEntityTwo);
         groupEntityOne = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals(1, groupEntityOne.getDeployedPackages().size());
         responseEntity = managementGroupService.addPackage(groupEntityOne.getUuid(), packageEntityOne.getUuid());

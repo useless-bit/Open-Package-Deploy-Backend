@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.codesystem.server.converter.OperatingSystemConverter;
+import org.codesystem.server.enums.agent.OperatingSystem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +27,14 @@ public class GroupEntity {
     @Column(name = "description", length = 1024)
     private String description;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @Column(name = "operatingSystem", length = 1024, updatable = false)
+    @Convert(converter = OperatingSystemConverter.class)
+    private OperatingSystem operatingSystem;
+
+    @ManyToMany()
     private List<AgentEntity> members = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany()
     private List<PackageEntity> deployedPackages = new ArrayList<>(
     );
 

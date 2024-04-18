@@ -9,6 +9,7 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
 import org.codesystem.server.response.deployment.management.CreateNewDeploymentResponse;
@@ -28,6 +29,7 @@ public class ManagementDeploymentService {
     private final DeploymentRepository deploymentRepository;
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
+    private final GroupRepository groupRepository;
 
     public ResponseEntity<ApiResponse> getAllDeployments() {
         return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deploymentRepository.findAll()));
@@ -53,14 +55,21 @@ public class ManagementDeploymentService {
         if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_PACKAGE_NOT_AVAILABLE));
         }
-        if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
-            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_ALREADY_PRESENT));
-        }
         if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN || packageEntity.getTargetOperatingSystem() == OperatingSystem.UNKNOWN) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_INVALID_OS));
         }
         if (agentEntity.getOperatingSystem() != packageEntity.getTargetOperatingSystem()) {
-            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_OS_MISMATCH));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_OS_MISMATCH));
+        }
+        if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
+            DeploymentEntity deploymentEntity = deploymentRepository.findByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid()).get(0);
+            if (deploymentEntity.isDirectDeployment()) {
+                return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_ALREADY_PRESENT));
+            } else {
+                deploymentEntity.setDirectDeployment(true);
+                deploymentEntity = deploymentRepository.save(deploymentEntity);
+                return ResponseEntity.ok().body(new CreateNewDeploymentResponse(deploymentEntity.getUuid()));
+            }
         }
         DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
         deploymentEntity.setDirectDeployment(true);
@@ -72,6 +81,14 @@ public class ManagementDeploymentService {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
+        }
+        if (!deploymentEntity.isDirectDeployment()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_THROUGH_GROUP));
+        }
+        if (groupRepository.isPackageAvailableThroughGroup(deploymentEntity.getAgentEntity().getUuid(), deploymentEntity.getPackageEntity().getUuid())) {
+            deploymentEntity.setDirectDeployment(false);
+            deploymentRepository.save(deploymentEntity);
+            return ResponseEntity.ok().build();
         }
         deploymentRepository.delete(deploymentEntity);
         return ResponseEntity.ok().build();

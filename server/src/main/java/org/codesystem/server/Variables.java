@@ -21,6 +21,7 @@ public class Variables {
     public static final String ERROR_RESPONSE_CANNOT_STORE_FILE = "Error when storing file";
     public static final String ERROR_RESPONSE_AGENT_REGISTRATION_CANNOT_VERIFY = "Cannot verify Agent";
     public static final String ERROR_RESPONSE_AGENT_REGISTRATION_ALREADY_REGISTERED = "A Agent with this public key is already registered";
+    public static final String ERROR_RESPONSE_OS_MISMATCH = "OS mismatch";
 
     // Package
     public static final String PACKAGE_AGENT_ERROR_BEGINNING = "AGENT-DEPLOYMENT-ERROR";
@@ -36,9 +37,8 @@ public class Variables {
     // Deployment
     public static final String DEPLOYMENT_ERROR_PACKAGE_NOT_AVAILABLE = "Package not available for deployment";
     public static final String DEPLOYMENT_ERROR_ALREADY_PRESENT = "Deployment already present";
+    public static final String DEPLOYMENT_ERROR_THROUGH_GROUP = "Deployment through Group cannot be deleted";
     public static final String DEPLOYMENT_ERROR_INVALID_OS = "Invalid OS";
-    public static final String DEPLOYMENT_ERROR_OS_MISMATCH = "OS mismatch";
-
 
     private Variables() {
     }

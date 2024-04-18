@@ -9,6 +9,8 @@ import org.codesystem.server.converter.OperatingSystemConverter;
 import org.codesystem.server.enums.agent.OperatingSystem;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -77,4 +79,7 @@ public class AgentEntity {
 
     @Column(name = "memory")
     private String memory = null;
+
+    @ManyToMany(mappedBy = "members")
+    List<GroupEntity> groups = new ArrayList<>();
 }

@@ -2,7 +2,7 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.codesystem.server.request.server.GroupDeploymentRefreshIntervalRequest;
+import org.codesystem.server.request.server.DeploymentValidationIntervalRequest;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
@@ -76,18 +76,18 @@ public class ManagementServerController {
         return systemUsageService.getStorageInformation();
     }
 
-    @GetMapping("groupDeploymentRefresh")
-    public ResponseEntity<ApiResponse> getGroupDeploymentRefreshInterval() {
-        return managementServerService.getGroupDeploymentRefreshInterval();
+    @GetMapping("deploymentValidation")
+    public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
+        return managementServerService.getDeploymentValidationInterval();
     }
 
-    @PatchMapping("groupDeploymentRefresh")
-    public ResponseEntity<ApiResponse> setGroupDeploymentRefreshInterval(@RequestBody GroupDeploymentRefreshIntervalRequest groupDeploymentRefreshIntervalRequest) {
-        return managementServerService.setGroupDeploymentRefreshInterval(groupDeploymentRefreshIntervalRequest);
+    @PatchMapping("deploymentValidationInterval")
+    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(@RequestBody DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
+        return managementServerService.setDeploymentValidationInterval(deploymentValidationIntervalRequest);
     }
 
-    @PatchMapping("groupDeploymentRefresh/reset")
-    public ResponseEntity<ApiResponse> resetGroupDeploymentRefreshInterval() {
-        return managementServerService.resetGroupDeploymentRefreshInterval();
+    @PatchMapping("deploymentValidation/reset")
+    public ResponseEntity<ApiResponse> resetDeploymentValidationInterval() {
+        return managementServerService.resetDeploymentValidationInterval();
     }
 }
