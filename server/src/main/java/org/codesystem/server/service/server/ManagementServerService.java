@@ -20,7 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ManagementServerService {
-    private final static String LOG_TO = " to: ";
+    private static final String LOG_TO = " to: ";
     private final ServerRepository serverRepository;
     private final LogService logService;
 

@@ -28,9 +28,16 @@ public class DeploymentValidator {
     private final GroupRepository groupRepository;
     private final LogService logService;
 
+    private long deletedDuplicateDeployments = 0;
+    private long createdGroupDeployments = 0;
+    private long deletedUnreferencedDeployments = 0;
+
     @Scheduled(timeUnit = TimeUnit.SECONDS, fixedDelay = 1)
     @Async("validateDeployments")
     public void validateDeployments() {
+        deletedDuplicateDeployments = 0;
+        createdGroupDeployments = 0;
+        deletedUnreferencedDeployments = 0;
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         if (serverEntity.getLastDeploymentValidation() == null || Instant.now().isAfter(serverEntity.getLastDeploymentValidation().plus(serverEntity.getDeploymentValidationInterval(), ChronoUnit.SECONDS))) {
             logService.addEntry(Severity.INFO, "Deployment Validation started");
@@ -38,22 +45,10 @@ public class DeploymentValidator {
             List<AgentEntity> agentEntities = agentRepository.findAllRegistered();
             List<PackageEntity> packageEntities = packageRepository.findAll();
 
-            long deletedDuplicateDeployments = 0;
-            long createdGroupDeployments = 0;
-            long deletedUnreferencedDeployments = 0;
-
             for (AgentEntity agentEntity : agentEntities) {
                 List<PackageEntity> filteredPackageEntities = packageEntities.stream().filter(entity -> entity.getTargetOperatingSystem().equals(agentEntity.getOperatingSystem())).toList();
                 for (PackageEntity packageEntity : filteredPackageEntities) {
-                    if (deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid()).size() > 1) {
-                        deletedDuplicateDeployments += deleteDuplicateDeployments(agentEntity, packageEntity);
-                    }
-                    if (addMissingDeployment(agentEntity, packageEntity)) {
-                        createdGroupDeployments += 1;
-                    }
-                    if (removeUnreferencedDeployments(agentEntity, packageEntity)) {
-                        deletedUnreferencedDeployments += 1;
-                    }
+                    validate(agentEntity, packageEntity);
                 }
             }
             serverEntity.setLastDeploymentValidation(Instant.now());
@@ -68,6 +63,19 @@ public class DeploymentValidator {
                     deletedUnreferencedDeployments
             );
         }
+    }
+
+    private void validate(AgentEntity agentEntity, PackageEntity packageEntity) {
+        if (deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid()).size() > 1) {
+            deletedDuplicateDeployments += deleteDuplicateDeployments(agentEntity, packageEntity);
+        }
+        if (addMissingDeployment(agentEntity, packageEntity)) {
+            createdGroupDeployments += 1;
+        }
+        if (removeUnreferencedDeployments(agentEntity, packageEntity)) {
+            deletedUnreferencedDeployments += 1;
+        }
+
     }
 
     /**
