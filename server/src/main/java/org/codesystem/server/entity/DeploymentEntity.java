@@ -30,9 +30,6 @@ public class DeploymentEntity {
     @Column(name = "direct_deployment", nullable = false)
     private boolean directDeployment;
 
-    @Column(name = "group_deployment", nullable = false)
-    private boolean groupDeployment;
-
     @Column(name = "return_value")
     private String returnValue;
 

@@ -2,6 +2,7 @@ package org.codesystem.server.service.scheduled;
 
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.entity.AgentEntity;
+import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.repository.*;
@@ -43,16 +44,47 @@ public class DeploymentValidator {
                     removeUnreferencedDeployments(agentEntity, packageEntity);
                 }
             }
+            serverEntity.setLastDeploymentValidation(Instant.now());
+            serverRepository.save(serverEntity);
         }
     }
 
 
     private void deleteDuplicateDeployments(AgentEntity agentEntity, PackageEntity packageEntity) {
+        boolean isOneDeploymentDirect = false;
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid());
+        for (DeploymentEntity deploymentEntity : deploymentEntities) {
+            if (deploymentEntity.isDirectDeployment()) {
+                isOneDeploymentDirect = true;
+                break;
+            }
+        }
+        deploymentRepository.deleteAll(deploymentEntities);
+        DeploymentEntity deploymentEntity = new DeploymentEntity();
+        deploymentEntity.setPackageEntity(packageEntity);
+        deploymentEntity.setAgentEntity(agentEntity);
+        deploymentEntity.setDirectDeployment(isOneDeploymentDirect);
+        deploymentRepository.save(deploymentEntity);
     }
 
     private void addMissingDeployment(AgentEntity agentEntity, PackageEntity packageEntity) {
+        if (!deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid()) && groupRepository.isPackageAvailableThroughGroup(agentEntity.getUuid(), packageEntity.getUuid())) {
+            DeploymentEntity deploymentEntity = new DeploymentEntity();
+            deploymentEntity.setPackageEntity(packageEntity);
+            deploymentEntity.setAgentEntity(agentEntity);
+            deploymentEntity.setDirectDeployment(false);
+            deploymentRepository.save(deploymentEntity);
+        }
     }
 
     private void removeUnreferencedDeployments(AgentEntity agentEntity, PackageEntity packageEntity) {
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid());
+        if (deploymentEntities.isEmpty()) {
+            return;
+        }
+        DeploymentEntity deploymentEntity = deploymentEntities.get(0);
+        if (deploymentEntity != null && !deploymentEntity.isDirectDeployment() && !groupRepository.isPackageAvailableThroughGroup(agentEntity.getUuid(), packageEntity.getUuid())) {
+            deploymentRepository.delete(deploymentEntity);
+        }
     }
 }

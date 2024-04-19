@@ -216,7 +216,6 @@ class ManagementGroupServiceTest {
     }
 
     @Test
-    @Transactional
     void addAgent() {
         ResponseEntity responseEntity = managementGroupService.addAgent(groupEntityOne.getUuid(), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -249,7 +248,6 @@ class ManagementGroupServiceTest {
     }
 
     @Test
-    @Transactional
     void removeAgent() {
         ResponseEntity responseEntity = managementGroupService.removeAgent(groupEntityOne.getUuid(), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -277,7 +275,6 @@ class ManagementGroupServiceTest {
     }
 
     @Test
-    @Transactional
     void addPackage() {
         ResponseEntity responseEntity = managementGroupService.addPackage(groupEntityOne.getUuid(), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
@@ -310,7 +307,6 @@ class ManagementGroupServiceTest {
     }
 
     @Test
-    @Transactional
     void removePackage() {
         ResponseEntity responseEntity = managementGroupService.removePackage(groupEntityOne.getUuid(), null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());

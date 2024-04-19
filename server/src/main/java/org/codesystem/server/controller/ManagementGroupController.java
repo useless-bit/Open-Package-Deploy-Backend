@@ -7,6 +7,7 @@ import org.codesystem.server.request.group.UpdateGroupRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.group.ManagementGroupService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Management Group")
@@ -46,13 +47,13 @@ public class ManagementGroupController {
         return managementGroupService.removeAgent(groupUUID, agentUUID);
     }
 
-    @PostMapping("{groupUUID}/package/{packageUUID}")
-    public ResponseEntity<ApiResponse> addPackage(@PathVariable String groupUUID, @PathVariable String packageUUID) {
-        return managementGroupService.addPackage(groupUUID, packageUUID);
-    }
-
     @DeleteMapping("{groupUUID}/package/{packageUUID}")
     public ResponseEntity<ApiResponse> removePackage(@PathVariable String groupUUID, @PathVariable String packageUUID) {
         return managementGroupService.removePackage(groupUUID, packageUUID);
+    }
+
+    @PostMapping("{groupUUID}/package/{packageUUID}")
+    public ResponseEntity<ApiResponse> addPackage(@PathVariable String groupUUID, @PathVariable String packageUUID) {
+        return managementGroupService.addPackage(groupUUID, packageUUID);
     }
 }

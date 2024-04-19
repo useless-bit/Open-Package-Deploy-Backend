@@ -31,10 +31,12 @@ public class GroupEntity {
     @Convert(converter = OperatingSystemConverter.class)
     private OperatingSystem operatingSystem;
 
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "group_agent")
     private List<AgentEntity> members = new ArrayList<>();
 
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "group_package")
     private List<PackageEntity> deployedPackages = new ArrayList<>(
     );
 
@@ -44,23 +46,25 @@ public class GroupEntity {
     }
 
     public void addMember(AgentEntity agentEntity) {
-        if (!members.contains(agentEntity)) {
+        boolean exists = members.stream().anyMatch(member -> member.getUuid().equals(agentEntity.getUuid()));
+        if (!exists) {
             members.add(agentEntity);
         }
     }
 
     public void removeMember(AgentEntity agentEntity) {
-        members.remove(agentEntity);
+        members.removeIf(member -> member.getUuid().equals(agentEntity.getUuid()));
     }
 
 
     public void addPackage(PackageEntity packageEntity) {
-        if (!deployedPackages.contains(packageEntity)) {
+        boolean exists = deployedPackages.stream().anyMatch(member -> member.getUuid().equals(packageEntity.getUuid()));
+        if (!exists) {
             deployedPackages.add(packageEntity);
         }
     }
 
     public void removePackage(PackageEntity packageEntity) {
-        deployedPackages.remove(packageEntity);
+        deployedPackages.removeIf(member -> member.getUuid().equals(packageEntity.getUuid()));
     }
 }
