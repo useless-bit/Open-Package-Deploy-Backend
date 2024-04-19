@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Entity
 @Getter
 @Setter
@@ -33,4 +35,10 @@ public class ServerEntity {
 
     @Column(name = "agent_install_retry_interval", nullable = false, columnDefinition = "int default 21600")
     private Integer agentInstallRetryInterval = 21600;
+
+    @Column(name = "deployment_validation_interval", nullable = false, columnDefinition = "int default 43200")
+    private Integer deploymentValidationInterval = 43200;
+
+    @Column(name = "last_deployment_validation_timestamp")
+    private Instant lastDeploymentValidation = null;
 }

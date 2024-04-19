@@ -64,7 +64,6 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChainWebAPI(HttpSecurity http) throws Exception {
         http.securityMatcher("/api/**").authorizeHttpRequests(auth -> auth.anyRequest().hasRole(AUTHENTICATION_ROLE))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)));
-        http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 

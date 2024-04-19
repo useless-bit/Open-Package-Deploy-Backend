@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class PackageUtility {
@@ -161,14 +162,18 @@ public class PackageUtility {
             AgentApplication.logger.warning("Cannot set file as executable");
         }
         ProcessBuilder processBuilder = new ProcessBuilder(file.getAbsolutePath());
-        String returnValue;
         try {
             Process process = processBuilder.start();
-            returnValue = String.valueOf(process.waitFor());
-        } catch (Exception e) {
+            boolean completed = process.waitFor(1, TimeUnit.HOURS);
+            if (!completed) {
+                throw new PackageErrorException("Package timeout during deployment");
+            }
+            return String.valueOf(process.exitValue());
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return e.getMessage();
+            throw new PackageErrorException("Cannot start Deployment: " + e.getMessage());
+        } catch (IOException e) {
+            throw new PackageErrorException("Cannot start Deployment: " + e.getMessage());
         }
-        return returnValue;
     }
 }

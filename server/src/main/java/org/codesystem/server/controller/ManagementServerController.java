@@ -2,6 +2,7 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.request.server.DeploymentValidationIntervalRequest;
 import org.codesystem.server.request.server.InstallRetryIntervalRequest;
 import org.codesystem.server.request.server.UpdateIntervalRequest;
 import org.codesystem.server.response.general.ApiResponse;
@@ -75,4 +76,18 @@ public class ManagementServerController {
         return systemUsageService.getStorageInformation();
     }
 
+    @GetMapping("deploymentValidation")
+    public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
+        return managementServerService.getDeploymentValidationInterval();
+    }
+
+    @PatchMapping("deploymentValidationInterval")
+    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(@RequestBody DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
+        return managementServerService.setDeploymentValidationInterval(deploymentValidationIntervalRequest);
+    }
+
+    @PatchMapping("deploymentValidation/reset")
+    public ResponseEntity<ApiResponse> resetDeploymentValidationInterval() {
+        return managementServerService.resetDeploymentValidationInterval();
+    }
 }

@@ -42,4 +42,9 @@ public class AsyncConfiguration implements AsyncConfigurer {
     public ThreadPoolTaskScheduler threadPoolTaskSchedulerDeleteSystemUsageEntries() {
         return createTaskSchedulerWithPoolSizeOne();
     }
+
+    @Bean(name = "validateDeployments")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerValidateDeployments() {
+        return createTaskSchedulerWithPoolSizeOne();
+    }
 }
