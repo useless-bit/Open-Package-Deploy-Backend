@@ -55,7 +55,7 @@ public class DeploymentValidator {
             serverRepository.save(serverEntity);
             logService.addEntry(Severity.INFO, "Deployment validation finished in: " +
                     Duration.between(startTimestamp, Instant.now()).getSeconds() +
-                    ". Deleted Duplicate Deployments: " +
+                    "seconds. Deleted Duplicate Deployments: " +
                     deletedDuplicateDeployments +
                     ". Created Group Deployments: " +
                     createdGroupDeployments +
