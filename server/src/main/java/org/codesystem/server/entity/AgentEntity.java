@@ -18,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "agent")
 public class AgentEntity {
+    @ManyToMany(mappedBy = "members")
+    List<GroupEntity> groups = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "uuid", updatable = false, nullable = false)
@@ -61,6 +63,4 @@ public class AgentEntity {
     private String cpuSockets = null;
     @Column(name = "memory")
     private String memory = null;
-    @ManyToMany(mappedBy = "members")
-    List<GroupEntity> groups = new ArrayList<>();
 }

@@ -20,6 +20,8 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "package")
 public class PackageEntity {
+    @ManyToMany(mappedBy = "deployedPackages")
+    List<GroupEntity> groups = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "uuid", updatable = false, nullable = false)
@@ -48,6 +50,4 @@ public class PackageEntity {
     private Long plaintextSize = 0L;
     @Column(name = "encrypted_size", nullable = false)
     private Long encryptedSize = 0L;
-    @ManyToMany(mappedBy = "deployedPackages")
-    List<GroupEntity> groups = new ArrayList<>();
 }

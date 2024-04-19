@@ -16,7 +16,6 @@ import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.response.group.CreateGroupResponse;
 import org.codesystem.server.response.group.GetAllGroupsResponse;
 import org.codesystem.server.response.group.GetGroupResponse;
-import org.codesystem.server.service.server.LogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
