@@ -20,6 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ManagementServerService {
+    private final static String LOG_TO = " to: ";
     private final ServerRepository serverRepository;
     private final LogService logService;
 
@@ -49,7 +50,7 @@ public class ManagementServerService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentUpdateInterval(updateIntervalRequest.getUpdateInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + " to: " + updateIntervalRequest.getUpdateInterval());
+        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + LOG_TO + updateIntervalRequest.getUpdateInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -65,7 +66,7 @@ public class ManagementServerService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setAgentInstallRetryInterval(installRetryIntervalRequest.getInstallRetryInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + " to: " + installRetryIntervalRequest.getInstallRetryInterval());
+        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + LOG_TO + installRetryIntervalRequest.getInstallRetryInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -86,7 +87,7 @@ public class ManagementServerService {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         serverEntity.setDeploymentValidationInterval(deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Group-Deployment refresh interval updated from: " + serverEntity.getDeploymentValidationInterval() + " to: " + deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
+        logService.addEntry(Severity.INFO, "Group-Deployment refresh interval updated from: " + serverEntity.getDeploymentValidationInterval() + LOG_TO + deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
