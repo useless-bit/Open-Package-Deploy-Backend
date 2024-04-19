@@ -49,7 +49,6 @@ public class DeploymentValidator {
         }
     }
 
-
     private void deleteDuplicateDeployments(AgentEntity agentEntity, PackageEntity packageEntity) {
         boolean isOneDeploymentDirect = false;
         List<DeploymentEntity> deploymentEntities = deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid());
@@ -83,7 +82,7 @@ public class DeploymentValidator {
             return;
         }
         DeploymentEntity deploymentEntity = deploymentEntities.get(0);
-        if (deploymentEntity != null && !deploymentEntity.isDirectDeployment() && !groupRepository.isPackageAvailableThroughGroup(agentEntity.getUuid(), packageEntity.getUuid())) {
+        if (!deploymentEntity.isDirectDeployment() && !groupRepository.isPackageAvailableThroughGroup(agentEntity.getUuid(), packageEntity.getUuid())) {
             deploymentRepository.delete(deploymentEntity);
         }
     }
