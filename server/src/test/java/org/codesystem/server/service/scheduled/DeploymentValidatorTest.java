@@ -175,6 +175,7 @@ class DeploymentValidatorTest {
     void deleteDuplicateDeployments_noDirectDeployment() {
         groupEntityTwo.removePackage(packageEntityTwo);
         groupEntityTwo = groupRepository.save(groupEntityTwo);
+        deploymentRepository.deleteAll();
 
         DeploymentEntity deploymentEntityDuplicateOne = new DeploymentEntity();
         deploymentEntityDuplicateOne.setPackageEntity(packageEntityOne);
@@ -201,6 +202,7 @@ class DeploymentValidatorTest {
     void deleteDuplicateDeployments_oneDirectDeployment() {
         groupEntityTwo.removePackage(packageEntityTwo);
         groupEntityTwo = groupRepository.save(groupEntityTwo);
+        deploymentRepository.deleteAll();
 
         DeploymentEntity deploymentEntityDuplicateOne = new DeploymentEntity();
         deploymentEntityDuplicateOne.setPackageEntity(packageEntityOne);
@@ -227,6 +229,7 @@ class DeploymentValidatorTest {
     void deleteDuplicateDeployments_allDirectDeployment() {
         groupEntityTwo.removePackage(packageEntityTwo);
         groupEntityTwo = groupRepository.save(groupEntityTwo);
+        deploymentRepository.deleteAll();
 
         DeploymentEntity deploymentEntityDuplicateOne = new DeploymentEntity();
         deploymentEntityDuplicateOne.setPackageEntity(packageEntityOne);
