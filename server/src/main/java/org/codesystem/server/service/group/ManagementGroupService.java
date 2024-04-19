@@ -27,8 +27,6 @@ public class ManagementGroupService {
     private final GroupRepository groupRepository;
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
-    private final LogService logService;
-
 
     public ResponseEntity<ApiResponse> getAllGroups() {
         return ResponseEntity.status(HttpStatus.OK).body(new GetAllGroupsResponse(groupRepository.findAll()));

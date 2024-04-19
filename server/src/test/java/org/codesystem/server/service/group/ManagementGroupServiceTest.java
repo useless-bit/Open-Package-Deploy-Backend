@@ -41,7 +41,6 @@ class ManagementGroupServiceTest {
     AgentRepository agentRepository;
     @Autowired
     PackageRepository packageRepository;
-    LogService logService;
     ManagementGroupService managementGroupService;
 
     PackageEntity packageEntityOne;
@@ -103,9 +102,7 @@ class ManagementGroupServiceTest {
         groupEntityOne.setOperatingSystem(OperatingSystem.LINUX);
         groupEntityTwo = groupRepository.save(groupEntityTwo);
 
-        logService = Mockito.mock(LogService.class);
-
-        managementGroupService = new ManagementGroupService(groupRepository, agentRepository, packageRepository, logService);
+        managementGroupService = new ManagementGroupService(groupRepository, agentRepository, packageRepository);
     }
 
     @AfterEach

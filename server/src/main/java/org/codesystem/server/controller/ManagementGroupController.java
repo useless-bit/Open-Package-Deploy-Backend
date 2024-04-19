@@ -7,7 +7,6 @@ import org.codesystem.server.request.group.UpdateGroupRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.group.ManagementGroupService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Management Group")
