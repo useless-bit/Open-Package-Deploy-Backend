@@ -30,13 +30,13 @@ public class ServerEntity {
     @Column(name = "agent_checksum", nullable = false)
     private String agentChecksum = null;
 
-    @Column(name = "agent_update_interval", nullable = false, columnDefinition = "int default 60")
+    @Column(name = "agent_update_interval", nullable = false)
     private Integer agentUpdateInterval = 60;
 
-    @Column(name = "agent_install_retry_interval", nullable = false, columnDefinition = "int default 21600")
+    @Column(name = "agent_install_retry_interval", nullable = false)
     private Integer agentInstallRetryInterval = 21600;
 
-    @Column(name = "deployment_validation_interval", nullable = false, columnDefinition = "int default 43200")
+    @Column(name = "deployment_validation_interval", nullable = false)
     private Integer deploymentValidationInterval = 43200;
 
     @Column(name = "last_deployment_validation_timestamp")
