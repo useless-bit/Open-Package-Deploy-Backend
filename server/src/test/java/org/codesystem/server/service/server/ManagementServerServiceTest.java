@@ -171,4 +171,10 @@ class ManagementServerServiceTest {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
         Assertions.assertNull(serverEntity.getLastDeploymentValidation());
     }
+
+    @Test
+    void getLastDeploymentValidationTimestamp() {
+        ResponseEntity responseEntity = managementServerService.getLastDeploymentValidationTimestamp();
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+    }
 }

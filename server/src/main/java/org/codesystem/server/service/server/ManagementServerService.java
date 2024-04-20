@@ -97,4 +97,9 @@ public class ManagementServerService {
         serverRepository.save(serverEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+    public ResponseEntity<ApiResponse> getLastDeploymentValidationTimestamp() {
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        return ResponseEntity.status(HttpStatus.OK).body(new GetLastDeploymentValidationTimestampResponse(serverEntity.getLastDeploymentValidation()));
+    }
 }

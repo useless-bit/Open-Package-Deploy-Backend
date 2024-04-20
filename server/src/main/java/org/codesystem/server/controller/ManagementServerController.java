@@ -76,7 +76,7 @@ public class ManagementServerController {
         return systemUsageService.getStorageInformation();
     }
 
-    @GetMapping("deploymentValidation")
+    @GetMapping("deploymentValidationInterval")
     public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
         return managementServerService.getDeploymentValidationInterval();
     }
@@ -84,6 +84,11 @@ public class ManagementServerController {
     @PatchMapping("deploymentValidationInterval")
     public ResponseEntity<ApiResponse> setDeploymentValidationInterval(@RequestBody DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
         return managementServerService.setDeploymentValidationInterval(deploymentValidationIntervalRequest);
+    }
+
+    @GetMapping("deploymentValidation")
+    public ResponseEntity<ApiResponse> getLastDeploymentValidationTimestamp() {
+        return managementServerService.getLastDeploymentValidationTimestamp();
     }
 
     @PatchMapping("deploymentValidation/reset")
