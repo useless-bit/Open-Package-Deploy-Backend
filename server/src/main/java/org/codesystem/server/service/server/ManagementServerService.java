@@ -77,7 +77,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetGroupDeploymentRefreshIntervalResponse(serverEntity.getDeploymentValidationInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GetDeploymentValidationIntervalResponse(serverEntity.getDeploymentValidationInterval()));
     }
 
     public ResponseEntity<ApiResponse> setDeploymentValidationInterval(DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {

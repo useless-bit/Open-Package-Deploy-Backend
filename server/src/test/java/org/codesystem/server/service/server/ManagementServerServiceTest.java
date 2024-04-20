@@ -143,7 +143,7 @@ class ManagementServerServiceTest {
     void getDeploymentValidationInterval() {
         ResponseEntity responseEntity = managementServerService.getDeploymentValidationInterval();
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assertions.assertEquals(43200, new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getInt("groupDeploymentRefreshInterval"));
+        Assertions.assertEquals(43200, new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getInt("deploymentValidationInterval"));
     }
 
     @Test
