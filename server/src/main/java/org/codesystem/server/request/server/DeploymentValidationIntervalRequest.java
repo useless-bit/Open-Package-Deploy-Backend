@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeploymentValidationIntervalRequest {
-    private Integer groupDeploymentRefreshInterval;
+    private Integer deploymentValidationInterval;
 }
