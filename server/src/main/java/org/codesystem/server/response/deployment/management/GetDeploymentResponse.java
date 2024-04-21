@@ -18,6 +18,7 @@ public class GetDeploymentResponse implements ApiResponse {
     private String packageUUID;
     private String packageName;
     private boolean isDeployed;
+    private boolean isDirectDeployment;
     private String expectedReturnValue;
     private String returnValue;
     private Instant lastDeploymentTimestamp;
@@ -29,6 +30,7 @@ public class GetDeploymentResponse implements ApiResponse {
         this.packageUUID = deploymentEntity.getPackageEntity().getUuid();
         this.packageName = deploymentEntity.getPackageEntity().getName();
         this.isDeployed = deploymentEntity.isDeployed();
+        this.isDirectDeployment = deploymentEntity.isDirectDeployment();
         this.expectedReturnValue = deploymentEntity.getPackageEntity().getExpectedReturnValue();
         this.returnValue = deploymentEntity.getReturnValue();
         this.lastDeploymentTimestamp = deploymentEntity.getLastDeploymentTimestamp();
