@@ -13,9 +13,7 @@ import org.codesystem.server.request.group.CreateEmptyGroupRequest;
 import org.codesystem.server.request.group.UpdateGroupRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.group.CreateGroupResponse;
-import org.codesystem.server.response.group.GetAllGroupsResponse;
-import org.codesystem.server.response.group.GetGroupResponse;
+import org.codesystem.server.response.group.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -77,6 +75,8 @@ public class ManagementGroupService {
         }
         if (updateGroupRequest.getDescription() != null && !updateGroupRequest.getDescription().isBlank()) {
             groupEntity.setDescription(updateGroupRequest.getDescription().trim());
+        } else {
+            groupEntity.setDescription(null);
         }
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -142,5 +142,22 @@ public class ManagementGroupService {
         groupEntity.removePackage(packageEntity);
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    //todo: add tests
+    public ResponseEntity<ApiResponse> getMembers(String groupUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new GetAlMembersResponse(groupEntity.getMembers()));
+    }
+
+    public ResponseEntity<ApiResponse> getPackages(String groupUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new GetAlPackagesResponse(groupEntity.getDeployedPackages()));
     }
 }

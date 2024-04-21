@@ -41,12 +41,12 @@ public class ManagementGroupController {
         return managementGroupService.updateGroup(groupUUID, updateGroupRequest);
     }
 
-    @PostMapping("{groupUUID}/agent/{agentUUID}")
+    @PostMapping("{groupUUID}/member/{agentUUID}")
     public ResponseEntity<ApiResponse> addAgent(@PathVariable String groupUUID, @PathVariable String agentUUID) {
         return managementGroupService.addAgent(groupUUID, agentUUID);
     }
 
-    @DeleteMapping("{groupUUID}/agent/{agentUUID}")
+    @DeleteMapping("{groupUUID}/member/{agentUUID}")
     public ResponseEntity<ApiResponse> removeAgent(@PathVariable String groupUUID, @PathVariable String agentUUID) {
         return managementGroupService.removeAgent(groupUUID, agentUUID);
     }
@@ -59,5 +59,15 @@ public class ManagementGroupController {
     @PostMapping("{groupUUID}/package/{packageUUID}")
     public ResponseEntity<ApiResponse> addPackage(@PathVariable String groupUUID, @PathVariable String packageUUID) {
         return managementGroupService.addPackage(groupUUID, packageUUID);
+    }
+
+    @GetMapping("{groupUUID}/member")
+    public ResponseEntity<ApiResponse> getMembers(@PathVariable String groupUUID) {
+        return managementGroupService.getMembers(groupUUID);
+    }
+
+    @GetMapping("{groupUUID}/package")
+    public ResponseEntity<ApiResponse> getPackages(@PathVariable String groupUUID) {
+        return managementGroupService.getPackages(groupUUID);
     }
 }

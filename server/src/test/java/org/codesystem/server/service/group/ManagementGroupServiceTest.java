@@ -204,12 +204,12 @@ class ManagementGroupServiceTest {
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         GroupEntity groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("new Group", groupEntity.getName());
-        Assertions.assertEquals("Desc for Group 1", groupEntity.getDescription());
+        Assertions.assertNull(groupEntity.getDescription());
         responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest(" New Group ", "   "));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("New Group", groupEntity.getName());
-        Assertions.assertEquals("Desc for Group 1", groupEntity.getDescription());
+        Assertions.assertNull(groupEntity.getDescription());
         responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest(null, " with description "));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
@@ -220,6 +220,11 @@ class ManagementGroupServiceTest {
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("New Group", groupEntity.getName());
         Assertions.assertEquals("With Description", groupEntity.getDescription());
+        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest("   ", ""));
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
+        Assertions.assertEquals("New Group", groupEntity.getName());
+        Assertions.assertNull(groupEntity.getDescription());
     }
 
     @Test
