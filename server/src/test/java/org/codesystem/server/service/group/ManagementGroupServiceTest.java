@@ -171,6 +171,19 @@ class ManagementGroupServiceTest {
         Assertions.assertEquals("with description", groupEntity.getDescription());
     }
 
+    @Test
+    void deleteGroup() {
+        ResponseEntity responseEntity = managementGroupService.deleteGroup("invalid UUID");
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Group not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.deleteGroup(groupEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNull(groupRepository.findFirstByUuid(groupEntityOne.getUuid()));
+        responseEntity = managementGroupService.deleteGroup(groupEntityTwo.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNull(groupRepository.findFirstByUuid(groupEntityTwo.getUuid()));
+    }
+
 
     @Test
     void updateGroup_invalid() {

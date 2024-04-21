@@ -54,6 +54,15 @@ public class ManagementGroupService {
         return ResponseEntity.status(HttpStatus.OK).body(new CreateGroupResponse(groupEntity.getUuid()));
     }
 
+    public ResponseEntity<ApiResponse> deleteGroup(String groupUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        groupRepository.delete(groupEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+
+    }
 
     public ResponseEntity<ApiResponse> updateGroup(String groupUUID, UpdateGroupRequest updateGroupRequest) {
         if (updateGroupRequest == null) {

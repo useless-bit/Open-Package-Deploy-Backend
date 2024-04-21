@@ -31,6 +31,11 @@ public class ManagementGroupController {
         return managementGroupService.createEmptyGroup(createEmptyGroupRequest);
     }
 
+    @DeleteMapping("{groupUUID}")
+    public ResponseEntity<ApiResponse> deleteGroup(@PathVariable String groupUUID) {
+        return managementGroupService.deleteGroup(groupUUID);
+    }
+
     @PatchMapping("{groupUUID}")
     public ResponseEntity<ApiResponse> updateGroup(@RequestBody UpdateGroupRequest updateGroupRequest, @PathVariable String groupUUID) {
         return managementGroupService.updateGroup(groupUUID, updateGroupRequest);
