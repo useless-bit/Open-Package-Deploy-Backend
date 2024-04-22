@@ -11,7 +11,7 @@ import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
-import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
+import org.codesystem.server.request.deployment.DeploymentCreateRequest;
 import org.codesystem.server.response.deployment.management.DeploymentCreateResponse;
 import org.codesystem.server.response.deployment.management.DeploymentInfoListResponse;
 import org.codesystem.server.response.deployment.management.DeploymentInfoResponse;
@@ -43,9 +43,9 @@ public class ManagementDeploymentService {
         return ResponseEntity.ok().body(new DeploymentInfoResponse(deploymentEntity));
     }
 
-    public ResponseEntity<ApiResponse> createNewDeployment(CreateNewDeploymentRequest createNewDeploymentRequest) {
-        AgentEntity agentEntity = agentRepository.findFirstByUuid(createNewDeploymentRequest.getAgentUUID());
-        PackageEntity packageEntity = packageRepository.findFirstByUuid(createNewDeploymentRequest.getPackageUUID());
+    public ResponseEntity<ApiResponse> createNewDeployment(DeploymentCreateRequest deploymentCreateRequest) {
+        AgentEntity agentEntity = agentRepository.findFirstByUuid(deploymentCreateRequest.getAgentUUID());
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(deploymentCreateRequest.getPackageUUID());
         if (agentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }

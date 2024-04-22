@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateGroupRequest {
+public class GroupUpdateRequest {
     private String name;
     private String description;
 }

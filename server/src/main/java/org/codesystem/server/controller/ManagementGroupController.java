@@ -2,8 +2,8 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.codesystem.server.request.group.CreateEmptyGroupRequest;
-import org.codesystem.server.request.group.UpdateGroupRequest;
+import org.codesystem.server.request.group.GroupCreateEmptyRequest;
+import org.codesystem.server.request.group.GroupUpdateRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.group.ManagementGroupService;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +27,8 @@ public class ManagementGroupController {
     }
 
     @PostMapping()
-    public ResponseEntity<ApiResponse> getGroup(@RequestBody CreateEmptyGroupRequest createEmptyGroupRequest) {
-        return managementGroupService.createEmptyGroup(createEmptyGroupRequest);
+    public ResponseEntity<ApiResponse> getGroup(@RequestBody GroupCreateEmptyRequest groupCreateEmptyRequest) {
+        return managementGroupService.createEmptyGroup(groupCreateEmptyRequest);
     }
 
     @DeleteMapping("{groupUUID}")
@@ -37,8 +37,8 @@ public class ManagementGroupController {
     }
 
     @PatchMapping("{groupUUID}")
-    public ResponseEntity<ApiResponse> updateGroup(@RequestBody UpdateGroupRequest updateGroupRequest, @PathVariable String groupUUID) {
-        return managementGroupService.updateGroup(groupUUID, updateGroupRequest);
+    public ResponseEntity<ApiResponse> updateGroup(@RequestBody GroupUpdateRequest groupUpdateRequest, @PathVariable String groupUUID) {
+        return managementGroupService.updateGroup(groupUUID, groupUpdateRequest);
     }
 
     @PostMapping("{groupUUID}/member/{agentUUID}")

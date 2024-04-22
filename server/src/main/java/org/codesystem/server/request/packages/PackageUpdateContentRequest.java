@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdatePackageContentRequest {
+public class PackageUpdateContentRequest {
     private String packageChecksum;
 }

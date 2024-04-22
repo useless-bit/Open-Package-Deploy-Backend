@@ -8,7 +8,7 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateEmptyGroupRequest {
+public class GroupCreateEmptyRequest {
     private String name;
     private String description;
     private OperatingSystem operatingSystem;

@@ -2,7 +2,7 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
+import org.codesystem.server.request.deployment.DeploymentCreateRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.deployment.ManagementDeploymentService;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +31,8 @@ public class ManagementDeploymentController {
     }
 
     @PostMapping()
-    public ResponseEntity<ApiResponse> createNewDeployment(@RequestBody CreateNewDeploymentRequest createNewDeploymentRequest) {
-        return managementDeploymentService.createNewDeployment(createNewDeploymentRequest);
+    public ResponseEntity<ApiResponse> createNewDeployment(@RequestBody DeploymentCreateRequest deploymentCreateRequest) {
+        return managementDeploymentService.createNewDeployment(deploymentCreateRequest);
     }
 
     @DeleteMapping("{deploymentUUID}")

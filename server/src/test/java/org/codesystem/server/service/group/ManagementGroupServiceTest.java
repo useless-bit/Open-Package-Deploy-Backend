@@ -11,8 +11,8 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
-import org.codesystem.server.request.group.CreateEmptyGroupRequest;
-import org.codesystem.server.request.group.UpdateGroupRequest;
+import org.codesystem.server.request.group.GroupCreateEmptyRequest;
+import org.codesystem.server.request.group.GroupUpdateRequest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,36 +135,36 @@ class ManagementGroupServiceTest {
         ResponseEntity responseEntity = managementGroupService.createEmptyGroup(null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(null, null, null));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest(null, null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest("", null, null));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest("", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest("   ", null, null));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest("   ", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null, null));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest(" new Group ", null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null, OperatingSystem.UNKNOWN));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest(" new Group ", null, OperatingSystem.UNKNOWN));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
 
     @Test
     void createEmptyGroup_valid() {
-        ResponseEntity responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", null, OperatingSystem.LINUX));
+        ResponseEntity responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest(" new Group ", null, OperatingSystem.LINUX));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         GroupEntity groupEntity = groupRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("groupUUID"));
         Assertions.assertEquals("new Group", groupEntity.getName());
         Assertions.assertNull(groupEntity.getDescription());
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group ", "   ", OperatingSystem.LINUX));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest(" new Group ", "   ", OperatingSystem.LINUX));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("groupUUID"));
         Assertions.assertEquals("new Group", groupEntity.getName());
         Assertions.assertNull(groupEntity.getDescription());
-        responseEntity = managementGroupService.createEmptyGroup(new CreateEmptyGroupRequest(" new Group 1 ", " with description ", OperatingSystem.LINUX));
+        responseEntity = managementGroupService.createEmptyGroup(new GroupCreateEmptyRequest(" new Group 1 ", " with description ", OperatingSystem.LINUX));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("groupUUID"));
         Assertions.assertEquals("new Group 1", groupEntity.getName());
@@ -193,34 +193,34 @@ class ManagementGroupServiceTest {
         responseEntity = managementGroupService.updateGroup("Invalid UUID", null);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid Request", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementGroupService.updateGroup("Invalid UUID", new UpdateGroupRequest("new name", "new description"));
+        responseEntity = managementGroupService.updateGroup("Invalid UUID", new GroupUpdateRequest("new name", "new description"));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Group not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
 
     @Test
     void updateGroup_valid() {
-        ResponseEntity responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest(" new Group ", null));
+        ResponseEntity responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new GroupUpdateRequest(" new Group ", null));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         GroupEntity groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("new Group", groupEntity.getName());
         Assertions.assertNull(groupEntity.getDescription());
-        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest(" New Group ", "   "));
+        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new GroupUpdateRequest(" New Group ", "   "));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("New Group", groupEntity.getName());
         Assertions.assertNull(groupEntity.getDescription());
-        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest(null, " with description "));
+        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new GroupUpdateRequest(null, " with description "));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("New Group", groupEntity.getName());
         Assertions.assertEquals("with description", groupEntity.getDescription());
-        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest("   ", " With Description "));
+        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new GroupUpdateRequest("   ", " With Description "));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("New Group", groupEntity.getName());
         Assertions.assertEquals("With Description", groupEntity.getDescription());
-        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new UpdateGroupRequest("   ", ""));
+        responseEntity = managementGroupService.updateGroup(groupEntityOne.getUuid(), new GroupUpdateRequest("   ", ""));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         groupEntity = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals("New Group", groupEntity.getName());
