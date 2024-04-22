@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class InstallRetryIntervalRequest {
+public class ServerAgentInstallRetryRequest {
     private Integer installRetryInterval;
 }

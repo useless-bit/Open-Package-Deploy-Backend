@@ -9,13 +9,11 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
-import org.codesystem.server.request.group.CreateEmptyGroupRequest;
-import org.codesystem.server.request.group.UpdateGroupRequest;
+import org.codesystem.server.request.group.GroupCreateEmptyRequest;
+import org.codesystem.server.request.group.GroupUpdateRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.group.CreateGroupResponse;
-import org.codesystem.server.response.group.GetAllGroupsResponse;
-import org.codesystem.server.response.group.GetGroupResponse;
+import org.codesystem.server.response.group.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,7 @@ public class ManagementGroupService {
     private final PackageRepository packageRepository;
 
     public ResponseEntity<ApiResponse> getAllGroups() {
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAllGroupsResponse(groupRepository.findAll()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoListResponse(groupRepository.findAll()));
     }
 
     public ResponseEntity<ApiResponse> getGroup(String groupUUID) {
@@ -36,38 +34,49 @@ public class ManagementGroupService {
         if (groupEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new GetGroupResponse(groupEntity));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoResponse(groupEntity));
     }
 
-    public ResponseEntity<ApiResponse> createEmptyGroup(CreateEmptyGroupRequest createEmptyGroupRequest) {
-        if (createEmptyGroupRequest == null || createEmptyGroupRequest.getName() == null || createEmptyGroupRequest.getName().isBlank()
-                || createEmptyGroupRequest.getOperatingSystem() == null || createEmptyGroupRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
+    public ResponseEntity<ApiResponse> createEmptyGroup(GroupCreateEmptyRequest groupCreateEmptyRequest) {
+        if (groupCreateEmptyRequest == null || groupCreateEmptyRequest.getName() == null || groupCreateEmptyRequest.getName().isBlank()
+                || groupCreateEmptyRequest.getOperatingSystem() == null || groupCreateEmptyRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         GroupEntity groupEntity = new GroupEntity();
-        groupEntity.setName(createEmptyGroupRequest.getName().trim());
-        if (createEmptyGroupRequest.getDescription() != null && !createEmptyGroupRequest.getDescription().isBlank()) {
-            groupEntity.setDescription(createEmptyGroupRequest.getDescription().trim());
+        groupEntity.setName(groupCreateEmptyRequest.getName().trim());
+        if (groupCreateEmptyRequest.getDescription() != null && !groupCreateEmptyRequest.getDescription().isBlank()) {
+            groupEntity.setDescription(groupCreateEmptyRequest.getDescription().trim());
         }
-        groupEntity.setOperatingSystem(createEmptyGroupRequest.getOperatingSystem());
+        groupEntity.setOperatingSystem(groupCreateEmptyRequest.getOperatingSystem());
         groupEntity = groupRepository.save(groupEntity);
-        return ResponseEntity.status(HttpStatus.OK).body(new CreateGroupResponse(groupEntity.getUuid()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupCreateResponse(groupEntity.getUuid()));
     }
 
+    public ResponseEntity<ApiResponse> deleteGroup(String groupUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        groupRepository.delete(groupEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
 
-    public ResponseEntity<ApiResponse> updateGroup(String groupUUID, UpdateGroupRequest updateGroupRequest) {
-        if (updateGroupRequest == null) {
+    }
+
+    public ResponseEntity<ApiResponse> updateGroup(String groupUUID, GroupUpdateRequest groupUpdateRequest) {
+        if (groupUpdateRequest == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
         if (groupEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
-        if (updateGroupRequest.getName() != null && !updateGroupRequest.getName().isBlank()) {
-            groupEntity.setName(updateGroupRequest.getName().trim());
+        if (groupUpdateRequest.getName() != null && !groupUpdateRequest.getName().isBlank()) {
+            groupEntity.setName(groupUpdateRequest.getName().trim());
         }
-        if (updateGroupRequest.getDescription() != null && !updateGroupRequest.getDescription().isBlank()) {
-            groupEntity.setDescription(updateGroupRequest.getDescription().trim());
+        if (groupUpdateRequest.getDescription() != null && !groupUpdateRequest.getDescription().isBlank()) {
+            groupEntity.setDescription(groupUpdateRequest.getDescription().trim());
+        } else {
+            groupEntity.setDescription(null);
         }
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -133,5 +142,21 @@ public class ManagementGroupService {
         groupEntity.removePackage(packageEntity);
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> getMembers(String groupUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupMemberListResponse(groupEntity.getMembers()));
+    }
+
+    public ResponseEntity<ApiResponse> getPackages(String groupUUID) {
+        GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
+        if (groupEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupPackageListResponse(groupEntity.getDeployedPackages()));
     }
 }

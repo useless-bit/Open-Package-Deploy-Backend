@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetInstallRetryIntervalResponse implements ApiResponse {
-    private Integer installRetryInterval;
+public class ServerRegistrationTokenResponse implements ApiResponse {
+    private String registrationToken;
 }

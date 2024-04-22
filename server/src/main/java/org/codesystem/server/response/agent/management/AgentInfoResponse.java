@@ -8,7 +8,7 @@ import org.codesystem.server.response.general.ApiResponse;
 import java.time.Instant;
 
 @Getter
-public class GetAgentResponse implements ApiResponse {
+public class AgentInfoResponse implements ApiResponse {
     private final String uuid;
     private final String name;
     private final boolean registrationCompleted;
@@ -27,7 +27,7 @@ public class GetAgentResponse implements ApiResponse {
     private final String cpuSockets;
     private final String memory;
 
-    public GetAgentResponse(AgentEntity agent) {
+    public AgentInfoResponse(AgentEntity agent) {
         this.uuid = agent.getUuid();
         this.name = agent.getName();
         this.registrationCompleted = agent.isRegistrationCompleted();

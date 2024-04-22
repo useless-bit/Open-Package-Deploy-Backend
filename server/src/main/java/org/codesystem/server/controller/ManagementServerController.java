@@ -2,9 +2,9 @@ package org.codesystem.server.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.codesystem.server.request.server.DeploymentValidationIntervalRequest;
-import org.codesystem.server.request.server.InstallRetryIntervalRequest;
-import org.codesystem.server.request.server.UpdateIntervalRequest;
+import org.codesystem.server.request.server.ServerAgentInstallRetryRequest;
+import org.codesystem.server.request.server.ServerAgentUpdateIntervalRequest;
+import org.codesystem.server.request.server.ServerDeploymentValidationRequest;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.service.server.ManagementServerService;
@@ -37,8 +37,8 @@ public class ManagementServerController {
     }
 
     @PatchMapping("updateInterval")
-    public ResponseEntity<ApiResponse> setUpdateInterval(@RequestBody UpdateIntervalRequest updateIntervalRequest) {
-        return managementServerService.setUpdateInterval(updateIntervalRequest);
+    public ResponseEntity<ApiResponse> setUpdateInterval(@RequestBody ServerAgentUpdateIntervalRequest serverAgentUpdateIntervalRequest) {
+        return managementServerService.setUpdateInterval(serverAgentUpdateIntervalRequest);
     }
 
     @GetMapping("installRetryInterval")
@@ -47,8 +47,8 @@ public class ManagementServerController {
     }
 
     @PatchMapping("installRetryInterval")
-    public ResponseEntity<ApiResponse> setInstallRetryInterval(@RequestBody InstallRetryIntervalRequest installRetryIntervalRequest) {
-        return managementServerService.setInstallRetryInterval(installRetryIntervalRequest);
+    public ResponseEntity<ApiResponse> setInstallRetryInterval(@RequestBody ServerAgentInstallRetryRequest serverAgentInstallRetryRequest) {
+        return managementServerService.setInstallRetryInterval(serverAgentInstallRetryRequest);
     }
 
     @GetMapping("agentChecksum")
@@ -76,14 +76,19 @@ public class ManagementServerController {
         return systemUsageService.getStorageInformation();
     }
 
-    @GetMapping("deploymentValidation")
+    @GetMapping("deploymentValidationInterval")
     public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
         return managementServerService.getDeploymentValidationInterval();
     }
 
     @PatchMapping("deploymentValidationInterval")
-    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(@RequestBody DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
-        return managementServerService.setDeploymentValidationInterval(deploymentValidationIntervalRequest);
+    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(@RequestBody ServerDeploymentValidationRequest serverDeploymentValidationRequest) {
+        return managementServerService.setDeploymentValidationInterval(serverDeploymentValidationRequest);
+    }
+
+    @GetMapping("deploymentValidation")
+    public ResponseEntity<ApiResponse> getLastDeploymentValidationTimestamp() {
+        return managementServerService.getLastDeploymentValidationTimestamp();
     }
 
     @PatchMapping("deploymentValidation/reset")

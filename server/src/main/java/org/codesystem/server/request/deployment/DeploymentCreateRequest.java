@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateNewDeploymentRequest {
+public class DeploymentCreateRequest {
     private String agentUUID;
     private String packageUUID;
 }

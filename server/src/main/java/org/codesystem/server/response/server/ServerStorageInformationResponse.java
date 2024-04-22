@@ -8,6 +8,7 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetUpdateIntervalResponse implements ApiResponse {
-    private Integer updateInterval;
+public class ServerStorageInformationResponse implements ApiResponse {
+    private long spaceTotal;
+    private long spaceAvailable;
 }

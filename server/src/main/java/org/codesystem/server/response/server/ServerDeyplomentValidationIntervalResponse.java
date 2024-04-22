@@ -8,7 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetStorageInformationResponse implements ApiResponse {
-    private long spaceTotal;
-    private long spaceAvailable;
+public class ServerDeyplomentValidationIntervalResponse implements ApiResponse {
+    private Integer deploymentValidationInterval;
 }

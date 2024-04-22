@@ -9,12 +9,12 @@ import java.util.List;
 
 @Getter
 @Setter
-public class GetAllDeploymentsResponse implements ApiResponse {
-    private List<GetDeploymentResponse> deployments;
+public class DeploymentInfoListResponse implements ApiResponse {
+    private List<DeploymentInfoResponse> deployments;
 
-    public GetAllDeploymentsResponse(List<DeploymentEntity> deploymentEntities) {
+    public DeploymentInfoListResponse(List<DeploymentEntity> deploymentEntities) {
         this.deployments = deploymentEntities.stream()
-                .map(GetDeploymentResponse::new)
+                .map(DeploymentInfoResponse::new)
                 .toList();
     }
 

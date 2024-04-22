@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetGroupDeploymentRefreshIntervalResponse implements ApiResponse {
-    private Integer groupDeploymentRefreshInterval;
+public class ServerUpdateIntervalResponse implements ApiResponse {
+    private Integer updateInterval;
 }

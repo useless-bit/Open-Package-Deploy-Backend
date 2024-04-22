@@ -7,12 +7,12 @@ import org.codesystem.server.response.general.ApiResponse;
 import java.util.List;
 
 @Getter
-public class GetAllAgentsResponse implements ApiResponse {
-    private final List<GetAgentResponse> agents;
+public class AgentInfoListResponse implements ApiResponse {
+    private final List<AgentInfoResponse> agents;
 
-    public GetAllAgentsResponse(List<AgentEntity> agentEntities) {
+    public AgentInfoListResponse(List<AgentEntity> agentEntities) {
         this.agents = agentEntities.stream()
-                .map(GetAgentResponse::new)
+                .map(AgentInfoResponse::new)
                 .toList();
     }
 }

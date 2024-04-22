@@ -5,9 +5,9 @@ import org.codesystem.server.Variables;
 import org.codesystem.server.entity.ServerEntity;
 import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.ServerRepository;
-import org.codesystem.server.request.server.DeploymentValidationIntervalRequest;
-import org.codesystem.server.request.server.InstallRetryIntervalRequest;
-import org.codesystem.server.request.server.UpdateIntervalRequest;
+import org.codesystem.server.request.server.ServerAgentInstallRetryRequest;
+import org.codesystem.server.request.server.ServerAgentUpdateIntervalRequest;
+import org.codesystem.server.request.server.ServerDeploymentValidationRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
 import org.codesystem.server.response.server.*;
@@ -26,7 +26,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getRegistrationToken() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetRegistrationTokenResponse(serverEntity.getAgentRegistrationToken()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerRegistrationTokenResponse(serverEntity.getAgentRegistrationToken()));
     }
 
     public ResponseEntity<ApiResponse> updateRegistrationToken() {
@@ -40,54 +40,54 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getUpdateInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetUpdateIntervalResponse(serverEntity.getAgentUpdateInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerUpdateIntervalResponse(serverEntity.getAgentUpdateInterval()));
     }
 
-    public ResponseEntity<ApiResponse> setUpdateInterval(UpdateIntervalRequest updateIntervalRequest) {
-        if (updateIntervalRequest == null || updateIntervalRequest.getUpdateInterval() == null || updateIntervalRequest.getUpdateInterval() <= 0) {
+    public ResponseEntity<ApiResponse> setUpdateInterval(ServerAgentUpdateIntervalRequest serverAgentUpdateIntervalRequest) {
+        if (serverAgentUpdateIntervalRequest == null || serverAgentUpdateIntervalRequest.getUpdateInterval() == null || serverAgentUpdateIntervalRequest.getUpdateInterval() <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_INTERVAL));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        serverEntity.setAgentUpdateInterval(updateIntervalRequest.getUpdateInterval());
+        serverEntity.setAgentUpdateInterval(serverAgentUpdateIntervalRequest.getUpdateInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + LOG_TO + updateIntervalRequest.getUpdateInterval());
+        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + LOG_TO + serverAgentUpdateIntervalRequest.getUpdateInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     public ResponseEntity<ApiResponse> getInstallRetryInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetInstallRetryIntervalResponse(serverEntity.getAgentInstallRetryInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerInstallRetryResponse(serverEntity.getAgentInstallRetryInterval()));
     }
 
-    public ResponseEntity<ApiResponse> setInstallRetryInterval(InstallRetryIntervalRequest installRetryIntervalRequest) {
-        if (installRetryIntervalRequest == null || installRetryIntervalRequest.getInstallRetryInterval() == null || installRetryIntervalRequest.getInstallRetryInterval() <= 0) {
+    public ResponseEntity<ApiResponse> setInstallRetryInterval(ServerAgentInstallRetryRequest serverAgentInstallRetryRequest) {
+        if (serverAgentInstallRetryRequest == null || serverAgentInstallRetryRequest.getInstallRetryInterval() == null || serverAgentInstallRetryRequest.getInstallRetryInterval() <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_INTERVAL));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        serverEntity.setAgentInstallRetryInterval(installRetryIntervalRequest.getInstallRetryInterval());
+        serverEntity.setAgentInstallRetryInterval(serverAgentInstallRetryRequest.getInstallRetryInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + LOG_TO + installRetryIntervalRequest.getInstallRetryInterval());
+        logService.addEntry(Severity.INFO, "Agent update interval updated from: " + serverEntity.getAgentUpdateInterval() + LOG_TO + serverAgentInstallRetryRequest.getInstallRetryInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     public ResponseEntity<ApiResponse> getAgentChecksum() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAgentChecksumResponse(serverEntity.getAgentChecksum()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerAgentChecksumResponse(serverEntity.getAgentChecksum()));
     }
 
     public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetGroupDeploymentRefreshIntervalResponse(serverEntity.getDeploymentValidationInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerDeyplomentValidationIntervalResponse(serverEntity.getDeploymentValidationInterval()));
     }
 
-    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
-        if (deploymentValidationIntervalRequest == null || deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval() == null || deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval() <= 0) {
+    public ResponseEntity<ApiResponse> setDeploymentValidationInterval(ServerDeploymentValidationRequest serverDeploymentValidationRequest) {
+        if (serverDeploymentValidationRequest == null || serverDeploymentValidationRequest.getDeploymentValidationInterval() == null || serverDeploymentValidationRequest.getDeploymentValidationInterval() <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_INVALID_INTERVAL));
         }
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        serverEntity.setDeploymentValidationInterval(deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
+        serverEntity.setDeploymentValidationInterval(serverDeploymentValidationRequest.getDeploymentValidationInterval());
         serverRepository.save(serverEntity);
-        logService.addEntry(Severity.INFO, "Group-Deployment refresh interval updated from: " + serverEntity.getDeploymentValidationInterval() + LOG_TO + deploymentValidationIntervalRequest.getGroupDeploymentRefreshInterval());
+        logService.addEntry(Severity.INFO, "Group-Deployment refresh interval updated from: " + serverEntity.getDeploymentValidationInterval() + LOG_TO + serverDeploymentValidationRequest.getDeploymentValidationInterval());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -96,5 +96,10 @@ public class ManagementServerService {
         serverEntity.setLastDeploymentValidation(null);
         serverRepository.save(serverEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> getLastDeploymentValidationTimestamp() {
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerLastDeploymentValidationResponse(serverEntity.getLastDeploymentValidation()));
     }
 }

@@ -1,4 +1,4 @@
-package org.codesystem.server.response.deployment.management;
+package org.codesystem.server.response.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CreateNewDeploymentResponse implements ApiResponse {
-    private String deploymentUUID;
+public class ServerAgentChecksumResponse implements ApiResponse {
+    private String agentChecksum;
 }

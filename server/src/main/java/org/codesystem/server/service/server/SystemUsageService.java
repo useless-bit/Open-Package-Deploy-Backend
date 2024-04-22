@@ -5,8 +5,8 @@ import org.codesystem.server.ServerApplication;
 import org.codesystem.server.entity.SystemUsageEntity;
 import org.codesystem.server.repository.SystemUsageRepository;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.server.GetStorageInformationResponse;
-import org.codesystem.server.response.server.GetSystemUsageResponse;
+import org.codesystem.server.response.server.ServerStorageInformationResponse;
+import org.codesystem.server.response.server.ServerSystemUsageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -41,15 +41,15 @@ public class SystemUsageService {
     }
 
     public ResponseEntity<ApiResponse> getAllEntries() {
-        return ResponseEntity.status(HttpStatus.OK).body(new GetSystemUsageResponse(systemUsageRepository.findAllSorted()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerSystemUsageResponse(systemUsageRepository.findAllSorted()));
     }
 
     public ResponseEntity<ApiResponse> getLatest30Entries() {
-        return ResponseEntity.status(HttpStatus.OK).body(new GetSystemUsageResponse(systemUsageRepository.findAllSorted().stream().limit(30).toList()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerSystemUsageResponse(systemUsageRepository.findAllSorted().stream().limit(30).toList()));
     }
 
     public ResponseEntity<ApiResponse> getStorageInformation() {
         File packageLocation = Paths.get(ServerApplication.PACKAGE_LOCATION).toFile();
-        return ResponseEntity.status(HttpStatus.OK).body(new GetStorageInformationResponse(packageLocation.getTotalSpace(), packageLocation.getUsableSpace()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerStorageInformationResponse(packageLocation.getTotalSpace(), packageLocation.getUsableSpace()));
     }
 }

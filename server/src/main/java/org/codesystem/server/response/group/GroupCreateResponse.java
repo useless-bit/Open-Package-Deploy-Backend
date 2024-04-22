@@ -1,4 +1,4 @@
-package org.codesystem.server.response.server;
+package org.codesystem.server.response.group;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetAgentChecksumResponse implements ApiResponse {
-    private String agentChecksum;
+public class GroupCreateResponse implements ApiResponse {
+    private String groupUUID;
 }

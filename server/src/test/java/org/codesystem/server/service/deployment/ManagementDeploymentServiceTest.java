@@ -13,7 +13,7 @@ import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
-import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
+import org.codesystem.server.request.deployment.DeploymentCreateRequest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,22 +138,22 @@ class ManagementDeploymentServiceTest {
 
     @Test
     void createNewDeployment_invalidRequest() {
-        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(null, null));
+        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(null, null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Agent not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest("", null));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest("", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Agent not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest("invalid UUID", null));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest("invalid UUID", null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Agent not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), null));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), null));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), ""));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), ""));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), "invalid UUID"));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), "invalid UUID"));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
@@ -162,7 +162,7 @@ class ManagementDeploymentServiceTest {
     void createNewDeployment_invalid() {
         packageEntityOne.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
         packageEntityOne = packageRepository.save(packageEntityOne);
-        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Package not available for deployment", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
@@ -170,7 +170,7 @@ class ManagementDeploymentServiceTest {
         packageEntityTwo = packageRepository.save(packageEntityTwo);
         agentEntityOne.setOperatingSystem(OperatingSystem.UNKNOWN);
         agentEntityOne = agentRepository.save(agentEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid OS", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
@@ -178,7 +178,7 @@ class ManagementDeploymentServiceTest {
         packageEntityTwo = packageRepository.save(packageEntityTwo);
         agentEntityOne.setOperatingSystem(OperatingSystem.UNKNOWN);
         agentEntityOne = agentRepository.save(agentEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid OS", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
@@ -186,7 +186,7 @@ class ManagementDeploymentServiceTest {
         packageEntityTwo = packageRepository.save(packageEntityTwo);
         agentEntityOne.setOperatingSystem(OperatingSystem.LINUX);
         agentEntityOne = agentRepository.save(agentEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Invalid OS", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
@@ -196,7 +196,7 @@ class ManagementDeploymentServiceTest {
         agentEntityOne = agentRepository.save(agentEntityOne);
         packageEntityOne.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
         packageEntityOne = packageRepository.save(packageEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("OS mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
 
@@ -206,7 +206,7 @@ class ManagementDeploymentServiceTest {
         agentEntityOne = agentRepository.save(agentEntityOne);
         packageEntityOne.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
         packageEntityOne = packageRepository.save(packageEntityOne);
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("Deployment already present", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
     }
@@ -217,7 +217,7 @@ class ManagementDeploymentServiceTest {
         packageEntityTwo = packageRepository.save(packageEntityTwo);
         agentEntityOne.setOperatingSystem(OperatingSystem.LINUX);
         agentEntityOne = agentRepository.save(agentEntityOne);
-        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
+        ResponseEntity responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityTwo.getUuid()));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         DeploymentEntity newDeploymentEntity = deploymentRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("deploymentUUID"));
         Assertions.assertEquals("Agent One", newDeploymentEntity.getAgentEntity().getName());
@@ -229,7 +229,7 @@ class ManagementDeploymentServiceTest {
         deploymentEntityOne.setDirectDeployment(false);
         deploymentEntityOne = deploymentRepository.save(deploymentEntityOne);
         Assertions.assertFalse(deploymentEntityOne.isDirectDeployment());
-        responseEntity = managementDeploymentService.createNewDeployment(new CreateNewDeploymentRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
+        responseEntity = managementDeploymentService.createNewDeployment(new DeploymentCreateRequest(agentEntityOne.getUuid(), packageEntityOne.getUuid()));
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         newDeploymentEntity = deploymentRepository.findFirstByUuid(new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("deploymentUUID"));
         Assertions.assertEquals(packageEntityOne.getUuid(), newDeploymentEntity.getPackageEntity().getUuid());

@@ -11,7 +11,7 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetPackageResponse implements ApiResponse {
+public class PackageInfoResponse implements ApiResponse {
     private String uuid;
     private String name;
     private String expectedReturnValue;
@@ -22,7 +22,7 @@ public class GetPackageResponse implements ApiResponse {
     private Long plaintextSize;
     private Long encryptedSize;
 
-    public GetPackageResponse(PackageEntity packageEntity) {
+    public PackageInfoResponse(PackageEntity packageEntity) {
         this.uuid = packageEntity.getUuid();
         this.name = packageEntity.getName();
         this.expectedReturnValue = packageEntity.getExpectedReturnValue();

@@ -9,10 +9,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class GetAllLogsResponse implements ApiResponse {
+public class ServerLogListResponse implements ApiResponse {
     private List<LogEntity> logEntries;
 
-    public GetAllLogsResponse(List<LogEntity> logEntities) {
+    public ServerLogListResponse(List<LogEntity> logEntities) {
         this.logEntries = logEntities;
     }
 }

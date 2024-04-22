@@ -9,13 +9,13 @@ import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.PackageRepository;
-import org.codesystem.server.request.packages.AddNewPackageRequest;
-import org.codesystem.server.request.packages.UpdatePackageContentRequest;
-import org.codesystem.server.request.packages.UpdatePackageRequest;
+import org.codesystem.server.request.packages.PackageAddNewRequest;
+import org.codesystem.server.request.packages.PackageUpdateContentRequest;
+import org.codesystem.server.request.packages.PackageUpdateRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.packages.GetAllPackagesResponse;
-import org.codesystem.server.response.packages.GetPackageResponse;
+import org.codesystem.server.response.packages.PackageInfoListResponse;
+import org.codesystem.server.response.packages.PackageInfoResponse;
 import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +36,7 @@ public class ManagementPackageService {
     private final LogService logService;
 
     public ResponseEntity<ApiResponse> getAllPackages() {
-        return ResponseEntity.ok().body(new GetAllPackagesResponse(packageRepository.findAll()));
+        return ResponseEntity.ok().body(new PackageInfoListResponse(packageRepository.findAll()));
     }
 
     public ResponseEntity<ApiResponse> getPackage(String packageUUID) {
@@ -44,12 +44,12 @@ public class ManagementPackageService {
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
-        return ResponseEntity.ok().body(new GetPackageResponse(packageEntity));
+        return ResponseEntity.ok().body(new PackageInfoResponse(packageEntity));
     }
 
-    public ResponseEntity<ApiResponse> addNewNewPackage(AddNewPackageRequest addNewPackageRequest, MultipartFile multipartFile) {
-        if (addNewPackageRequest.getPackageName() == null || addNewPackageRequest.getPackageName().isBlank()
-                || addNewPackageRequest.getOperatingSystem() == null || addNewPackageRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
+    public ResponseEntity<ApiResponse> addNewNewPackage(PackageAddNewRequest packageAddNewRequest, MultipartFile multipartFile) {
+        if (packageAddNewRequest.getPackageName() == null || packageAddNewRequest.getPackageName().isBlank()
+                || packageAddNewRequest.getOperatingSystem() == null || packageAddNewRequest.getOperatingSystem() == OperatingSystem.UNKNOWN) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
 
@@ -68,15 +68,15 @@ public class ManagementPackageService {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_ZIP_FILE_CHECKSUM));
         }
-        if (!calculatedChecksum.equals(addNewPackageRequest.getPackageChecksum())) {
+        if (!calculatedChecksum.equals(packageAddNewRequest.getPackageChecksum())) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_CHECKSUM_MISMATCH));
         }
 
         PackageEntity packageEntity = new PackageEntity();
-        packageEntity.setName(addNewPackageRequest.getPackageName().trim());
+        packageEntity.setName(packageAddNewRequest.getPackageName().trim());
         packageEntity.setChecksumPlaintext(calculatedChecksum);
-        packageEntity.setTargetOperatingSystem(addNewPackageRequest.getOperatingSystem());
-        packageEntity.setExpectedReturnValue(addNewPackageRequest.getExpectedReturnValue());
+        packageEntity.setTargetOperatingSystem(packageAddNewRequest.getOperatingSystem());
+        packageEntity.setExpectedReturnValue(packageAddNewRequest.getExpectedReturnValue());
         packageEntity = packageRepository.save(packageEntity);
 
         if (!savePackage(multipartFile, packageEntity)) {
@@ -90,18 +90,18 @@ public class ManagementPackageService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<ApiResponse> updatePackage(UpdatePackageRequest updatePackageRequest, String packageUUID) {
-        if (updatePackageRequest == null) {
+    public ResponseEntity<ApiResponse> updatePackage(PackageUpdateRequest packageUpdateRequest, String packageUUID) {
+        if (packageUpdateRequest == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
-        if (updatePackageRequest.getPackageName() != null && !updatePackageRequest.getPackageName().isBlank() && !updatePackageRequest.getPackageName().equals(packageEntity.getName())) {
-            packageEntity.setName(updatePackageRequest.getPackageName().trim());
+        if (packageUpdateRequest.getPackageName() != null && !packageUpdateRequest.getPackageName().isBlank() && !packageUpdateRequest.getPackageName().equals(packageEntity.getName())) {
+            packageEntity.setName(packageUpdateRequest.getPackageName().trim());
         }
-        packageEntity.setExpectedReturnValue(updatePackageRequest.getExpectedReturnValue());
+        packageEntity.setExpectedReturnValue(packageUpdateRequest.getExpectedReturnValue());
         packageRepository.save(packageEntity);
         return ResponseEntity.ok().build();
     }
@@ -125,7 +125,7 @@ public class ManagementPackageService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<ApiResponse> updatePackageContent(UpdatePackageContentRequest updatePackageContentRequest, MultipartFile multipartFile, String packageUUID) {
+    public ResponseEntity<ApiResponse> updatePackageContent(PackageUpdateContentRequest packageUpdateContentRequest, MultipartFile multipartFile, String packageUUID) {
         PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
@@ -146,7 +146,7 @@ public class ManagementPackageService {
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_ZIP_FILE_CHECKSUM));
         }
-        if (!calculatedChecksum.equals(updatePackageContentRequest.getPackageChecksum())) {
+        if (!calculatedChecksum.equals(packageUpdateContentRequest.getPackageChecksum())) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.PACKAGE_ERROR_CHECKSUM_MISMATCH));
         }
 
@@ -155,7 +155,7 @@ public class ManagementPackageService {
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.UPLOADED);
-        packageEntity.setChecksumPlaintext(updatePackageContentRequest.getPackageChecksum());
+        packageEntity.setChecksumPlaintext(packageUpdateContentRequest.getPackageChecksum());
         packageRepository.save(packageEntity);
         deploymentRepository.resetDeploymentsForPackage(packageEntity);
         logService.addEntry(Severity.INFO, "Package content updated and awaiting processing: " + packageEntity.getName() + " | " + packageEntity.getUuid());
