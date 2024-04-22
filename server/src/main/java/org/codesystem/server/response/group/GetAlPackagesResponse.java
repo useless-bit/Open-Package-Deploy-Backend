@@ -1,7 +1,6 @@
 package org.codesystem.server.response.group;
 
 import lombok.Getter;
-import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.response.general.ApiResponse;
 
