@@ -144,7 +144,6 @@ public class ManagementGroupService {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    //todo: add tests
     public ResponseEntity<ApiResponse> getMembers(String groupUUID) {
         GroupEntity groupEntity = groupRepository.findFirstByUuid(groupUUID);
         if (groupEntity == null) {

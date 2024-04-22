@@ -344,4 +344,24 @@ class ManagementGroupServiceTest {
         groupEntityOne = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals(0, groupEntityOne.getDeployedPackages().size());
     }
+
+    @Test
+    void getMembers() {
+        ResponseEntity responseEntity = managementGroupService.getMembers("invalid UUID");
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Group not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.getMembers(groupEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNotNull(new JSONObject(responseEntity.getBody()).getJSONArray("members").getJSONObject(0));
+    }
+
+    @Test
+    void getPackages() {
+        ResponseEntity responseEntity = managementGroupService.getPackages("invalid UUID");
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Group not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.getPackages(groupEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNotNull(new JSONObject(responseEntity.getBody()).getJSONArray("packages").getJSONObject(0));
+    }
 }
