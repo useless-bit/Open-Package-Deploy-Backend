@@ -26,7 +26,7 @@ public class ManagementGroupService {
     private final PackageRepository packageRepository;
 
     public ResponseEntity<ApiResponse> getAllGroups() {
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAllGroupsResponse(groupRepository.findAll()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoListResponse(groupRepository.findAll()));
     }
 
     public ResponseEntity<ApiResponse> getGroup(String groupUUID) {
@@ -34,7 +34,7 @@ public class ManagementGroupService {
         if (groupEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new GetGroupResponse(groupEntity));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoResponse(groupEntity));
     }
 
     public ResponseEntity<ApiResponse> createEmptyGroup(CreateEmptyGroupRequest createEmptyGroupRequest) {
@@ -49,7 +49,7 @@ public class ManagementGroupService {
         }
         groupEntity.setOperatingSystem(createEmptyGroupRequest.getOperatingSystem());
         groupEntity = groupRepository.save(groupEntity);
-        return ResponseEntity.status(HttpStatus.OK).body(new CreateGroupResponse(groupEntity.getUuid()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupCreateResponse(groupEntity.getUuid()));
     }
 
     public ResponseEntity<ApiResponse> deleteGroup(String groupUUID) {
@@ -149,7 +149,7 @@ public class ManagementGroupService {
         if (groupEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAlMembersResponse(groupEntity.getMembers()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupMemberListResponse(groupEntity.getMembers()));
     }
 
     public ResponseEntity<ApiResponse> getPackages(String groupUUID) {
@@ -157,6 +157,6 @@ public class ManagementGroupService {
         if (groupEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAlPackagesResponse(groupEntity.getDeployedPackages()));
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupPackageListResponse(groupEntity.getDeployedPackages()));
     }
 }

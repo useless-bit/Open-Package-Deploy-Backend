@@ -7,12 +7,12 @@ import org.codesystem.server.response.general.ApiResponse;
 import java.util.List;
 
 @Getter
-public class GetAllGroupsResponse implements ApiResponse {
-    private final List<GetGroupResponse> groups;
+public class GroupInfoListResponse implements ApiResponse {
+    private final List<GroupInfoResponse> groups;
 
-    public GetAllGroupsResponse(List<GroupEntity> groupEntities) {
+    public GroupInfoListResponse(List<GroupEntity> groupEntities) {
         this.groups = groupEntities.stream()
-                .map(GetGroupResponse::new)
+                .map(GroupInfoResponse::new)
                 .toList();
     }
 }

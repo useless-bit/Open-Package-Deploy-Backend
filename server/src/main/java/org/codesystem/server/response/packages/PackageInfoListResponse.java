@@ -9,12 +9,12 @@ import java.util.List;
 
 @Getter
 @Setter
-public class GetAllPackagesResponse implements ApiResponse {
-    private List<GetPackageResponse> packages;
+public class PackageInfoListResponse implements ApiResponse {
+    private List<PackageInfoResponse> packages;
 
-    public GetAllPackagesResponse(List<PackageEntity> packageEntities) {
+    public PackageInfoListResponse(List<PackageEntity> packageEntities) {
         this.packages = packageEntities.stream()
-                .map(GetPackageResponse::new)
+                .map(PackageInfoResponse::new)
                 .toList();
     }
 }

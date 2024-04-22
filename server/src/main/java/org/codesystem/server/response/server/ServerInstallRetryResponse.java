@@ -1,4 +1,4 @@
-package org.codesystem.server.response.group;
+package org.codesystem.server.response.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CreateGroupResponse implements ApiResponse {
-    private String groupUUID;
+public class ServerInstallRetryResponse implements ApiResponse {
+    private Integer installRetryInterval;
 }

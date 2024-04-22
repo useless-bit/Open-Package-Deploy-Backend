@@ -5,11 +5,11 @@ import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.response.general.ApiResponse;
 
 @Getter
-public class GetPackageResponse implements ApiResponse {
+public class GroupPackageResponse implements ApiResponse {
     private final String uuid;
     private final String name;
 
-    public GetPackageResponse(PackageEntity packageEntity) {
+    public GroupPackageResponse(PackageEntity packageEntity) {
         this.uuid = packageEntity.getUuid();
         this.name = packageEntity.getName();
     }

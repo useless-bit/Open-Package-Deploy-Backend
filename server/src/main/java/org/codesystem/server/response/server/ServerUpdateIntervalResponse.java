@@ -5,11 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.codesystem.server.response.general.ApiResponse;
 
-import java.time.Instant;
-
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetLastDeploymentValidationTimestampResponse implements ApiResponse {
-    private Instant lastDeploymentValidation;
+public class ServerUpdateIntervalResponse implements ApiResponse {
+    private Integer updateInterval;
 }

@@ -26,7 +26,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getRegistrationToken() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetRegistrationTokenResponse(serverEntity.getAgentRegistrationToken()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerRegistrationTokenResponse(serverEntity.getAgentRegistrationToken()));
     }
 
     public ResponseEntity<ApiResponse> updateRegistrationToken() {
@@ -40,7 +40,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getUpdateInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetUpdateIntervalResponse(serverEntity.getAgentUpdateInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerUpdateIntervalResponse(serverEntity.getAgentUpdateInterval()));
     }
 
     public ResponseEntity<ApiResponse> setUpdateInterval(UpdateIntervalRequest updateIntervalRequest) {
@@ -56,7 +56,7 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getInstallRetryInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetInstallRetryIntervalResponse(serverEntity.getAgentInstallRetryInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerInstallRetryResponse(serverEntity.getAgentInstallRetryInterval()));
     }
 
     public ResponseEntity<ApiResponse> setInstallRetryInterval(InstallRetryIntervalRequest installRetryIntervalRequest) {
@@ -72,12 +72,12 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getAgentChecksum() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAgentChecksumResponse(serverEntity.getAgentChecksum()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerAgentChecksumResponse(serverEntity.getAgentChecksum()));
     }
 
     public ResponseEntity<ApiResponse> getDeploymentValidationInterval() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetDeploymentValidationIntervalResponse(serverEntity.getDeploymentValidationInterval()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerDeyplomentValidationIntervalResponse(serverEntity.getDeploymentValidationInterval()));
     }
 
     public ResponseEntity<ApiResponse> setDeploymentValidationInterval(DeploymentValidationIntervalRequest deploymentValidationIntervalRequest) {
@@ -100,6 +100,6 @@ public class ManagementServerService {
 
     public ResponseEntity<ApiResponse> getLastDeploymentValidationTimestamp() {
         ServerEntity serverEntity = serverRepository.findAll().get(0);
-        return ResponseEntity.status(HttpStatus.OK).body(new GetLastDeploymentValidationTimestampResponse(serverEntity.getLastDeploymentValidation()));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerLastDeploymentValidationResponse(serverEntity.getLastDeploymentValidation()));
     }
 }

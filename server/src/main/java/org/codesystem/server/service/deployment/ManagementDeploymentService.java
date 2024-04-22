@@ -12,9 +12,9 @@ import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
-import org.codesystem.server.response.deployment.management.CreateNewDeploymentResponse;
-import org.codesystem.server.response.deployment.management.GetAllDeploymentsResponse;
-import org.codesystem.server.response.deployment.management.GetDeploymentResponse;
+import org.codesystem.server.response.deployment.management.DeploymentCreateResponse;
+import org.codesystem.server.response.deployment.management.DeploymentInfoListResponse;
+import org.codesystem.server.response.deployment.management.DeploymentInfoResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -32,7 +32,7 @@ public class ManagementDeploymentService {
     private final GroupRepository groupRepository;
 
     public ResponseEntity<ApiResponse> getAllDeployments() {
-        return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deploymentRepository.findAll()));
+        return ResponseEntity.ok().body(new DeploymentInfoListResponse(deploymentRepository.findAll()));
     }
 
     public ResponseEntity<ApiResponse> getDeployment(String deploymentUUID) {
@@ -40,7 +40,7 @@ public class ManagementDeploymentService {
         if (deploymentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
         }
-        return ResponseEntity.ok().body(new GetDeploymentResponse(deploymentEntity));
+        return ResponseEntity.ok().body(new DeploymentInfoResponse(deploymentEntity));
     }
 
     public ResponseEntity<ApiResponse> createNewDeployment(CreateNewDeploymentRequest createNewDeploymentRequest) {
@@ -68,13 +68,13 @@ public class ManagementDeploymentService {
             } else {
                 deploymentEntity.setDirectDeployment(true);
                 deploymentEntity = deploymentRepository.save(deploymentEntity);
-                return ResponseEntity.ok().body(new CreateNewDeploymentResponse(deploymentEntity.getUuid()));
+                return ResponseEntity.ok().body(new DeploymentCreateResponse(deploymentEntity.getUuid()));
             }
         }
         DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
         deploymentEntity.setDirectDeployment(true);
         deploymentEntity = deploymentRepository.save(deploymentEntity);
-        return ResponseEntity.ok().body(new CreateNewDeploymentResponse(deploymentEntity.getUuid()));
+        return ResponseEntity.ok().body(new DeploymentCreateResponse(deploymentEntity.getUuid()));
     }
 
     public ResponseEntity<ApiResponse> deleteDeployment(String deploymentUUID) {
@@ -100,7 +100,7 @@ public class ManagementDeploymentService {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid());
-        return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deployments));
+        return ResponseEntity.ok().body(new DeploymentInfoListResponse(deployments));
     }
 
     public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {

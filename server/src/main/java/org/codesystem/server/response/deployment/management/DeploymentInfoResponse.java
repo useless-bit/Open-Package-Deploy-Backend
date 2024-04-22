@@ -11,7 +11,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetDeploymentResponse implements ApiResponse {
+public class DeploymentInfoResponse implements ApiResponse {
     private String uuid;
     private String agentUUID;
     private String agentName;
@@ -23,7 +23,7 @@ public class GetDeploymentResponse implements ApiResponse {
     private String returnValue;
     private Instant lastDeploymentTimestamp;
 
-    public GetDeploymentResponse(DeploymentEntity deploymentEntity) {
+    public DeploymentInfoResponse(DeploymentEntity deploymentEntity) {
         this.uuid = deploymentEntity.getUuid();
         this.agentUUID = deploymentEntity.getAgentEntity().getUuid();
         this.agentName = deploymentEntity.getAgentEntity().getName();

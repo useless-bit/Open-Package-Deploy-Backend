@@ -9,10 +9,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class GetSystemUsageResponse implements ApiResponse {
+public class ServerSystemUsageResponse implements ApiResponse {
     private List<SystemUsageEntity> systemUsageEntities;
 
-    public GetSystemUsageResponse(List<SystemUsageEntity> systemUsageEntities) {
+    public ServerSystemUsageResponse(List<SystemUsageEntity> systemUsageEntities) {
         this.systemUsageEntities = systemUsageEntities;
     }
 }

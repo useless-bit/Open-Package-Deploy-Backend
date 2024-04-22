@@ -5,7 +5,7 @@ import org.codesystem.server.entity.LogEntity;
 import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.LogRepository;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.server.GetAllLogsResponse;
+import org.codesystem.server.response.server.ServerLogListResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,6 +31,6 @@ public class LogService {
 
     public ResponseEntity<ApiResponse> getAllEntries() {
         List<LogEntity> logEntities = logRepository.findAllSorted();
-        return ResponseEntity.status(HttpStatus.OK).body(new GetAllLogsResponse(logEntities));
+        return ResponseEntity.status(HttpStatus.OK).body(new ServerLogListResponse(logEntities));
     }
 }

@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CreateNewDeploymentResponse implements ApiResponse {
+public class DeploymentCreateResponse implements ApiResponse {
     private String deploymentUUID;
 }

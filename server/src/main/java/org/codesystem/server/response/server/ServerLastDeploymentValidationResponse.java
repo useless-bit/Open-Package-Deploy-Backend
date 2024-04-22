@@ -5,9 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.codesystem.server.response.general.ApiResponse;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetRegistrationTokenResponse implements ApiResponse {
-    private String registrationToken;
+public class ServerLastDeploymentValidationResponse implements ApiResponse {
+    private Instant lastDeploymentValidation;
 }

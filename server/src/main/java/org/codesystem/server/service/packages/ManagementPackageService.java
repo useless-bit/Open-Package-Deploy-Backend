@@ -14,8 +14,8 @@ import org.codesystem.server.request.packages.UpdatePackageContentRequest;
 import org.codesystem.server.request.packages.UpdatePackageRequest;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.response.packages.GetAllPackagesResponse;
-import org.codesystem.server.response.packages.GetPackageResponse;
+import org.codesystem.server.response.packages.PackageInfoListResponse;
+import org.codesystem.server.response.packages.PackageInfoResponse;
 import org.codesystem.server.service.server.LogService;
 import org.codesystem.server.utility.CryptoUtility;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +36,7 @@ public class ManagementPackageService {
     private final LogService logService;
 
     public ResponseEntity<ApiResponse> getAllPackages() {
-        return ResponseEntity.ok().body(new GetAllPackagesResponse(packageRepository.findAll()));
+        return ResponseEntity.ok().body(new PackageInfoListResponse(packageRepository.findAll()));
     }
 
     public ResponseEntity<ApiResponse> getPackage(String packageUUID) {
@@ -44,7 +44,7 @@ public class ManagementPackageService {
         if (packageEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
-        return ResponseEntity.ok().body(new GetPackageResponse(packageEntity));
+        return ResponseEntity.ok().body(new PackageInfoResponse(packageEntity));
     }
 
     public ResponseEntity<ApiResponse> addNewNewPackage(AddNewPackageRequest addNewPackageRequest, MultipartFile multipartFile) {

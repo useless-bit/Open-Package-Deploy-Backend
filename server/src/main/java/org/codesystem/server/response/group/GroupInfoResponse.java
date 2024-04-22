@@ -6,7 +6,7 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.response.general.ApiResponse;
 
 @Getter
-public class GetGroupResponse implements ApiResponse {
+public class GroupInfoResponse implements ApiResponse {
     private final String uuid;
     private final String name;
     private final String description;
@@ -14,7 +14,7 @@ public class GetGroupResponse implements ApiResponse {
     private final int memberCount;
     private final int packageCount;
 
-    public GetGroupResponse(GroupEntity groupEntity) {
+    public GroupInfoResponse(GroupEntity groupEntity) {
         this.uuid = groupEntity.getUuid();
         this.name = groupEntity.getName();
         this.description = groupEntity.getDescription();

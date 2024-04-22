@@ -7,12 +7,12 @@ import org.codesystem.server.response.general.ApiResponse;
 import java.util.List;
 
 @Getter
-public class GetAlPackagesResponse implements ApiResponse {
-    private final List<GetPackageResponse> packages;
+public class GroupPackageListResponse implements ApiResponse {
+    private final List<GroupPackageResponse> packages;
 
-    public GetAlPackagesResponse(List<PackageEntity> packageEntities) {
+    public GroupPackageListResponse(List<PackageEntity> packageEntities) {
         this.packages = packageEntities.stream()
-                .map(GetPackageResponse::new)
+                .map(GroupPackageResponse::new)
                 .toList();
     }
 }

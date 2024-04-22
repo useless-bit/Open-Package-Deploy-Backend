@@ -8,6 +8,6 @@ import org.codesystem.server.response.general.ApiResponse;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetDeploymentValidationIntervalResponse implements ApiResponse {
-    private Integer deploymentValidationInterval;
+public class ServerRegistrationTokenResponse implements ApiResponse {
+    private String registrationToken;
 }
