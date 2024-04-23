@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "agent")
 public class AgentEntity {
-    @ManyToMany(mappedBy = "members")
+    @ManyToMany(mappedBy = "members",fetch = FetchType.EAGER)
     List<GroupEntity> groups = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

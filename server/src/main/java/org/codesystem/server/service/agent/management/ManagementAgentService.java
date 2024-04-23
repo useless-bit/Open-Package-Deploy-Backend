@@ -3,9 +3,11 @@ package org.codesystem.server.service.agent.management;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
+import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.request.agent.management.AgentUpdateRequest;
 import org.codesystem.server.response.agent.management.AgentInfoListResponse;
 import org.codesystem.server.response.agent.management.AgentInfoResponse;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class ManagementAgentService {
     private final AgentRepository agentRepository;
     private final DeploymentRepository deploymentRepository;
+    private final GroupRepository groupRepository;
     private final LogService logService;
 
     public ResponseEntity<ApiResponse> getAllAgents() {
@@ -53,6 +56,10 @@ public class ManagementAgentService {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
             return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
+        }
+        for (GroupEntity group : agentEntity.getGroups()) {
+            group.removeMember(agentEntity);
+            groupRepository.save(group);
         }
         deploymentRepository.deleteAll(deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid()));
         agentRepository.delete(agentEntity);

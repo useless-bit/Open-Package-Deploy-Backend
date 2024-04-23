@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "package")
 public class PackageEntity {
-    @ManyToMany(mappedBy = "deployedPackages")
+    @ManyToMany(mappedBy = "deployedPackages", fetch = FetchType.EAGER)
     List<GroupEntity> groups = new ArrayList<>();
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
