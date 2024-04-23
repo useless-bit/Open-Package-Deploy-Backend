@@ -6,6 +6,7 @@ import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
+import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -125,6 +126,9 @@ public class ManagementGroupService {
         if (packageEntity.getTargetOperatingSystem() != groupEntity.getOperatingSystem()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_OS_MISMATCH));
         }
+        if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_PACKAGE_NOT_AVAILABLE));
+        }
         groupEntity.addPackage(packageEntity);
         groupRepository.save(groupEntity);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -158,5 +162,13 @@ public class ManagementGroupService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_GROUP));
         }
         return ResponseEntity.status(HttpStatus.OK).body(new GroupPackageListResponse(groupEntity.getDeployedPackages()));
+    }
+
+    public ResponseEntity<ApiResponse> getGroupsForAgent(String agentUUID) {
+        AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
+        if (agentEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoListResponse(groupRepository.findGroupsWhereAgentIsMember(agentEntity.getUuid())));
     }
 }
