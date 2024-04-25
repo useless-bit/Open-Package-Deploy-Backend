@@ -171,4 +171,13 @@ public class ManagementGroupService {
         }
         return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoListResponse(groupRepository.findGroupsWhereAgentIsMember(agentEntity.getUuid())));
     }
+
+    public ResponseEntity<ApiResponse> getGroupsForPackage(String packageUUID) {
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new GroupInfoListResponse(groupRepository.findGroupsWherePackageIsDeployedTo(packageEntity.getUuid())));
+
+    }
 }

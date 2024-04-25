@@ -50,5 +50,6 @@ public interface DeploymentRepository extends JpaRepository<DeploymentEntity, St
     @Query("select d from DeploymentEntity d where d.agentEntity.uuid = ?1")
     List<DeploymentEntity> findDeploymentsForAgent(String agentUUID);
 
-
+    @Query("select d from DeploymentEntity d where d.packageEntity.uuid = ?1")
+    List<DeploymentEntity> findDeploymentsForPackage(String packageUUID);
 }

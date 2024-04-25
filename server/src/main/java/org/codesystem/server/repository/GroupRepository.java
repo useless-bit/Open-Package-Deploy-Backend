@@ -19,5 +19,6 @@ public interface GroupRepository extends JpaRepository<GroupEntity, String> {
     @Query("select g from GroupEntity g inner join g.members members where members.uuid = ?1")
     List<GroupEntity> findGroupsWhereAgentIsMember(String agentUUID);
 
-
+    @Query("select g from GroupEntity g inner join g.deployedPackages deployedPackages where deployedPackages.uuid = ?1")
+    List<GroupEntity> findGroupsWherePackageIsDeployedTo(String packageUUID);
 }

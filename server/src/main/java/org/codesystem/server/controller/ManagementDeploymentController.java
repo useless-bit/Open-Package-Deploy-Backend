@@ -30,6 +30,11 @@ public class ManagementDeploymentController {
         return managementDeploymentService.getAllDeploymentsForAgent(agentUUID);
     }
 
+    @GetMapping("package/{packageUUID}")
+    public ResponseEntity<ApiResponse> getAllDeploymentsForPackage(@PathVariable String packageUUID) {
+        return managementDeploymentService.getAllDeploymentsForPackage(packageUUID);
+    }
+
     @PostMapping()
     public ResponseEntity<ApiResponse> createNewDeployment(@RequestBody DeploymentCreateRequest deploymentCreateRequest) {
         return managementDeploymentService.createNewDeployment(deploymentCreateRequest);

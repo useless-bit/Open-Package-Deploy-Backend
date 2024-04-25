@@ -75,4 +75,9 @@ public class ManagementGroupController {
     public ResponseEntity<ApiResponse> getGroupsForAgent(@PathVariable String agentUUID) {
         return managementGroupService.getGroupsForAgent(agentUUID);
     }
+
+    @GetMapping("/package/{packageUUID}")
+    public ResponseEntity<ApiResponse> getGroupsForPackage(@PathVariable String packageUUID) {
+        return managementGroupService.getGroupsForPackage(packageUUID);
+    }
 }
