@@ -3,11 +3,13 @@ package org.codesystem.server.service.packages;
 import lombok.RequiredArgsConstructor;
 import org.codesystem.server.ServerApplication;
 import org.codesystem.server.Variables;
+import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.log.Severity;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.PackageAddNewRequest;
 import org.codesystem.server.request.packages.PackageUpdateContentRequest;
@@ -33,6 +35,7 @@ public class ManagementPackageService {
     private final PackageRepository packageRepository;
     private final CryptoUtility cryptoUtility;
     private final DeploymentRepository deploymentRepository;
+    private final GroupRepository groupRepository;
     private final LogService logService;
 
     public ResponseEntity<ApiResponse> getAllPackages() {
@@ -119,6 +122,10 @@ public class ManagementPackageService {
         }
 
         packageEntity.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
+        for (GroupEntity group : packageEntity.getGroups()) {
+            group.removePackage(packageEntity);
+            groupRepository.save(group);
+        }
         deploymentRepository.deleteDeploymentsForPackage(packageEntity);
         packageRepository.save(packageEntity);
         logService.addEntry(Severity.INFO, "Marked Package for deletion: " + packageEntity.getName() + " | " + packageEntity.getUuid());

@@ -17,10 +17,10 @@ jacocoTestReport {
 }
 
 dependencies {
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    implementation 'org.json:json:20231013'
-    implementation 'com.github.oshi:oshi-core:6.4.12'
+    implementation 'org.json:json:20240303'
+    implementation 'com.github.oshi:oshi-core:6.6.0'
     implementation 'net.lingala.zip4j:zip4j:2.11.5'
 
     testImplementation platform('org.junit:junit-bom:5.9.1')

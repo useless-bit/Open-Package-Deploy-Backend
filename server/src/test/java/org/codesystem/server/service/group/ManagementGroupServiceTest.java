@@ -8,6 +8,7 @@ import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
+import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
@@ -303,8 +304,14 @@ class ManagementGroupServiceTest {
         responseEntity = managementGroupService.addPackage(groupEntityOne.getUuid(), packageEntityTwo.getUuid());
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         Assertions.assertEquals("OS mismatch", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
-
+        packageEntityTwo.setPackageStatusInternal(PackageStatusInternal.MARKED_AS_DELETED);
         packageEntityTwo.setTargetOperatingSystem(OperatingSystem.LINUX);
+        packageEntityTwo = packageRepository.save(packageEntityTwo);
+        responseEntity = managementGroupService.addPackage(groupEntityOne.getUuid(), packageEntityTwo.getUuid());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Package not available for deployment", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        packageEntityTwo.setPackageStatusInternal(PackageStatusInternal.PROCESSED);
         packageEntityTwo = packageRepository.save(packageEntityTwo);
         groupEntityOne = groupRepository.findFirstByUuid(groupEntityOne.getUuid());
         Assertions.assertEquals(1, groupEntityOne.getDeployedPackages().size());
@@ -364,4 +371,25 @@ class ManagementGroupServiceTest {
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Assertions.assertNotNull(new JSONObject(responseEntity.getBody()).getJSONArray("packages").getJSONObject(0));
     }
+
+    @Test
+    void getGroupsForAgent() {
+        ResponseEntity responseEntity = managementGroupService.getGroupsForAgent("invalid UUID");
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Agent not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.getGroupsForAgent(agentEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNotNull(new JSONObject(responseEntity.getBody()).getJSONArray("groups").getJSONObject(0));
+    }
+
+    @Test
+    void getGroupsForPackage() {
+        ResponseEntity responseEntity = managementGroupService.getGroupsForPackage("invalid UUID");
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementGroupService.getGroupsForPackage(packageEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertNotNull(new JSONObject(responseEntity.getBody()).getJSONArray("groups").getJSONObject(0));
+    }
+
 }

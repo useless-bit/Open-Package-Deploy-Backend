@@ -103,6 +103,15 @@ public class ManagementDeploymentService {
         return ResponseEntity.ok().body(new DeploymentInfoListResponse(deployments));
     }
 
+    public ResponseEntity<ApiResponse> getAllDeploymentsForPackage(String packageUUID) {
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
+        }
+        List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForPackage(packageEntity.getUuid());
+        return ResponseEntity.ok().body(new DeploymentInfoListResponse(deployments));
+    }
+
     public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {

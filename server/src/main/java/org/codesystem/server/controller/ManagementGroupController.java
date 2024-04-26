@@ -70,4 +70,14 @@ public class ManagementGroupController {
     public ResponseEntity<ApiResponse> getPackages(@PathVariable String groupUUID) {
         return managementGroupService.getPackages(groupUUID);
     }
+
+    @GetMapping("/agent/{agentUUID}")
+    public ResponseEntity<ApiResponse> getGroupsForAgent(@PathVariable String agentUUID) {
+        return managementGroupService.getGroupsForAgent(agentUUID);
+    }
+
+    @GetMapping("/package/{packageUUID}")
+    public ResponseEntity<ApiResponse> getGroupsForPackage(@PathVariable String packageUUID) {
+        return managementGroupService.getGroupsForPackage(packageUUID);
+    }
 }

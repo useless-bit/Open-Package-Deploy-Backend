@@ -5,10 +5,12 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.agent.management.AgentUpdateRequest;
 import org.codesystem.server.service.server.LogService;
@@ -36,10 +38,13 @@ class ManagementAgentServiceTest {
     DeploymentRepository deploymentRepository;
     @Autowired
     PackageRepository packageRepository;
+    @Autowired
+    GroupRepository groupRepository;
     ManagementAgentService managementAgentService;
     LogService logService;
     AgentEntity agentEntityOne;
     AgentEntity agentEntityTwo;
+    GroupEntity groupEntityOne;
 
 
     @BeforeAll
@@ -66,13 +71,21 @@ class ManagementAgentServiceTest {
         agentEntityTwo.setName("Agent Two");
         agentEntityTwo = agentRepository.save(agentEntityTwo);
 
+        groupEntityOne = new GroupEntity();
+        groupEntityOne.setOperatingSystem(OperatingSystem.LINUX);
+        groupEntityOne.setName("Group One");
+        groupEntityOne = groupRepository.save(groupEntityOne);
+        groupEntityOne.addMember(agentEntityOne);
+        groupEntityOne = groupRepository.save(groupEntityOne);
+
         logService = Mockito.mock(LogService.class);
 
-        managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository, logService);
+        managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository, groupRepository, logService);
     }
 
     @AfterEach
     void tearDown() {
+        groupRepository.deleteAll();
         deploymentRepository.deleteAll();
         agentRepository.deleteAll();
     }
