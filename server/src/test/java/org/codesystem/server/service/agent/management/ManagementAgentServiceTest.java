@@ -9,6 +9,7 @@ import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.agent.management.AgentUpdateRequest;
 import org.codesystem.server.service.server.LogService;
@@ -36,6 +37,8 @@ class ManagementAgentServiceTest {
     DeploymentRepository deploymentRepository;
     @Autowired
     PackageRepository packageRepository;
+    @Autowired
+    GroupRepository groupRepository;
     ManagementAgentService managementAgentService;
     LogService logService;
     AgentEntity agentEntityOne;
@@ -68,7 +71,7 @@ class ManagementAgentServiceTest {
 
         logService = Mockito.mock(LogService.class);
 
-        managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository, logService);
+        managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository, groupRepository, logService);
     }
 
     @AfterEach

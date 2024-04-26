@@ -10,6 +10,7 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
 import org.codesystem.server.request.packages.PackageAddNewRequest;
 import org.codesystem.server.request.packages.PackageUpdateContentRequest;
@@ -54,6 +55,8 @@ class ManagementPackageServiceTest {
     DeploymentRepository deploymentRepository;
     @Autowired
     AgentRepository agentRepository;
+    @Autowired
+    GroupRepository groupRepository;
     CryptoUtility cryptoUtility;
     LogService logService;
     PackageEntity packageEntityOne;
@@ -93,7 +96,7 @@ class ManagementPackageServiceTest {
         cryptoUtility = Mockito.mock(CryptoUtility.class);
         logService = Mockito.mock(LogService.class);
 
-        managementPackageService = new ManagementPackageService(packageRepository, cryptoUtility, deploymentRepository, logService);
+        managementPackageService = new ManagementPackageService(packageRepository, cryptoUtility, deploymentRepository, groupRepository, logService);
         deleteFolderWithContent();
     }
 
