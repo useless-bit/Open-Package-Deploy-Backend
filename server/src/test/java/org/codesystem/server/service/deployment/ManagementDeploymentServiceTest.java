@@ -281,6 +281,20 @@ class ManagementDeploymentServiceTest {
     }
 
     @Test
+    void getAllDeploymentsForPackage() {
+        ResponseEntity responseEntity = managementDeploymentService.getAllDeploymentsForPackage(null);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+        responseEntity = managementDeploymentService.getAllDeploymentsForPackage("invalid UUID");
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals("Package not found", new JSONObject(Objects.requireNonNull(responseEntity.getBody())).getString("message"));
+
+        responseEntity = managementDeploymentService.getAllDeploymentsForPackage(packageEntityOne.getUuid());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals("Package One", new JSONObject(new JSONObject(responseEntity.getBody()).getJSONArray("deployments").get(0).toString()).getString("packageName"));
+    }
+
+    @Test
     void resetDeployment() {
         deploymentEntityOne.setDeployed(true);
         deploymentEntityOne.setLastDeploymentTimestamp(Instant.now());

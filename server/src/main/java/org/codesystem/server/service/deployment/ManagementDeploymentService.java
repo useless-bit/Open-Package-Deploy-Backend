@@ -110,7 +110,6 @@ public class ManagementDeploymentService {
         }
         List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForPackage(packageEntity.getUuid());
         return ResponseEntity.ok().body(new DeploymentInfoListResponse(deployments));
-
     }
 
     public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {
