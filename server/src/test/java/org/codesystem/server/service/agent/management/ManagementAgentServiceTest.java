@@ -5,6 +5,7 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.repository.AgentRepository;
@@ -43,6 +44,7 @@ class ManagementAgentServiceTest {
     LogService logService;
     AgentEntity agentEntityOne;
     AgentEntity agentEntityTwo;
+    GroupEntity groupEntityOne;
 
 
     @BeforeAll
@@ -69,6 +71,13 @@ class ManagementAgentServiceTest {
         agentEntityTwo.setName("Agent Two");
         agentEntityTwo = agentRepository.save(agentEntityTwo);
 
+        groupEntityOne = new GroupEntity();
+        groupEntityOne.setOperatingSystem(OperatingSystem.LINUX);
+        groupEntityOne.setName("Group One");
+        groupEntityOne = groupRepository.save(groupEntityOne);
+        groupEntityOne.addMember(agentEntityOne);
+        groupEntityOne = groupRepository.save(groupEntityOne);
+
         logService = Mockito.mock(LogService.class);
 
         managementAgentService = new ManagementAgentService(agentRepository, deploymentRepository, groupRepository, logService);
@@ -76,6 +85,7 @@ class ManagementAgentServiceTest {
 
     @AfterEach
     void tearDown() {
+        groupRepository.deleteAll();
         deploymentRepository.deleteAll();
         agentRepository.deleteAll();
     }
