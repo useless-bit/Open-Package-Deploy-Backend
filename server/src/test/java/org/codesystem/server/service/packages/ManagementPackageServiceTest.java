@@ -5,6 +5,7 @@ import org.codesystem.server.configuration.SecurityConfiguration;
 import org.codesystem.server.configuration.ServerInitialization;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.entity.GroupEntity;
 import org.codesystem.server.entity.PackageEntity;
 import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
@@ -61,6 +62,7 @@ class ManagementPackageServiceTest {
     LogService logService;
     PackageEntity packageEntityOne;
     PackageEntity packageEntityTwo;
+    GroupEntity groupEntityOne;
     ManagementPackageService managementPackageService;
     Path packageFolder = Paths.get("/opt/OPD/Packages");
 
@@ -93,6 +95,13 @@ class ManagementPackageServiceTest {
         packageEntityTwo.setName("Package Two");
         packageEntityTwo = packageRepository.save(packageEntityTwo);
 
+        groupEntityOne = new GroupEntity();
+        groupEntityOne.setOperatingSystem(OperatingSystem.LINUX);
+        groupEntityOne.setName("Group One");
+        groupEntityOne = groupRepository.save(groupEntityOne);
+        groupEntityOne.addPackage(packageEntityOne);
+        groupEntityOne = groupRepository.save(groupEntityOne);
+
         cryptoUtility = Mockito.mock(CryptoUtility.class);
         logService = Mockito.mock(LogService.class);
 
@@ -102,6 +111,7 @@ class ManagementPackageServiceTest {
 
     @AfterEach
     void tearDown() throws IOException {
+        groupRepository.deleteAll();
         deploymentRepository.deleteAll();
         packageRepository.deleteAll();
         deleteFolderWithContent();
@@ -211,6 +221,7 @@ class ManagementPackageServiceTest {
         Assertions.assertNull(packageEntity.getChecksumEncrypted());
         Assertions.assertEquals(OperatingSystem.LINUX, packageEntity.getTargetOperatingSystem());
 
+        groupRepository.deleteAll();
         packageRepository.deleteAll();
 
         multiPartFileContent = "Test Content".getBytes(StandardCharsets.UTF_8);
