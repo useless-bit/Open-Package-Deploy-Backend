@@ -1,6 +1,6 @@
 package org.codesystem.payload;
 
-import org.codesystem.CryptoHandler;
+import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 
 import java.time.Instant;
@@ -13,11 +13,13 @@ public class EmptyRequest {
         this.timestamp = Instant.now();
     }
 
-    public JSONObject toJsonObject() {
+    public JSONObject toJsonObject(CryptoUtility cryptoUtility) {
+        if (cryptoUtility == null) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
-        CryptoHandler cryptoHandler = new CryptoHandler();
-        String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
+        String signature = Base64.getEncoder().encodeToString(cryptoUtility.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;
     }

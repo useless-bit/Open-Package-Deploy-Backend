@@ -1,6 +1,7 @@
 package org.codesystem.server.service.deployment;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.codesystem.server.entity.PackageEntity;
@@ -8,13 +9,15 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
+import org.codesystem.server.repository.GroupRepository;
 import org.codesystem.server.repository.PackageRepository;
-import org.codesystem.server.request.deployment.CreateNewDeploymentRequest;
-import org.codesystem.server.response.deployment.management.CreateNewDeploymentResponse;
-import org.codesystem.server.response.deployment.management.GetAllDeploymentsResponse;
-import org.codesystem.server.response.deployment.management.GetDeploymentResponse;
+import org.codesystem.server.request.deployment.DeploymentCreateRequest;
+import org.codesystem.server.response.deployment.management.DeploymentCreateResponse;
+import org.codesystem.server.response.deployment.management.DeploymentInfoListResponse;
+import org.codesystem.server.response.deployment.management.DeploymentInfoResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,60 +29,113 @@ public class ManagementDeploymentService {
     private final DeploymentRepository deploymentRepository;
     private final AgentRepository agentRepository;
     private final PackageRepository packageRepository;
+    private final GroupRepository groupRepository;
 
-    public ResponseEntity<ApiResponse> getAllPackages() {
-        return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deploymentRepository.findAll()));
+    public ResponseEntity<ApiResponse> getAllDeployments() {
+        return ResponseEntity.ok().body(new DeploymentInfoListResponse(deploymentRepository.findAll()));
     }
 
-    public ResponseEntity<ApiResponse> detDeployment(String deploymentUUID) {
+    public ResponseEntity<ApiResponse> getDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
         }
-        return ResponseEntity.ok().body(new GetDeploymentResponse(deploymentEntity));
+        return ResponseEntity.ok().body(new DeploymentInfoResponse(deploymentEntity));
     }
 
-    public ResponseEntity<ApiResponse> createNewDeployment(CreateNewDeploymentRequest createNewDeploymentRequest) {
-        //todo: add null checks
-        AgentEntity agentEntity = agentRepository.findFirstByUuid(createNewDeploymentRequest.getAgentUUID());
-        PackageEntity packageEntity = packageRepository.findFirstByUuid(createNewDeploymentRequest.getPackageUUID());
+    public ResponseEntity<ApiResponse> createNewDeployment(DeploymentCreateRequest deploymentCreateRequest) {
+        AgentEntity agentEntity = agentRepository.findFirstByUuid(deploymentCreateRequest.getAgentUUID());
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(deploymentCreateRequest.getPackageUUID());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         if (packageEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
         }
-        if (packageEntity.getPackageStatusInternal() != PackageStatusInternal.PROCESSED) {
-            return ResponseEntity.badRequest().body(new ApiError("Package not available for deployment"));
+        if (packageEntity.getPackageStatusInternal() == PackageStatusInternal.MARKED_AS_DELETED) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_PACKAGE_NOT_AVAILABLE));
         }
-        if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment already present"));
+        if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN || packageEntity.getTargetOperatingSystem() == OperatingSystem.UNKNOWN) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_INVALID_OS));
         }
         if (agentEntity.getOperatingSystem() != packageEntity.getTargetOperatingSystem()) {
-            return ResponseEntity.badRequest().body(new ApiError("OS mismatch"));
-        } else if (agentEntity.getOperatingSystem() == OperatingSystem.UNKNOWN) {
-            return ResponseEntity.badRequest().body(new ApiError("OS invalid "));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_OS_MISMATCH));
         }
-        DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity, createNewDeploymentRequest.getExpectedReturnValue());
+        if (deploymentRepository.isDeploymentAlreadyPresent(agentEntity.getUuid(), packageEntity.getUuid())) {
+            DeploymentEntity deploymentEntity = deploymentRepository.findAllByAgentUUIDAndPackageUUID(agentEntity.getUuid(), packageEntity.getUuid()).get(0);
+            if (deploymentEntity.isDirectDeployment()) {
+                return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_ALREADY_PRESENT));
+            } else {
+                deploymentEntity.setDirectDeployment(true);
+                deploymentEntity = deploymentRepository.save(deploymentEntity);
+                return ResponseEntity.ok().body(new DeploymentCreateResponse(deploymentEntity.getUuid()));
+            }
+        }
+        DeploymentEntity deploymentEntity = new DeploymentEntity(agentEntity, packageEntity);
+        deploymentEntity.setDirectDeployment(true);
         deploymentEntity = deploymentRepository.save(deploymentEntity);
-        return ResponseEntity.ok().body(new CreateNewDeploymentResponse(deploymentEntity.getUuid()));
+        return ResponseEntity.ok().body(new DeploymentCreateResponse(deploymentEntity.getUuid()));
     }
 
     public ResponseEntity<ApiResponse> deleteDeployment(String deploymentUUID) {
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
         if (deploymentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Deployment not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
+        }
+        if (!deploymentEntity.isDirectDeployment()) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.DEPLOYMENT_ERROR_THROUGH_GROUP));
+        }
+        if (groupRepository.isPackageAvailableThroughGroup(deploymentEntity.getAgentEntity().getUuid(), deploymentEntity.getPackageEntity().getUuid())) {
+            deploymentEntity.setDirectDeployment(false);
+            deploymentRepository.save(deploymentEntity);
+            return ResponseEntity.ok().build();
         }
         deploymentRepository.delete(deploymentEntity);
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<ApiResponse> getAllPackagesForAgent(String agentUUID) {
+    public ResponseEntity<ApiResponse> getAllDeploymentsForAgent(String agentUUID) {
         AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Agent not found"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
         }
         List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForAgent(agentEntity.getUuid());
-        return ResponseEntity.ok().body(new GetAllDeploymentsResponse(deployments));
+        return ResponseEntity.ok().body(new DeploymentInfoListResponse(deployments));
+    }
+
+    public ResponseEntity<ApiResponse> getAllDeploymentsForPackage(String packageUUID) {
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
+        }
+        List<DeploymentEntity> deployments = deploymentRepository.findDeploymentsForPackage(packageEntity.getUuid());
+        return ResponseEntity.ok().body(new DeploymentInfoListResponse(deployments));
+    }
+
+    public ResponseEntity<ApiResponse> resetDeployment(String deploymentUUID) {
+        DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
+        if (deploymentEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT));
+        }
+        deploymentRepository.resetDeployment(deploymentUUID);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> resetDeploymentForAgent(String agentUUID) {
+        AgentEntity agentEntity = agentRepository.findFirstByUuid(agentUUID);
+        if (agentEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_AGENT));
+        }
+        deploymentRepository.resetDeploymentsForAgent(agentEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    public ResponseEntity<ApiResponse> resetDeploymentForPackage(String packageUUID) {
+        PackageEntity packageEntity = packageRepository.findFirstByUuid(packageUUID);
+        if (packageEntity == null) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_PACKAGE));
+        }
+        deploymentRepository.resetDeploymentsForPackage(packageEntity);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

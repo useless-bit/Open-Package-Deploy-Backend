@@ -1,74 +1,77 @@
 package org.codesystem;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.codesystem.enums.OperatingSystem;
+import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.payload.DetailedSystemInformation;
+import org.codesystem.utility.CryptoUtility;
+import org.codesystem.utility.DownloadUtility;
+import org.codesystem.utility.PackageUtility;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.Security;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class AgentApplication {
-    public static final PropertiesLoader properties = new PropertiesLoader();
-    public static final Logger logger = Logger.getLogger("");
-    public static String agentChecksum;
-    public static OperatingSystem operatingSystem;
+    public static final Logger logger = Logger.getLogger("Agent");
+    private final PropertiesLoader propertiesLoader;
+    private final HardwareInfo hardwareInfo;
+    private final CryptoUtility cryptoUtility;
+    private String agentChecksum;
+    private OperatingSystem operatingSystem;
 
-    public static void main(String[] args) {
-        initialSetup();
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleWithFixedDelay(AgentApplication::mainLogic, 0, Integer.parseInt(properties.getProperty("Agent.Update-Interval")), TimeUnit.SECONDS);
+    public AgentApplication(PropertiesLoader propertiesLoader, HardwareInfo hardwareInfo, CryptoUtility cryptoUtility) {
+        this.propertiesLoader = propertiesLoader;
+        this.hardwareInfo = hardwareInfo;
+        this.cryptoUtility = cryptoUtility;
     }
 
-    private static void initialSetup() {
-        String filename;
-        try {
-            filename = String.valueOf(new File(AgentApplication.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Cannot get filename");
-        }
-        if (filename.endsWith("Agent_update-download.jar")) {
-            logger.info("Entering Update Mode");
-            UpdateHandler updateHandler = new UpdateHandler();
-            updateHandler.updateApplication();
-        } else if (Files.exists(Paths.get("Agent_update-download.jar"))) {
+    public void agentLogic() {
+        initialSetup();
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
-                Files.delete(Paths.get("Agent_update-download.jar"));
+                mainLogic();
+            } catch (Throwable t) {
+                throw new SevereAgentErrorException("Unexpected Exception occurred: " + t.getMessage());
+            }
+        }, 0, Integer.parseInt(propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_UPDATE_INTERVAL)), TimeUnit.SECONDS);
+    }
+
+    private void initialSetup() {
+        if (Files.exists(Variables.PATH_UPDATE_FILE)) {
+            try {
+                Files.deleteIfExists(Variables.PATH_UPDATE_FILE);
             } catch (IOException e) {
-                throw new RuntimeException("Cannot delete old update");
+                throw new SevereAgentErrorException("Cannot delete old update");
             }
         }
-        HardwareInfo hardwareInfo = new HardwareInfo();
         if (!hardwareInfo.isElevated()) {
-            throw new RuntimeException("Application needs elevated permissions");
+            throw new SevereAgentErrorException("Application needs elevated permissions");
         }
 
-        if (hardwareInfo.getOsManufacturer().toLowerCase().contains("linux")) {
-            AgentApplication.operatingSystem = OperatingSystem.LINUX;
+        DetailedSystemInformation detailedSystemInformation = new DetailedSystemInformation(hardwareInfo);
+        if (detailedSystemInformation.getOperatingSystem() == null) {
+            throw new SevereAgentErrorException("Unsupported OS: " + hardwareInfo.getOsManufacturer());
         } else {
-            throw new RuntimeException("Unsupported OS");
+            operatingSystem = detailedSystemInformation.getOperatingSystem();
+            logger.info("Detected OS: " + detailedSystemInformation.getOperatingSystem());
         }
-
         logger.info("Agent Startup");
-        Security.addProvider(new BouncyCastleProvider());
-        properties.loadProperties();
 
-        CryptoHandler cryptoHandler = new CryptoHandler();
-        agentChecksum = cryptoHandler.calculateChecksumOfFile("Agent.jar");
+        agentChecksum = cryptoUtility.calculateChecksumOfFile("Agent.jar");
 
-        ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration();
+        UpdateHandler updateHandler = new UpdateHandler(new DownloadUtility(), cryptoUtility, propertiesLoader);
+        PackageUtility packageUtility = new PackageUtility(cryptoUtility, operatingSystem, propertiesLoader, new DownloadUtility());
+        ServerCommunicationRegistration serverCommunicationRegistration = new ServerCommunicationRegistration(cryptoUtility, propertiesLoader, new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, updateHandler, packageUtility), operatingSystem);
         serverCommunicationRegistration.validateRegistration();
     }
 
-    private static void mainLogic() {
+    private void mainLogic() {
         logger.info("Checking for deployment");
-        ServerCommunication serverCommunication = new ServerCommunication(operatingSystem);
+        ServerCommunication serverCommunication = new ServerCommunication(cryptoUtility, propertiesLoader, agentChecksum, new UpdateHandler(new DownloadUtility(), cryptoUtility, propertiesLoader), new PackageUtility(cryptoUtility, operatingSystem, propertiesLoader, new DownloadUtility()));
         serverCommunication.waitForServerAvailability();
         while (serverCommunication.sendUpdateRequest()) {
             logger.info("Checking for deployment");

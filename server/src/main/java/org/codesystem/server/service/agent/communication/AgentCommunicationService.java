@@ -1,8 +1,14 @@
 package org.codesystem.server.service.agent.communication;
 
 import lombok.RequiredArgsConstructor;
+import org.codesystem.server.ServerApplication;
+import org.codesystem.server.Variables;
 import org.codesystem.server.entity.AgentEntity;
 import org.codesystem.server.entity.DeploymentEntity;
+import org.codesystem.server.entity.ServerEntity;
+import org.codesystem.server.enums.agent.OperatingSystem;
+import org.codesystem.server.enums.log.Severity;
+import org.codesystem.server.enums.packages.PackageStatusInternal;
 import org.codesystem.server.repository.AgentRepository;
 import org.codesystem.server.repository.DeploymentRepository;
 import org.codesystem.server.repository.ServerRepository;
@@ -13,16 +19,17 @@ import org.codesystem.server.response.agent.communication.AgentCheckForUpdateRes
 import org.codesystem.server.response.agent.communication.AgentPackageDetailResponse;
 import org.codesystem.server.response.general.ApiError;
 import org.codesystem.server.response.general.ApiResponse;
-import org.codesystem.server.utility.RequestValidator;
+import org.codesystem.server.service.server.LogService;
+import org.codesystem.server.utility.RequestUtility;
 import org.json.JSONObject;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -34,28 +41,48 @@ import java.util.List;
 public class AgentCommunicationService {
     private final AgentRepository agentRepository;
     private final DeploymentRepository deploymentRepository;
-    private final RequestValidator requestValidator;
+    private final RequestUtility requestUtility;
     private final ServerRepository serverRepository;
     private final ResourceLoader resourceLoader;
+    private final LogService logService;
+
 
     public ResponseEntity<ApiResponse> checkForUpdates(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid Request"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentEncryptedRequest.getPublicKeyBase64());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().body(new ApiError("Invalid Key"));
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_KEY));
         }
 
-        updateAgent(agentEntity, new AgentCheckForUpdateRequest(request));
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments_test(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        AgentCheckForUpdateRequest agentCheckForUpdateRequest = new AgentCheckForUpdateRequest(request);
+        if (agentCheckForUpdateRequest.getSystemInformationRequest() != null) {
+            String updateAgentResponse = updateAgent(agentEntity, agentCheckForUpdateRequest);
+            if (updateAgentResponse != null) {
+                return ResponseEntity.badRequest().body(new ApiError(updateAgentResponse));
+            }
+        }
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
         boolean deploymentAvailable = !deploymentEntities.isEmpty();
-        String checksum = serverRepository.findAll().get(0).getAgentChecksum();
-        return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(60, deploymentAvailable, checksum).toJsonObject(), agentEntity));
+        return ResponseEntity.ok().body(requestUtility.generateAgentEncryptedResponse(new AgentCheckForUpdateResponse(serverEntity.getAgentUpdateInterval(), deploymentAvailable, serverEntity.getAgentChecksum()).toJsonObject(), agentEntity));
     }
 
-    private void updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
+    private String updateAgent(AgentEntity agentEntity, AgentCheckForUpdateRequest agentCheckForUpdateRequest) {
+
+        if (agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem() == OperatingSystem.UNKNOWN) {
+            return Variables.AGENT_ERROR_INVALID_OS;
+        }
+
+        if (agentEntity.getOperatingSystem() != OperatingSystem.UNKNOWN && agentEntity.getOperatingSystem() != agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem()) {
+            logService.addEntry(Severity.ERROR, "The Agent '" + agentEntity.getName() + " | " + agentEntity.getUuid() + "' tried to change the Operating System from: " + agentEntity.getOperatingSystem() + " to: " + agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem());
+            return Variables.AGENT_ERROR_CHANGING_OS;
+        }
+
+        agentEntity.setAgentChecksum(agentCheckForUpdateRequest.getAgentChecksum());
+
         agentEntity.setOperatingSystem(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystem());
         agentEntity.setOperatingSystemFamily(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystemFamily());
         agentEntity.setOperatingSystemArchitecture(agentCheckForUpdateRequest.getSystemInformationRequest().getOperatingSystemArchitecture());
@@ -71,10 +98,11 @@ public class AgentCommunicationService {
 
         agentEntity.setLastConnectionTime(Instant.now());
         agentRepository.save(agentEntity);
+        return null;
     }
 
     public ResponseEntity<byte[]> getAgent(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -84,16 +112,16 @@ public class AgentCommunicationService {
         }
 
         Resource resource = resourceLoader.getResource("classpath:agent/Agent.jar");
-
         try {
             return ResponseEntity.ok().body(resource.getContentAsByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logService.addEntry(Severity.ERROR, "Failed to serve Agent-Update: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     public ResponseEntity<FileSystemResource> getPackage(AgentEncryptedRequest agentEncryptedRequest, String deploymentUUID) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -102,58 +130,61 @@ public class AgentCommunicationService {
             return ResponseEntity.badRequest().build();
         }
 
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(deploymentUUID);
-        if (deploymentEntity == null || deploymentEntity.isDeployed()
-                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
+        if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
+                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS)))) {
             return ResponseEntity.badRequest().build();
         }
-        Path path = Paths.get("/opt/OPD/Packages/" + deploymentEntity.getPackageEntity().getUuid());
+        Path path = Paths.get(ServerApplication.PACKAGE_LOCATION + deploymentEntity.getPackageEntity().getUuid());
         return ResponseEntity.ok().body(new FileSystemResource(new File(String.valueOf(path))));
     }
 
     public ResponseEntity<ApiResponse> getPackageDetails(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentEncryptedRequest.getPublicKeyBase64());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_KEY));
         }
 
-        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments_test(agentEntity.getUuid(), Instant.now().minus(6, ChronoUnit.HOURS));
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        List<DeploymentEntity> deploymentEntities = deploymentRepository.findAvailableDeployments(agentEntity.getUuid(), Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS));
         if (deploymentEntities.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_NO_DEPLOYMENT_AVAILABLE));
         }
 
         DeploymentEntity deploymentEntity = deploymentEntities.get(0);
-        return ResponseEntity.ok().body(requestValidator.generateAgentEncryptedResponse(new AgentPackageDetailResponse(deploymentEntity).toJsonObject(), agentEntity));
+        return ResponseEntity.ok().body(requestUtility.generateAgentEncryptedResponse(new AgentPackageDetailResponse(deploymentEntity).toJsonObject(), agentEntity));
     }
 
     public ResponseEntity<ApiResponse> sendDeploymentResult(AgentEncryptedRequest agentEncryptedRequest) {
-        JSONObject request = requestValidator.validateRequest(agentEncryptedRequest);
+        JSONObject request = requestUtility.validateRequest(agentEncryptedRequest);
         if (request == null || request.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_REQUEST));
         }
         AgentEntity agentEntity = agentRepository.findFirstByPublicKeyBase64(agentEncryptedRequest.getPublicKeyBase64());
         if (agentEntity == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_KEY));
         }
 
         AgentDeploymentResultRequest agentDeploymentResultRequest = new AgentDeploymentResultRequest(request);
         DeploymentEntity deploymentEntity = deploymentRepository.findFirstByUuid(agentDeploymentResultRequest.getDeploymentUUID());
 
-        if (deploymentEntity == null || deploymentEntity.isDeployed()
-                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(6, ChronoUnit.HOURS)))) {
-            return ResponseEntity.badRequest().build();
+        ServerEntity serverEntity = serverRepository.findAll().get(0);
+        if (deploymentEntity == null || deploymentEntity.isDeployed() || deploymentEntity.getPackageEntity().getPackageStatusInternal() != PackageStatusInternal.PROCESSED
+                || (deploymentEntity.getLastDeploymentTimestamp() != null && !deploymentEntity.getLastDeploymentTimestamp().isBefore(Instant.now().minus(serverEntity.getAgentInstallRetryInterval(), ChronoUnit.SECONDS)))) {
+            return ResponseEntity.badRequest().body(new ApiError(Variables.ERROR_RESPONSE_INVALID_DEPLOYMENT));
         }
 
-        if (agentDeploymentResultRequest.getResultCode().startsWith("AGENT-DEPLOYMENT-ERROR")) {
+        if (agentDeploymentResultRequest.getResultCode() == null || agentDeploymentResultRequest.getResultCode().startsWith(Variables.PACKAGE_AGENT_ERROR_BEGINNING)) {
             deploymentEntity.setDeployed(false);
-        } else if (deploymentEntity.getExpectedReturnValue() == null || deploymentEntity.getExpectedReturnValue().isBlank()) {
+        } else if (deploymentEntity.getPackageEntity().getExpectedReturnValue() == null || deploymentEntity.getPackageEntity().getExpectedReturnValue().isBlank()) {
             deploymentEntity.setDeployed(true);
         } else
-            deploymentEntity.setDeployed(agentDeploymentResultRequest.getResultCode().equals(deploymentEntity.getExpectedReturnValue()));
+            deploymentEntity.setDeployed(agentDeploymentResultRequest.getResultCode().equals(deploymentEntity.getPackageEntity().getExpectedReturnValue()));
 
         deploymentEntity.setLastDeploymentTimestamp(Instant.now());
         deploymentEntity.setReturnValue(agentDeploymentResultRequest.getResultCode());

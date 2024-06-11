@@ -1,101 +1,66 @@
 package org.codesystem;
 
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import org.codesystem.exceptions.SevereAgentErrorException;
+import org.codesystem.payload.EmptyRequest;
 import org.codesystem.payload.EncryptedMessage;
-import org.codesystem.payload.UpdateCheckRequest;
+import org.codesystem.utility.CryptoUtility;
+import org.codesystem.utility.DownloadUtility;
+import org.codesystem.utility.SystemExitUtility;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class UpdateHandler {
-    public void updateApplication() {
-        File oldVersion = Paths.get("Agent.jar").toFile();
-        File backupOldVersion = Paths.get("Agent_backup.jar").toFile();
-        File currentVersion = Paths.get("Agent_update-download.jar").toFile();
+    private static final Path PATH_UPDATE_FILE = Paths.get(Variables.FILE_NAME_AGENT_UPDATE);
+    private final DownloadUtility downloadUtility;
+    private final CryptoUtility cryptoUtility;
+    private final PropertiesLoader propertiesLoader;
 
-        if (!currentVersion.exists()) {
-            throw new RuntimeException("Cannot find update");
-        }
-
-        if (backupOldVersion.exists()) {
-            backupOldVersion.delete();
-        }
-
-        if (oldVersion.exists()) {
-            try {
-                Files.copy(oldVersion.toPath(), backupOldVersion.toPath());
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot create backup");
-            }
-            oldVersion.delete();
-        }
-
-        try {
-            Files.copy(currentVersion.toPath(), oldVersion.toPath());
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot copy update");
-        }
-        System.exit(0);
+    public UpdateHandler(DownloadUtility downloadUtility, CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader) {
+        this.downloadUtility = downloadUtility;
+        this.cryptoUtility = cryptoUtility;
+        this.propertiesLoader = propertiesLoader;
     }
 
     public void startUpdateProcess(String checksum) {
+        if (checksum == null || checksum.isBlank()) {
+            throw new SevereAgentErrorException("Invalid Checksum");
+        }
         try {
-            Files.delete(Paths.get("Agent_update-download.jar"));
+            Files.deleteIfExists(PATH_UPDATE_FILE);
         } catch (IOException e) {
-
+            throw new SevereAgentErrorException("Cannot delete old update: " + e.getMessage());
         }
-        CryptoHandler cryptoHandler = new CryptoHandler();
-        downloadUpdate();
-        if (!cryptoHandler.calculateChecksumOfFile("Agent_update-download.jar").equals(checksum)) {
-            System.exit(12);
-        }
-        startNewApplication();
-    }
 
-    private void downloadUpdate() {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(new EncryptedMessage(new UpdateCheckRequest().toJsonObject()).toJsonObject().toString(), mediaType);
+        RequestBody body = RequestBody.create(new EncryptedMessage(new EmptyRequest().toJsonObject(cryptoUtility), cryptoUtility, propertiesLoader).toJsonObject().toString(), mediaType);
         Request request = new Request.Builder()
-                .url(AgentApplication.properties.getProperty("Server.Url") + "/api/agent/communication/agent")
+                .url(propertiesLoader.getProperty(Variables.PROPERTIES_SERVER_URL) + Variables.URL_AGENT_DOWNLOAD)
                 .post(body)
                 .build();
 
-        Response response;
-        OkHttpClient client = new OkHttpClient();
+        boolean updateDownloaded = false;
         try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            updateDownloaded = downloadUtility.downloadFile(PATH_UPDATE_FILE, request);
+        } catch (Exception e) {
+            throw new SevereAgentErrorException("Update-download from Server failed: " + e.getMessage());
         }
-        if (response.code() != 200) {
-            return;
+        if (!updateDownloaded) {
+            throw new SevereAgentErrorException("Update-download from Server failed");
         }
-
-        byte[] data;
-        try {
-            data = response.body().bytes();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (!cryptoUtility.calculateChecksumOfFile(Variables.FILE_NAME_AGENT_UPDATE).equals(checksum)) {
+            try {
+                Files.deleteIfExists(PATH_UPDATE_FILE);
+            } catch (IOException e) {
+                throw new SevereAgentErrorException("Cannot delete invalid Agent: " + e.getMessage());
+            }
+            throw new SevereAgentErrorException("Checksum of new Agent is invalid");
         }
-        try (FileOutputStream fos = new FileOutputStream("Agent_update-download.jar")) {
-            fos.write(data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private void startNewApplication() {
-        String command = ProcessHandle.current().info().commandLine().get();
-        command = command.substring(0, command.indexOf(" "));
-        try {
-            new ProcessBuilder(command, "-jar", "Agent_update-download.jar").start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        System.exit(0);
+        SystemExitUtility.exit(0);
     }
 }

@@ -1,6 +1,5 @@
 package org.codesystem.server.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +27,8 @@ public class DeploymentEntity {
     @Column(name = "deployed")
     private boolean deployed = false;
 
-    @Column(name = "expected_return_value")
-    private String expectedReturnValue;
+    @Column(name = "direct_deployment", nullable = false)
+    private boolean directDeployment;
 
     @Column(name = "return_value")
     private String returnValue;
@@ -37,9 +36,8 @@ public class DeploymentEntity {
     @Column(name = "last_deployment_timestamp")
     private Instant lastDeploymentTimestamp;
 
-    public DeploymentEntity(AgentEntity agentEntity, PackageEntity packageEntity, String expectedReturnValue) {
+    public DeploymentEntity(AgentEntity agentEntity, PackageEntity packageEntity) {
         this.agentEntity = agentEntity;
         this.packageEntity = packageEntity;
-        this.expectedReturnValue = expectedReturnValue;
     }
 }

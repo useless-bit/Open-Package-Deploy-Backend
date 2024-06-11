@@ -1,25 +1,38 @@
 package org.codesystem.payload;
 
-import org.codesystem.CryptoHandler;
+import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 
-import java.time.Instant;
 import java.util.Base64;
 
 public class UpdateCheckRequest extends EmptyRequest {
     private final DetailedSystemInformation detailedSystemInformation;
+    private final String agentChecksum;
 
-    public UpdateCheckRequest() {
+    public UpdateCheckRequest(String agentChecksum, DetailedSystemInformation detailedSystemInformation) {
         super();
-        this.detailedSystemInformation = new DetailedSystemInformation();
+        this.detailedSystemInformation = detailedSystemInformation;
+        this.agentChecksum = agentChecksum;
     }
 
-    public JSONObject toJsonObject() {
+    @Override
+    public JSONObject toJsonObject(CryptoUtility cryptoUtility) {
+        if (cryptoUtility == null) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("timestamp", this.timestamp);
-        jsonObject.put("systemInformation", detailedSystemInformation.toJsonObject());
-        CryptoHandler cryptoHandler = new CryptoHandler();
-        String signature = Base64.getEncoder().encodeToString(cryptoHandler.createSignatureECC(jsonObject.toString()));
+        if (detailedSystemInformation == null) {
+            jsonObject.put("systemInformation", JSONObject.NULL);
+        } else {
+            jsonObject.put("systemInformation", detailedSystemInformation.toJsonObject());
+        }
+        if (agentChecksum == null) {
+            jsonObject.put("agentChecksum", JSONObject.NULL);
+        } else {
+            jsonObject.put("agentChecksum", agentChecksum.trim());
+        }
+        String signature = Base64.getEncoder().encodeToString(cryptoUtility.createSignatureECC(jsonObject.toString()));
         jsonObject.put("signature", signature);
         return jsonObject;
     }

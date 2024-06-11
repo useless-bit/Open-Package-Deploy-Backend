@@ -1,21 +1,16 @@
 package org.codesystem.server.response.agent.communication;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.codesystem.server.entity.DeploymentEntity;
 import org.json.JSONObject;
 
-import javax.crypto.SecretKey;
 import java.util.Base64;
 
-@Getter
-@Setter
 public class AgentPackageDetailResponse {
-    private String deploymentUUID;
-    private String encryptionToken;
-    private String initializationVector;
-    private String checksumPlaintext;
-    private String checksumEncrypted;
+    private final String deploymentUUID;
+    private final String encryptionToken;
+    private final String initializationVector;
+    private final String checksumPlaintext;
+    private final String checksumEncrypted;
 
     public AgentPackageDetailResponse(DeploymentEntity deploymentEntity) {
         this.deploymentUUID = deploymentEntity.getUuid();

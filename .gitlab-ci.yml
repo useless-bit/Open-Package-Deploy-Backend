@@ -1,6 +1,6 @@
 stages:
-  - agent
-  - server
+  - build
+  - test
   - publish
 
 before_script:
@@ -12,7 +12,7 @@ cache:
 
 Agent-Build:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: agent
+  stage: build
   script:
     - gradle -p agent clean build check --stacktrace --info --build-cache -x test
   except:
@@ -20,7 +20,7 @@ Agent-Build:
 
 Agent-Test:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: agent
+  stage: test
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
@@ -32,7 +32,7 @@ Agent-Test:
     - gradle -p agent test --fail-fast --info --stacktrace jacocoTestReport sonar
   artifacts:
     reports:
-      junit: server/build/test-results/test/**/TEST-*.xml
+      junit: agent/build/test-results/test/**/TEST-*.xml
   except:
     - master
   needs:
@@ -40,17 +40,15 @@ Agent-Test:
 
 Server-Build:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: server
+  stage: build
   script:
     - gradle -p server clean build check --stacktrace --info --build-cache -x test
   except:
     - master
-  needs:
-    - Agent-Test
 
 Server-Test:
   image: $CI_REGISTRY/java/gradle:jdk19
-  stage: server
+  stage: test
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
@@ -74,11 +72,12 @@ build-image-dev:
   stage: publish
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build . -t $CI_REGISTRY/opd/server:dev
+    - docker build . -t $CI_REGISTRY/opd/server:dev --build-arg BASE_IMAGE_1=$DOCKER_IMAGE_JDK19
     - docker push $CI_REGISTRY/opd/server:dev
   only:
     - dev
   needs:
+    - Agent-Test
     - Server-Test
 
 build-image-master:
@@ -86,7 +85,7 @@ build-image-master:
   stage: publish
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build . -t $CI_REGISTRY/opd/server:latest
+    - docker build . -t $CI_REGISTRY/opd/server:latest --build-arg BASE_IMAGE_1=$DOCKER_IMAGE_JDK19
     - docker push $CI_REGISTRY/opd/server:latest
   only:
     - master

@@ -7,11 +7,11 @@ import org.codesystem.server.enums.agent.OperatingSystem;
 @Converter
 public class OperatingSystemConverter implements AttributeConverter<OperatingSystem, String> {
     @Override
-    public String convertToDatabaseColumn(OperatingSystem packageStatusInternal) {
-        if (packageStatusInternal == null) {
+    public String convertToDatabaseColumn(OperatingSystem operatingSystem) {
+        if (operatingSystem == null) {
             return null;
         }
-        return packageStatusInternal.name();
+        return operatingSystem.name();
     }
 
     @Override

@@ -12,10 +12,39 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @EnableScheduling
 public class AsyncConfiguration implements AsyncConfigurer {
 
-    @Bean(name = "encryptPackageTask")
-    public ThreadPoolTaskScheduler threadPoolTaskSchedulerEmailSender() {
+    private ThreadPoolTaskScheduler createTaskSchedulerWithPoolSizeOne() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
         threadPoolTaskScheduler.setPoolSize(1);
         return threadPoolTaskScheduler;
+    }
+
+    @Bean(name = "encryptPackageTask")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerEncryptPackage() {
+        return createTaskSchedulerWithPoolSizeOne();
+    }
+
+    @Bean(name = "deletePackageTask")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerDeletePackage() {
+        return createTaskSchedulerWithPoolSizeOne();
+    }
+
+    @Bean(name = "deleteLogsTask")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerDeleteLogs() {
+        return createTaskSchedulerWithPoolSizeOne();
+    }
+
+    @Bean(name = "collectSystemUsageTask")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerCollectSystemUsage() {
+        return createTaskSchedulerWithPoolSizeOne();
+    }
+
+    @Bean(name = "deleteSystemUsageTask")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerDeleteSystemUsageEntries() {
+        return createTaskSchedulerWithPoolSizeOne();
+    }
+
+    @Bean(name = "validateDeployments")
+    public ThreadPoolTaskScheduler threadPoolTaskSchedulerValidateDeployments() {
+        return createTaskSchedulerWithPoolSizeOne();
     }
 }

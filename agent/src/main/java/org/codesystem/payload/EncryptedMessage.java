@@ -1,7 +1,8 @@
 package org.codesystem.payload;
 
-import org.codesystem.AgentApplication;
-import org.codesystem.CryptoHandler;
+import org.codesystem.PropertiesLoader;
+import org.codesystem.Variables;
+import org.codesystem.utility.CryptoUtility;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -12,13 +13,20 @@ public class EncryptedMessage {
     final String message;
 
 
-    public EncryptedMessage(JSONObject jsonObject) {
-        this.publicKeyBase64 = AgentApplication.properties.getProperty("Agent.ECC.Public-Key");
-        CryptoHandler cryptoHandler = new CryptoHandler();
-        this.message = Base64.getEncoder().encodeToString(cryptoHandler.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
+    public EncryptedMessage(JSONObject jsonObject, CryptoUtility cryptoUtility, PropertiesLoader propertiesLoader) {
+        if (jsonObject == null || cryptoUtility == null || propertiesLoader == null) {
+            publicKeyBase64 = null;
+            message = null;
+        } else {
+            this.publicKeyBase64 = propertiesLoader.getProperty(Variables.PROPERTIES_AGENT_ECC_PUBLIC_KEY);
+            this.message = Base64.getEncoder().encodeToString(cryptoUtility.encryptECC(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
+        }
     }
 
     public JSONObject toJsonObject() {
+        if (publicKeyBase64 == null || publicKeyBase64.isBlank() || message == null || message.isBlank()) {
+            return null;
+        }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("publicKeyBase64", this.publicKeyBase64);
         jsonObject.put("message", this.message);

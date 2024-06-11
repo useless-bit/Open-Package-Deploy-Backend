@@ -1,11 +1,12 @@
 package org.codesystem.server.request.agent.registration;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class AgentRegistrationRequest {
     private String publicKeyBase64;
     private String name;
