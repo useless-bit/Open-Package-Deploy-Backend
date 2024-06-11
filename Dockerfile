@@ -1,4 +1,6 @@
-FROM harbor.codesystem.org/java/gradle:jdk19 AS build-stage-aagent
+ARG BASE_IMAGE_1=azul/zulu-openjdk-alpine:19-latest
+
+FROM $BASE_IMAGE_1 AS build-stage-aagent
 
 WORKDIR /source
 ADD agent/src /source/src
@@ -7,7 +9,7 @@ ADD agent/build.gradle /source
 RUN gradle clean fatJar
 
 
-FROM harbor.codesystem.org/java/gradle:jdk19 AS build-stage-server
+FROM $BASE_IMAGE_1 AS build-stage-server
 
 WORKDIR /source
 ADD server/src /source/src
@@ -20,7 +22,7 @@ RUN rm -r src/test
 RUN gradle clean bootJar
 
 
-FROM harbor.codesystem.org/java/zulu-openjdk-alpine:19-latest
+FROM $BASE_IMAGE_1
 
 WORKDIR /jar
 COPY --from=build-stage-server /source/build/libs/* /jar/backend.jar
